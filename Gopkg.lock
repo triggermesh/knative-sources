@@ -901,7 +901,7 @@
   version = "kubernetes-1.16.4"
 
 [[projects]]
-  digest = "1:e3c6c353cd65459452d603cf156201ce6aad470d3081dd4c52b13bd4035ca7ac"
+  digest = "1:814703684a5e0baf4a4dc15fe892bfb266c57d66db5d6d89996cdec36efb2fc1"
   name = "k8s.io/apimachinery"
   packages = [
     "pkg/api/equality",
@@ -935,16 +935,19 @@
     "pkg/util/framer",
     "pkg/util/intstr",
     "pkg/util/json",
+    "pkg/util/mergepatch",
     "pkg/util/naming",
     "pkg/util/net",
     "pkg/util/runtime",
     "pkg/util/sets",
+    "pkg/util/strategicpatch",
     "pkg/util/validation",
     "pkg/util/validation/field",
     "pkg/util/wait",
     "pkg/util/yaml",
     "pkg/version",
     "pkg/watch",
+    "third_party/forked/golang/json",
     "third_party/forked/golang/reflect",
   ]
   pruneopts = "NUT"
@@ -952,10 +955,11 @@
   version = "kubernetes-1.16.4"
 
 [[projects]]
-  digest = "1:60aa2f5890d3408629159fed6410a685d0121fa5b65ab5e7392993392bccd8f7"
+  digest = "1:c4ec0c2bf1fd4a5abbff60b493ead74a3ba32aa0391548afae88ce924fed88cf"
   name = "k8s.io/client-go"
   packages = [
     "discovery",
+    "discovery/fake",
     "dynamic",
     "informers",
     "informers/admissionregistration",
@@ -1092,10 +1096,13 @@
     "plugin/pkg/client/auth/exec",
     "rest",
     "rest/watch",
+    "testing",
     "tools/cache",
     "tools/clientcmd/api",
     "tools/metrics",
     "tools/pager",
+    "tools/record",
+    "tools/record/util",
     "tools/reference",
     "transport",
     "util/cert",
@@ -1164,6 +1171,14 @@
 
 [[projects]]
   branch = "master"
+  digest = "1:42674e29bf0cf4662d49bd9528e24b9ecc4895b32d0be281f9cf04d3a7671846"
+  name = "k8s.io/kube-openapi"
+  packages = ["pkg/util/proto"]
+  pruneopts = "NUT"
+  revision = "addea2498afe5a6d58f8bdcd9ae51363d12f12ef"
+
+[[projects]]
+  branch = "master"
   digest = "1:2d3f59daa4b479ff4e100a2e1d8fea6780040fdadc177869531fe4cc29407f55"
   name = "k8s.io/utils"
   packages = [
@@ -1176,10 +1191,11 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:95c5140d07a510296c96058c22f531f169861351336d906bd34cdf0434436b14"
+  digest = "1:59c0057f654fd75908aa7e70ec4d24144fde17703e66ea155c0452147bb2170a"
   name = "knative.dev/eventing"
   packages = [
     "pkg/adapter/v2",
+    "pkg/apis/duck",
     "pkg/configmap",
     "pkg/tracing",
   ]
@@ -1195,10 +1211,13 @@
     "apis/duck",
     "apis/duck/v1",
     "changeset",
+    "client/injection/kube/client",
     "codegen/cmd/injection-gen",
     "codegen/cmd/injection-gen/args",
     "codegen/cmd/injection-gen/generators",
     "configmap",
+    "controller",
+    "injection",
     "kmeta",
     "kmp",
     "logging",
@@ -1206,6 +1225,7 @@
     "metrics",
     "metrics/metricskey",
     "profiling",
+    "reconciler",
     "signals",
     "source",
     "tracing",
@@ -1240,13 +1260,48 @@
   input-imports = [
     "github.com/cloudevents/sdk-go/v2",
     "github.com/slack-go/slack",
+    "go.uber.org/zap",
+    "k8s.io/api/apps/v1",
+    "k8s.io/api/core/v1",
+    "k8s.io/apimachinery/pkg/api/equality",
+    "k8s.io/apimachinery/pkg/api/errors",
+    "k8s.io/apimachinery/pkg/apis/meta/v1",
+    "k8s.io/apimachinery/pkg/labels",
+    "k8s.io/apimachinery/pkg/runtime",
+    "k8s.io/apimachinery/pkg/runtime/schema",
+    "k8s.io/apimachinery/pkg/runtime/serializer",
+    "k8s.io/apimachinery/pkg/types",
+    "k8s.io/apimachinery/pkg/util/runtime",
+    "k8s.io/apimachinery/pkg/util/sets",
+    "k8s.io/apimachinery/pkg/util/wait",
+    "k8s.io/apimachinery/pkg/watch",
+    "k8s.io/client-go/discovery",
+    "k8s.io/client-go/discovery/fake",
+    "k8s.io/client-go/kubernetes/scheme",
+    "k8s.io/client-go/kubernetes/typed/core/v1",
+    "k8s.io/client-go/rest",
+    "k8s.io/client-go/testing",
+    "k8s.io/client-go/tools/cache",
+    "k8s.io/client-go/tools/record",
+    "k8s.io/client-go/util/flowcontrol",
     "k8s.io/code-generator/cmd/client-gen",
     "k8s.io/code-generator/cmd/deepcopy-gen",
     "k8s.io/code-generator/cmd/defaulter-gen",
     "k8s.io/code-generator/cmd/informer-gen",
     "k8s.io/code-generator/cmd/lister-gen",
     "knative.dev/eventing/pkg/adapter/v2",
+    "knative.dev/eventing/pkg/apis/duck",
+    "knative.dev/pkg/apis",
+    "knative.dev/pkg/apis/duck",
+    "knative.dev/pkg/apis/duck/v1",
+    "knative.dev/pkg/client/injection/kube/client",
     "knative.dev/pkg/codegen/cmd/injection-gen",
+    "knative.dev/pkg/configmap",
+    "knative.dev/pkg/controller",
+    "knative.dev/pkg/injection",
+    "knative.dev/pkg/kmeta",
+    "knative.dev/pkg/logging",
+    "knative.dev/pkg/reconciler",
     "knative.dev/test-infra/scripts",
     "knative.dev/test-infra/tools/dep-collector",
   ]

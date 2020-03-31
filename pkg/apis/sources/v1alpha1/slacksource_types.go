@@ -77,8 +77,13 @@ type SlackSourceSpec struct {
 	// +optional
 	ServiceAccountName string `json:"serviceAccountName,omitempty"`
 
-	// SecretToken is the Kubernetes secret containing the Slack secret token.
-	SecretToken SecretValueFromSource `json:"secretToken"`
+	// SlackToken is the Kubernetes secret containing the Slack secret token.
+	SlackToken SecretValueFromSource `json:"slackToken"`
+
+	// Threadiness indicates how many threads will be dedicated to parsing incoming
+	// messages from slack
+	// +optional
+	Threadiness int `json:"threadiness,omitempty"`
 }
 
 // SecretValueFromSource represents the source of a secret value

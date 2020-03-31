@@ -13,5 +13,5 @@ type envAccessor struct {
 	adapter.EnvConfig
 
 	Threadiness int    `envconfig:"THREADINESS" default:"1"`
-	Token       string `envconfig:"TOKEN" required:"true"`
+	Token       string `envconfig:"SLACK_TOKEN" required:"true"`
 }

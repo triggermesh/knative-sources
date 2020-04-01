@@ -23,11 +23,12 @@ metadata:
 spec:
   replicas: 1
   selector:
-    matchLabels: &labels
+    matchLabels:
       control-plane: slack-source-controller-manager
   template:
     metadata:
-      labels: *labels
+      labels:
+        control-plane: slack-source-controller-manager
         contrib.eventing.knative.dev/release: devel
     spec:
       serviceAccountName: slack-source-controller
@@ -35,8 +36,7 @@ spec:
       containers:
       - name: controller
         terminationMessagePolicy: FallbackToLogsOnError
-        image: ko://github.com/triggermesh/slack-knative-source/cmd/controller
-
+        image: ko://github.com/triggermesh/knative-slack-source/cmd/controller
         resources:
           requests:
             cpu: 100m
@@ -54,7 +54,7 @@ spec:
           - name: METRICS_DOMAIN
             value: knative.dev/sources
           - name: SLACK_SOURCE_RA_IMAGE
-            value: ko://github.com/triggermesh/slack-knative-source/cmd/receive_adapter
+            value: ko://github.com/triggermesh/knative-slack-source/cmd/receive_adapter
 
         securityContext:
           allowPrivilegeEscalation: false

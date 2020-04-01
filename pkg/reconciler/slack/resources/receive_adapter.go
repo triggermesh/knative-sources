@@ -1,5 +1,5 @@
 /*
-Copyright 2019 The Knative Authors
+Copyright 2020 The Knative Authors
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -28,7 +28,7 @@ import (
 	"github.com/triggermesh/knative-slack-source/pkg/apis/sources/v1alpha1"
 )
 
-// ReceiveAdapterArgs are the arguments needed to create a Sample Source Receive Adapter.
+// ReceiveAdapterArgs are the arguments needed to create a Slack Source Receive Adapter.
 // Every field is required.
 type ReceiveAdapterArgs struct {
 	Image       string
@@ -37,8 +37,7 @@ type ReceiveAdapterArgs struct {
 	EventSource string
 }
 
-// MakeReceiveAdapter generates (but does not insert into K8s) the Receive Adapter Deployment for
-// Sample sources.
+// MakeReceiveAdapter generates (but does not insert into K8s) the Receive Adapter Deployment for Slack sources.
 func MakeReceiveAdapter(args *ReceiveAdapterArgs) *v1.Deployment {
 	replicas := int32(1)
 	return &v1.Deployment{

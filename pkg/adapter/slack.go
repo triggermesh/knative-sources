@@ -78,11 +78,11 @@ type messageEvent struct {
 func (p *defaultProcessor) cloudEventFromMessage(message *slack.MessageEvent) *cloudevents.Event {
 	event := cloudevents.NewEvent(cloudevents.VersionV1)
 	event.SetID(message.ClientMsgID)
-	event.SetSource("channels.slack.io/" + message.Channel)
+	event.SetSource("com.slack.api.channel/" + message.Channel)
 	event.SetSubject(message.User + " / " + message.Username)
 	event.SetData(cloudevents.ApplicationJSON, &messageEvent{
 		Text: message.Text,
 	})
-	event.SetType("channels.slack.io/new-message")
+	event.SetType("dev.knative.sources.slack/new-message")
 	return &event
 }

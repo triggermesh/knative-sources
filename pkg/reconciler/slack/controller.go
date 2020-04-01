@@ -1,5 +1,5 @@
 /*
-Copyright 2019 The Knative Authors
+Copyright 2020 The Knative Authors
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -30,12 +30,12 @@ import (
 
 	"github.com/triggermesh/knative-slack-source/pkg/reconciler"
 
+	slacksourceinformer "github.com/triggermesh/knative-slack-source/pkg/client/injection/informers/sources/v1alpha1/slacksource"
+	"github.com/triggermesh/knative-slack-source/pkg/client/injection/reconciler/sources/v1alpha1/slacksource"
 	eventingclient "knative.dev/eventing/pkg/client/injection/client"
 	sinkbindinginformer "knative.dev/eventing/pkg/client/injection/informers/sources/v1alpha2/sinkbinding"
 	kubeclient "knative.dev/pkg/client/injection/kube/client"
 	deploymentinformer "knative.dev/pkg/client/injection/kube/informers/apps/v1/deployment"
-	slacksourceinformer "github.com/triggermesh/knative-slack-source/pkg/client/injection/informers/sources/v1alpha1/slacksource"
-	"github.com/triggermesh/knative-slack-source/pkg/client/injection/reconciler/sources/v1alpha1/slacksource"
 )
 
 // NewController initializes the controller and is called by the generated code

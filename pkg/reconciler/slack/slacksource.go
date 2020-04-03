@@ -18,9 +18,12 @@ package slack
 
 import (
 	"context"
+	"fmt"
 
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/kubernetes"
 	"knative.dev/pkg/logging"
 	pkgreconciler "knative.dev/pkg/reconciler"
 	"knative.dev/pkg/tracker"
@@ -41,6 +44,8 @@ func newReconciledNormal(namespace, name string) pkgreconciler.Event {
 type Reconciler struct {
 	ReceiveAdapterImage string `envconfig:"SLACK_SOURCE_RA_IMAGE" required:"true"`
 
+	kubeClientSet kubernetes.Interface
+
 	dr  *reconciler.DeploymentReconciler
 	sbr *reconciler.SinkBindingReconciler
 }
@@ -52,6 +57,13 @@ var _ reconcilerslacksource.Interface = (*Reconciler)(nil)
 func (r *Reconciler) ReconcileKind(ctx context.Context, src *v1alpha1.SlackSource) pkgreconciler.Event {
 	src.Status.InitializeConditions()
 	src.Status.ObservedGeneration = src.Generation
+
+	_, err := r.secretFrom(ctx, src.Namespace, src.Spec.SlackToken.SecretKeyRef)
+	if err != nil {
+		src.Status.MarkNoSecrets("AccessTokenNotFound", "%s", err)
+		return err
+	}
+	src.Status.MarkSecrets()
 
 	ra, event := r.dr.ReconcileDeployment(ctx, src, resources.MakeReceiveAdapter(&resources.ReceiveAdapterArgs{
 		EventSource: src.Namespace + "/" + src.Name,
@@ -85,4 +97,17 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, src *v1alpha1.SlackSourc
 	}
 
 	return newReconciledNormal(src.Namespace, src.Name)
+}
+
+func (r *Reconciler) secretFrom(ctx context.Context, namespace string, secretKeySelector *corev1.SecretKeySelector) (string, error) {
+	secret := &corev1.Secret{}
+	secret, err := r.kubeClientSet.CoreV1().Secrets(namespace).Get(secretKeySelector.Name, metav1.GetOptions{})
+	if err != nil {
+		return "", err
+	}
+	secretVal, ok := secret.Data[secretKeySelector.Key]
+	if !ok {
+		return "", fmt.Errorf(`key "%s" not found in secret "%s"`, secretKeySelector.Key, secretKeySelector.Name)
+	}
+	return string(secretVal), nil
 }

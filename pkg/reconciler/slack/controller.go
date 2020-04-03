@@ -49,6 +49,8 @@ func NewController(
 	slackSourceInformer := slacksourceinformer.Get(ctx)
 
 	r := &Reconciler{
+		kubeClientSet: kubeclient.Get(ctx),
+
 		dr:  &reconciler.DeploymentReconciler{KubeClientSet: kubeclient.Get(ctx)},
 		sbr: &reconciler.SinkBindingReconciler{EventingClientSet: eventingclient.Get(ctx)},
 	}

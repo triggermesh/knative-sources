@@ -12,7 +12,7 @@ metadata:
   annotations:
     registry.knative.dev/eventTypes: |
       [
-        { "type": "dev.knative.sources.slack/new-message" },
+        { "type": "dev.knative.sources.slack/message" },
       ]
 spec:
   group: sources.knative.dev

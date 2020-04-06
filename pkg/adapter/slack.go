@@ -89,6 +89,6 @@ func (p *defaultProcessor) cloudEventFromMessage(message *slack.MessageEvent) *c
 		UserID: message.User,
 		Text:   message.Text,
 	})
-	event.SetType("dev.knative.sources.slack/" + message.Type)
+	event.SetType("dev.knative.sources.slack/message")
 	return &event
 }

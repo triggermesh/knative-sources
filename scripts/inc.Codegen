@@ -1,0 +1,72 @@
+## Generated code
+
+# Name of the Go package for this repository
+ROOT_PKG := github.com/triggermesh/knative-sources
+SOURCE_PKG := $(ROOT_PKG)/$(SOURCES)
+
+GROUPS_PKGS := $(shell find pkg/apis/sources/* -type d)
+GROUP_INPUT_DIRS := $(foreach group,$(GROUPS_PKGS),$(SOURCE_PKG)/$(group))
+BOILERPLATE := $(BASE_DIR)/hack/boilerplate/boilerplate.go.txt
+
+generators := gen-deepcopy gen-client gen-lister gen-informer gen-injection
+
+.PHONY: gen-all $(generators)
+
+gen-all: $(generators) ## Generate all
+
+# http://blog.jgc.org/2007/06/escaping-comma-and-space-in-gnu-make.html
+comma := ,
+space :=
+space +=
+
+gen-deepcopy: ## Generate deepcopy for API objects
+	@echo "+ Generating deepcopy funcs for $(GROUP_INPUT_DIRS)"
+	@go run k8s.io/code-generator/cmd/deepcopy-gen \
+		--go-header-file $(BOILERPLATE) \
+		--input-dirs $(subst $(space),$(comma),$(GROUP_INPUT_DIRS)) \
+		--output-file-base zz_generated.deepcopy
+
+gen-client: ## Generate clientset for API objects
+	@echo "+ Generating clientsets for $(GROUP_INPUT_DIRS)"
+	@rm -rf pkg/client/generated/clientset
+	@go run k8s.io/code-generator/cmd/client-gen \
+		--go-header-file $(BOILERPLATE) \
+		--input $(subst $(space),$(comma),$(GROUPS_PKGS)) \
+		--input-base $(SOURCE_PKG) \
+		--output-package $(SOURCE_PKG)/pkg/client/generated/clientset
+
+gen-lister: ## Generate listers for API objects
+	@echo "+ Generating listers for $(GROUP_INPUT_DIRS)"
+	@rm -rf pkg/client/generated/listers
+	@go run k8s.io/code-generator/cmd/lister-gen \
+		--go-header-file $(BOILERPLATE) \
+		--input-dirs $(subst $(space),$(comma),$(GROUP_INPUT_DIRS)) \
+		--output-package $(SOURCE_PKG)/pkg/client/generated/listers
+
+gen-informer: ## Generate informers for API objects
+	@echo "+ Generating informers for $(GROUP_INPUT_DIRS)"
+	@rm -rf pkg/client/generated/informers
+	@go run k8s.io/code-generator/cmd/informer-gen \
+		--go-header-file $(BOILERPLATE) \
+		--input-dirs $(subst $(space),$(comma),$(GROUP_INPUT_DIRS)) \
+		--output-package $(SOURCE_PKG)/pkg/client/generated/informers \
+		--versioned-clientset-package $(SOURCE_PKG)/pkg/client/generated/clientset/internalclientset \
+		--listers-package $(SOURCE_PKG)/pkg/client/generated/listers
+
+gen-injection: ## Generate injection for API objects
+	@echo "+ Generating injection for $(GROUP_INPUT_DIRS)"
+	@rm -rf pkg/client/generated/injection
+	@go run knative.dev/pkg/codegen/cmd/injection-gen \
+		--go-header-file $(BOILERPLATE) \
+		--input-dirs $(subst $(space),$(comma),$(GROUP_INPUT_DIRS)) \
+		--output-package $(SOURCE_PKG)/pkg/client/generated/injection \
+		--versioned-clientset-package $(SOURCE_PKG)/pkg/client/generated/clientset/internalclientset \
+		--listers-package $(SOURCE_PKG)/pkg/client/generated/listers \
+		--external-versions-informers-package $(SOURCE_PKG)/pkg/client/generated/informers/externalversions
+
+# DO NOT USE FOR NOW
+# https://github.com/knative/serving/issues/912
+gen-crd: ## Generate CRD manifests for API objects
+	@echo "+ Generating CRD manifests for $(GROUP_INPUT_DIRS)"
+	go run sigs.k8s.io/controller-tools/cmd/controller-gen crd \
+	paths=./pkg/apis/... output:dir=./config/

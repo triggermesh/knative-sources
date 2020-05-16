@@ -1,77 +1,23 @@
-# Slack Source for Knative
+# Triggermesh Sources for Knative
 
-Slack Source enables integration between slack messages read by a bot users and Knative Eventing.
+Set of Knative Sources that bring cloud events from external systems.
 
-## Deployment
+## Sources
 
-### Deploy Knative Slack Source
+Sources are located at folders under this repository, each of them containing a README regarding its configuration and deployment.
 
-You can build your own images from source configuring [ko](https://github.com/google/ko) and executing with the config folder:
+## Support
 
-```sh
-ko apply -f ./config/
-```
+This is heavily **Work In Progress** We would love your feedback on this
+Operator so don't hesitate to let us know what is wrong and how we could improve
+it, just file an [issue](https://github.com/triggermesh/knative-sources/issues/new)
 
-### Create a Slack Bot User
+## Commercial Support
 
-1. Customize Slack adding a new **clasic** bot at https://api.slack.com/apps?new_classic_app=1
+TriggerMesh Inc supports those sources commercially, email info@triggermesh.com to get more details.
 
-    ![New classic app wizzard](./docs/images/01.add-classic-bot.png)
+## Code of Conduct
 
-2. From Basic Information section, display Add features and functionality and select bots, then click on `Add Legacy Bot User`
-
-    ![Legacy bot user](./docs/images/02.add-legacy-bot-user.png)
-
-3. Select `Install App` section and click on `Install App to Workspace`
-
-    ![Install to workspace](./docs/images/03.install-workspace.png)
-
-4. Copy the bot user OAuth token
-
-    ![Retrieve token](./docs/images/04.retrieve-oauth-token.png)
-
-### Creating an Slack Source instance
-
-An instance of the Slack Source is created by creating a manifest at your cluster where it is informed of:
-
-- The namespace where the instance of the source adapter will run.
-- The kubernetes secret and key that host the bot token copied when configuring the Slack bot.
-- An optional threadiness parameter in case we need more than one thread for sink dispatching.
-- The sink addressable where events will be sent.
-
-```yaml
-apiVersion: sources.knative.dev/v1alpha1
-kind: SlackSource
-metadata:
-  name: triggermesh-knbot
-  namespace: knative-samples
-spec:
-  slackToken:
-    secretKeyRef:
-      name: slack
-      key: token
-  threadiness: 1
-  sink:
-    ref:
-      apiVersion: serving.knative.dev/v1
-      kind: Service
-      name: event-display
-```
-
-You can find a full configuration example at the `sample` folder, replacing the secret's token with your own will make the Slack source ready.
-
-## Events
-
-The Slack Source creates a cloud event for each message written at a channel where the bot is added and also to direct messages to the bot.
-
-- type: `dev.knative.sources.slack/message`
-- source: `com.slack.<WORKSPACE>`
-- subject: `<CHANNEL-WHERE-THE-MESSAGE-WAS-HEARD>`
-- data: JSON structure that contains:
-
-```json
-   {
-     "user_id": "<USER-WRITING-THE-MESSAGE>",
-     "text": "<MESSAGE-CONTENTS>"
-   }
-```
+This project is by no means part of [CNCF](https://www.cncf.io/) but we abide
+by its
+[code of conduct](https://github.com/cncf/foundation/blob/master/code-of-conduct.md)

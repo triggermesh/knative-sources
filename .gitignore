@@ -1,9 +1,18 @@
-bazel-*
-*~
-.idea/
-.vscode/
-.DS_Store
+# Local configurations and secrets
+/.env/
+/.local/
+
+# Continuous integration
+
+# Editors and IDEs
+*.swo
 *.swp
-.history
-tmp/
-local/
+*~
+/*.sublime-project
+/*.sublime-workspace
+/.DS_Store
+/.idea/
+/.vscode/
+
+# Build artifacts
+**/_output

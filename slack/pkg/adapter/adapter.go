@@ -44,8 +44,8 @@ func (a *slackAdapter) Start(stopCh <-chan struct{}) error {
 
 	wg := sync.WaitGroup{}
 	for i := 1; i <= a.threadiness; i++ {
+		wg.Add(1)
 		go func() {
-			wg.Add(1)
 			defer wg.Done()
 			a.sendCloudEvent(ceCh, stopCh)
 		}()

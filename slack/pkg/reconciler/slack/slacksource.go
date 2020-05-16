@@ -100,7 +100,6 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, src *v1alpha1.SlackSourc
 }
 
 func (r *Reconciler) secretFrom(ctx context.Context, namespace string, secretKeySelector *corev1.SecretKeySelector) (string, error) {
-	secret := &corev1.Secret{}
 	secret, err := r.kubeClientSet.CoreV1().Secrets(namespace).Get(secretKeySelector.Name, metav1.GetOptions{})
 	if err != nil {
 		return "", err

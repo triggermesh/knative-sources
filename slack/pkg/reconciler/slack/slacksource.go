@@ -29,7 +29,7 @@ import (
 	"knative.dev/pkg/tracker"
 
 	"github.com/triggermesh/knative-sources/slack/pkg/apis/sources/v1alpha1"
-	reconcilerslacksource "github.com/triggermesh/knative-sources/slack/pkg/client/injection/reconciler/sources/v1alpha1/slacksource"
+	reconcilerslacksource "github.com/triggermesh/knative-sources/slack/pkg/client/generated/injection/reconciler/sources/v1alpha1/slacksource"
 	"github.com/triggermesh/knative-sources/slack/pkg/reconciler"
 	"github.com/triggermesh/knative-sources/slack/pkg/reconciler/slack/resources"
 )
@@ -100,7 +100,6 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, src *v1alpha1.SlackSourc
 }
 
 func (r *Reconciler) secretFrom(ctx context.Context, namespace string, secretKeySelector *corev1.SecretKeySelector) (string, error) {
-	secret := &corev1.Secret{}
 	secret, err := r.kubeClientSet.CoreV1().Secrets(namespace).Get(secretKeySelector.Name, metav1.GetOptions{})
 	if err != nil {
 		return "", err

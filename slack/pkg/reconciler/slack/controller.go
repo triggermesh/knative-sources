@@ -30,8 +30,8 @@ import (
 
 	"github.com/triggermesh/knative-sources/slack/pkg/reconciler"
 
-	slacksourceinformer "github.com/triggermesh/knative-sources/slack/pkg/client/injection/informers/sources/v1alpha1/slacksource"
-	"github.com/triggermesh/knative-sources/slack/pkg/client/injection/reconciler/sources/v1alpha1/slacksource"
+	slacksourceinformer "github.com/triggermesh/knative-sources/slack/pkg/client/generated/injection/informers/sources/v1alpha1/slacksource"
+	"github.com/triggermesh/knative-sources/slack/pkg/client/generated/injection/reconciler/sources/v1alpha1/slacksource"
 	eventingclient "knative.dev/eventing/pkg/client/injection/client"
 	sinkbindinginformer "knative.dev/eventing/pkg/client/injection/informers/sources/v1alpha2/sinkbinding"
 	kubeclient "knative.dev/pkg/client/injection/kube/client"

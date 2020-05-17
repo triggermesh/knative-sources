@@ -35,7 +35,12 @@ type defaultProcessor struct {
 
 func (p *defaultProcessor) Run(stopCh <-chan struct{}) {
 	rtm := p.client.NewRTM()
-	defer rtm.Disconnect()
+	defer func() {
+		if err := rtm.Disconnect(); err != nil {
+			p.logger.Errorw("Error disconnecting", zap.Error(err))
+		}
+	}()
+
 	go rtm.ManageConnection()
 
 	for {
@@ -85,10 +90,9 @@ func (p *defaultProcessor) cloudEventFromMessage(message *slack.MessageEvent) *c
 	event.SetID(message.ClientMsgID)
 	event.SetSource(fmt.Sprintf("com.slack.%s", p.domain))
 	event.SetSubject(message.Channel)
-	event.SetData(cloudevents.ApplicationJSON, &messageEvent{
-		UserID: message.User,
-		Text:   message.Text,
-	})
-	event.SetType("dev.knative.sources.slack/message")
+	if err := event.SetData(cloudevents.ApplicationJSON, &messageEvent{UserID: message.User, Text: message.Text}); err != nil {
+		p.logger.Errorw("error setting data at cloud event", zap.Error(err))
+	}
+	event.SetType("com.slack/message")
 	return &event
 }

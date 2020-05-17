@@ -1,4 +1,4 @@
-# Copyright 2020 The Knative Authors
+# Copyright (c) 2020 TriggerMesh Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,8 +15,8 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: slack-source-controller
-  namespace: knative-sources
+  name: &app slack-source-controller
+  namespace: triggermesh
   labels:
     contrib.eventing.knative.dev/release: devel
     control-plane: slack-source-controller-manager
@@ -24,23 +24,25 @@ spec:
   replicas: 1
   selector:
     matchLabels:
-      control-plane: slack-source-controller-manager
+      control-plane: *app
+
   template:
     metadata:
       labels:
-        control-plane: slack-source-controller-manager
+        control-plane: *app
         contrib.eventing.knative.dev/release: devel
+
     spec:
-      serviceAccountName: slack-source-controller
+      serviceAccountName: *app
 
       containers:
       - name: controller
         terminationMessagePolicy: FallbackToLogsOnError
-        image: ko://github.com/triggermesh/knative-slack-source/cmd/controller
+        image: ko://github.com/triggermesh/knative-sources/slack/cmd/controller
         resources:
           requests:
-            cpu: 100m
-            memory: 100Mi
+            cpu: 20m
+            memory: 20Mi
 
         env:
           - name: SYSTEM_NAMESPACE
@@ -54,11 +56,13 @@ spec:
           - name: METRICS_DOMAIN
             value: knative.dev/sources
           - name: SLACK_SOURCE_RA_IMAGE
-            value: ko://github.com/triggermesh/knative-slack-source/cmd/receive_adapter
+            value: ko://github.com/triggermesh/knative-sources/slack/cmd/adapter
 
         securityContext:
           allowPrivilegeEscalation: false
 
         ports:
-          - name: metrics
-            containerPort: 9090
+        - name: metrics
+          containerPort: 9090
+        - name: profiling
+          containerPort: 8008

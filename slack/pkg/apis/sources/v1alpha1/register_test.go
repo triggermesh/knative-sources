@@ -22,15 +22,15 @@ import (
 )
 
 func TestRegisterHelpers(t *testing.T) {
-	if got, want := Kind("SlackSource"), "SlackSource.sources.knative.dev"; got.String() != want {
+	if got, want := Kind("SlackSource"), "SlackSource.sources.triggermesh.io"; got.String() != want {
 		t.Errorf("Kind(Foo) = %v, want %v", got.String(), want)
 	}
 
-	if got, want := Resource("SlackSource"), "SlackSource.sources.knative.dev"; got.String() != want {
+	if got, want := Resource("SlackSource"), "SlackSource.sources.triggermesh.io"; got.String() != want {
 		t.Errorf("Resource(SlackSource) = %v, want %v", got.String(), want)
 	}
 
-	if got, want := SchemeGroupVersion.String(), "sources.knative.dev/v1alpha1"; got != want {
+	if got, want := SchemeGroupVersion.String(), "sources.triggermesh.io/v1alpha1"; got != want {
 		t.Errorf("SchemeGroupVersion() = %v, want %v", got, want)
 	}
 

@@ -93,6 +93,6 @@ func (p *defaultProcessor) cloudEventFromMessage(message *slack.MessageEvent) *c
 	if err := event.SetData(cloudevents.ApplicationJSON, &messageEvent{UserID: message.User, Text: message.Text}); err != nil {
 		p.logger.Errorw("error setting data at cloud event", zap.Error(err))
 	}
-	event.SetType("dev.knative.sources.slack/message")
+	event.SetType("com.slack/message")
 	return &event
 }

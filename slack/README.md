@@ -40,7 +40,7 @@ An instance of the Slack Source is created by creating a manifest at your cluste
 - The sink addressable where events will be sent.
 
 ```yaml
-apiVersion: sources.knative.dev/v1alpha1
+apiVersion: sources.triggermesh.io/v1alpha1
 kind: SlackSource
 metadata:
   name: triggermesh-knbot
@@ -64,7 +64,7 @@ You can find a full configuration example at the `sample` folder, replacing the 
 
 The Slack Source creates a cloud event for each message written at a channel where the bot is added and also to direct messages to the bot.
 
-- type: `dev.knative.sources.slack/message`
+- type: `com.slack/message`
 - source: `com.slack.<WORKSPACE>`
 - subject: `<CHANNEL-WHERE-THE-MESSAGE-WAS-HEARD>`
 - data: JSON structure that contains:

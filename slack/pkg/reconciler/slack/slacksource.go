@@ -29,7 +29,7 @@ import (
 	"knative.dev/pkg/tracker"
 
 	"github.com/triggermesh/knative-sources/slack/pkg/apis/sources/v1alpha1"
-	reconcilerslacksource "github.com/triggermesh/knative-sources/slack/pkg/client/injection/reconciler/sources/v1alpha1/slacksource"
+	reconcilerslacksource "github.com/triggermesh/knative-sources/slack/pkg/client/generated/injection/reconciler/sources/v1alpha1/slacksource"
 	"github.com/triggermesh/knative-sources/slack/pkg/reconciler"
 	"github.com/triggermesh/knative-sources/slack/pkg/reconciler/slack/resources"
 )

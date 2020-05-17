@@ -2,7 +2,7 @@
 
 # Name of the Go package for this repository
 ROOT_PKG := github.com/triggermesh/knative-sources
-SOURCE_PKG := $(ROOT_PKG)/$(SOURCES)
+SOURCE_PKG := $(ROOT_PKG)/$(KSOURCE)
 
 GROUPS_PKGS := $(shell find pkg/apis/sources/* -type d)
 GROUP_INPUT_DIRS := $(foreach group,$(GROUPS_PKGS),$(SOURCE_PKG)/$(group))

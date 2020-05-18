@@ -1,5 +1,5 @@
 COMMANDS           = adapter controller
-SOURCES           ?= darwin/amd64 linux/amd64
+SOURCES           ?= linux/amd64
 
 BASE_DIR          ?= .
 

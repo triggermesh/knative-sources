@@ -6,4 +6,4 @@ include $(BASE_DIR)/scripts/inc.Makefile
 
 GOPKGS = ./cmd/... ./pkg/adapter/... ./pkg/apis/... ./pkg/reconciler/...
 
-include $(BASE_DIR)/scripts/inc.Source
+include $(BASE_DIR)/scripts/inc.Target

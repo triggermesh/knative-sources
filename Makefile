@@ -1,6 +1,6 @@
 BASE_DIR := $(CURDIR)
 SUBDIRS  ?= slack
-SOURCES  := $(shell awk 'BEGIN {FS = ":.*?";} /^[a-zA-Z0-9._-]+:.*?\#\# / {printf "%s ", $$1}' $(BASE_DIR)/scripts/inc.Source $(BASE_DIR)/scripts/inc.Codegen)
+SOURCES  := $(shell awk 'BEGIN {FS = ":.*?";} /^[a-zA-Z0-9._-]+:.*?\#\# / {printf "%s ", $$1}' $(BASE_DIR)/scripts/inc.Target $(BASE_DIR)/scripts/inc.Codegen)
 
 include $(BASE_DIR)/scripts/inc.Makefile
 

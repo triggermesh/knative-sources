@@ -107,8 +107,8 @@ jobs:
           command: |
             SCRIPTS=
             for target in $(sed -n -e "s/^\(SUBDIRS[[:space:]]*?=[[:space:]]*\)\(.*\)$/\2/p" ~/project/Makefile); do
-              SCRIPTS+=" -e s/${target^^}_TARGET_CONTROLLER_IMAGE_TAG/${CIRCLE_TAG:-${CIRCLE_SHA1}}/g"
-              SCRIPTS+=" -e s/${target^^}_TARGET_ADAPTER_IMAGE_TAG/${CIRCLE_TAG:-${CIRCLE_SHA1}}/g"
+              SCRIPTS+=" -e s/${target^^}_SOURCE_CONTROLLER_IMAGE_TAG/${CIRCLE_TAG:-${CIRCLE_SHA1}}/g"
+              SCRIPTS+=" -e s/${target^^}_SOURCE_ADAPTER_IMAGE_TAG/${CIRCLE_TAG:-${CIRCLE_SHA1}}/g"
             done
             sed ${SCRIPTS} overlays/<< parameters.cluster >>/sources/deployments.yaml.PATTERN > overlays/<< parameters.cluster >>/sources/deployments.yaml
             git --no-pager diff
@@ -118,7 +118,7 @@ jobs:
           command: |
             git add overlays
             git commit -m "Update overlays/<< parameters.cluster >>/triggerflow manifest to '${CIRCLE_TAG:-${CIRCLE_SHA1}}'"
-            # git push origin << parameters.branch >>
+            git push origin << parameters.branch >>
 
   release:
     executor:
@@ -172,7 +172,7 @@ workflows:
             tags:
               only: /^v([0-9]+)\.([0-9]+)\.([0-9]+)(?:-([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?(?:\+[0-9A-Za-z-]+)?$/
             branches:
-              only: add-ci-pipeline
+              only: master
       - deploy:
           name: update-staging-config
           branch: dev
@@ -181,7 +181,7 @@ workflows:
             - publish
           filters:
             branches:
-              only: add-ci-pipeline
+              only: master
             tags:
               only: /^v([0-9]+)\.([0-9]+)\.([0-9]+)(?:-([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?(?:\+[0-9A-Za-z-]+)?$/
       - deploy:

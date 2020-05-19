@@ -114,7 +114,7 @@ jobs:
           working_directory: tmconfig/
           command: |
             git add overlays
-            git commit -m "Update overlays/<< parameters.cluster >>/triggerflow manifest to '${CIRCLE_TAG:-${CIRCLE_SHA1}}'"
+            git commit -m "Update overlays/<< parameters.cluster >>/sources deployment to '${CIRCLE_TAG:-${CIRCLE_SHA1}}'"
             git push origin master
 
   release:

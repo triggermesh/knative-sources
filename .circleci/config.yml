@@ -102,18 +102,17 @@ jobs:
           name: Cloning config repository
           command: git clone -b << parameters.branch >> --single-branch git@github.com:triggermesh/config.git tmconfig
       - run:
-          name: Updating overlays/<< parameters.cluster >> manifests
+          name: Updating overlays/<< parameters.cluster >>/sources manifests
           working_directory: tmconfig/
           command: |
-            SCRIPTS=
-            for target in $(sed -n -e "s/^\(SUBDIRS[[:space:]]*?=[[:space:]]*\)\(.*\)$/\2/p" ~/project/Makefile); do
-              SCRIPTS+=" -e s/${target^^}_SOURCE_CONTROLLER_IMAGE_TAG/${CIRCLE_TAG:-${CIRCLE_SHA1}}/g"
-              SCRIPTS+=" -e s/${target^^}_SOURCE_ADAPTER_IMAGE_TAG/${CIRCLE_TAG:-${CIRCLE_SHA1}}/g"
+            for source in $(sed -n -e "s/^\(SUBDIRS[[:space:]]*?=[[:space:]]*\)\(.*\)$/\2/p" ~/project/Makefile); do
+              sed -i overlays/<< parameters.cluster >>/sources/deployments.yaml \
+                -e "s|gcr.io/triggermesh/"${source}"-source-controller:.*|gcr.io/triggermesh/"${source}"-source-controller:"${CIRCLE_TAG:-${CIRCLE_SHA1}}"|g" \
+                -e "s|gcr.io/triggermesh/"${source}"-source-adapter:.*|gcr.io/triggermesh/"${source}"-source-adapter:"${CIRCLE_TAG:-${CIRCLE_SHA1}}"|g"
             done
-            sed ${SCRIPTS} overlays/<< parameters.cluster >>/sources/deployments.yaml.PATTERN > overlays/<< parameters.cluster >>/sources/deployments.yaml
             git --no-pager diff
       - run:
-          name: Committing overlays/<< parameters.cluster >> updates
+          name: Committing overlays/<< parameters.cluster >>/sources updates
           working_directory: tmconfig/
           command: |
             git add overlays

@@ -16,5 +16,3 @@ apiVersion: v1
 kind: Namespace
 metadata:
   name: triggermesh
-  labels:
-    contrib.eventing.knative.dev/release: devel

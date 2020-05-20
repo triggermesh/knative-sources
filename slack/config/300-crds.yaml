@@ -17,7 +17,6 @@ kind: CustomResourceDefinition
 metadata:
   name: slacksources.sources.triggermesh.io
   labels:
-    contrib.eventing.knative.dev/release: devel
     eventing.knative.dev/source: "true"
     duck.knative.dev/source: "true"
     knative.dev/crd-install: "true"

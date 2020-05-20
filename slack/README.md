@@ -2,6 +2,16 @@
 
 Slack Source enables integration between slack messages read by a bot users and Knative Eventing.
 
+## Contents
+- [Slack Source for Knative](#slack-source-for-knative)
+  - [Contents](#contents)
+  - [Deployment](#deployment)
+    - [Deploy Knative Slack Source](#deploy-knative-slack-source)
+    - [Create a Slack Bot User](#create-a-slack-bot-user)
+    - [Creating an Slack Source instance](#creating-an-slack-source-instance)
+  - [Events](#events)
+  - [Support](#support)
+
 ## Deployment
 
 ### Deploy Knative Slack Source
@@ -75,3 +85,9 @@ The Slack Source creates a cloud event for each message written at a channel whe
      "text": "<MESSAGE-CONTENTS>"
    }
 ```
+
+## Support
+
+This is heavily **Work In Progress** We would love your feedback on this
+Operator so don't hesitate to let us know what is wrong and how we could improve
+it, just file an [issue](https://github.com/triggermesh/knative-sources/issues/new)

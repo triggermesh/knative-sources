@@ -16,8 +16,6 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   name: &app slack-source-controller
-  labels:
-    contrib.eventing.knative.dev/release: devel
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
@@ -33,8 +31,6 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   name: slack-source-controller-addressable-resolver
-  labels:
-    contrib.eventing.knative.dev/release: devel
 # An aggregated ClusterRole for all Addressable CRDs.
 # Ref: https://github.com/knative/serving/blob/master/config/core/roles/addressable-resolvers-clusterrole.yaml
 roleRef:

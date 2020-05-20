@@ -18,7 +18,6 @@ metadata:
   name: &app slack-source-controller
   namespace: triggermesh
   labels:
-    contrib.eventing.knative.dev/release: devel
     control-plane: slack-source-controller-manager
 spec:
   replicas: 1
@@ -30,7 +29,6 @@ spec:
     metadata:
       labels:
         control-plane: *app
-        contrib.eventing.knative.dev/release: devel
 
     spec:
       serviceAccountName: *app
@@ -41,7 +39,7 @@ spec:
         image: ko://github.com/triggermesh/knative-sources/slack/cmd/controller
         resources:
           requests:
-            cpu: 20m
+            cpu: 50m
             memory: 20Mi
 
         env:

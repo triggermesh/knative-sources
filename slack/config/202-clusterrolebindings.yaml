@@ -23,7 +23,6 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: *app
-  namespace: triggermesh
 
 ---
 
@@ -40,4 +39,3 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: slack-source-controller
-  namespace: triggermesh

@@ -1,5 +1,5 @@
 /*
-Copyright 2020 The Knative Authors.
+Copyright (c) 2020 TriggerMesh Inc.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -74,7 +74,6 @@ type SlackSourceSpec struct {
 	// as which the underlying K8s resources should be run. If unspecified
 	// this will default to the "default" service account for the namespace
 	// in which the SlackSource exists.
-	// +optional
 	ServiceAccountName string `json:"serviceAccountName,omitempty"`
 
 	// SlackToken is the Kubernetes secret containing the Slack secret token.
@@ -82,7 +81,6 @@ type SlackSourceSpec struct {
 
 	// Threadiness indicates how many threads will be dedicated to parsing incoming
 	// messages from slack
-	// +optional
 	Threadiness int `json:"threadiness,omitempty"`
 }
 

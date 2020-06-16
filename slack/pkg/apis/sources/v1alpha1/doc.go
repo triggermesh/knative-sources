@@ -1,5 +1,5 @@
 /*
-Copyright 2020 The Knative Authors
+Copyright (c) 2020 TriggerMesh Inc.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -15,9 +15,6 @@ limitations under the License.
 */
 
 // Package v1alpha1 contains API Schema definitions for the sources v1alpha1 API group
-// +k8s:openapi-gen=true
-// +k8s:deepcopy-gen=package,register
-// +k8s:conversion-gen=knative.dev/eventing-contrib/pkg/apis/sources
-// +k8s:defaulter-gen=TypeMeta
+// +k8s:deepcopy-gen=package
 // +groupName=sources.triggermesh.io
 package v1alpha1

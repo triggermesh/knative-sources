@@ -15,7 +15,6 @@ apiVersion: sources.triggermesh.io/v1alpha1
 kind: SlackSource
 metadata:
   name: triggermesh-knbot
-  namespace: knative-samples
 spec:
   slackToken:
     secretKeyRef:

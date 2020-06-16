@@ -16,7 +16,6 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: &app slack-source-controller
-  namespace: triggermesh
   labels:
     control-plane: slack-source-controller-manager
 spec:

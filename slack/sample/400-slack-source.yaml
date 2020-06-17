@@ -1,4 +1,4 @@
-# Copyright 2020 The Knative Authors
+# Copyright (c) 2020 TriggerMesh Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,17 +11,19 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 apiVersion: sources.triggermesh.io/v1alpha1
 kind: SlackSource
 metadata:
   name: triggermesh-knbot
-  namespace: knative-samples
 spec:
-  slackToken:
+  # optional, making sure we are receiving events on behalf of Slack
+  token:
     secretKeyRef:
       name: slack
       key: token
-  threadiness: 1
+  # optional, making sure the events are being sent for this integration
+  appID: AXXXXXXXXX
   sink:
     ref:
       apiVersion: serving.knative.dev/v1

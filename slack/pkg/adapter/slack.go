@@ -124,6 +124,9 @@ func (h *slackEventAPIHandler) handleAll(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
+	// There are only 2 documented types to be received from the Events API
+	// - `event_callback`, See: https://api.slack.com/events-api#receiving_events
+	// - `event_callback`, See: https://api.slack.com/events-api#subscriptions
 	switch event.Type {
 	case "event_callback":
 		h.handleCallback(event, w)

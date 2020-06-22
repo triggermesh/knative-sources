@@ -28,7 +28,8 @@ func (e SlackEvent) Type() string {
 	return s.(string)
 }
 
-// SlackEventWrapper contains a common wrapper for all events
+// SlackEventWrapper contains a common wrapper for all events.
+// See https://api.slack.com/types/event for reference.
 type SlackEventWrapper struct {
 	AdditionalProperties map[string]interface{} `json:"-,omitempty"`
 

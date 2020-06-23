@@ -56,7 +56,7 @@ func TestNewController(t *testing.T) {
 		t.Errorf("Expected %d injected informers, got %d", expect, got)
 	}
 
-	// // required envconfig env vars
+	// required envconfig env vars
 	defer st.SetEnvVar(t, ImageEnv, ImageVal)()
 
 	cmw := configmap.NewStaticWatcher(

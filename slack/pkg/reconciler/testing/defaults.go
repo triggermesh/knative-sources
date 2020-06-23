@@ -14,7 +14,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// Package v1alpha1 contains API Schema definitions for the sources v1alpha1 API group
-// +k8s:deepcopy-gen=package,register
-// +groupName=sources.triggermesh.io
-package v1alpha1
+package testing
+
+import "k8s.io/apimachinery/pkg/types"
+
+// Defaults for tests
+const (
+	Namespace = "testns"
+	Name      = "test"
+	Key       = Namespace + "/" + Name
+	UID       = types.UID("00000000-0000-0000-0000-000000000000")
+	Image     = "registry/image:tag"
+)

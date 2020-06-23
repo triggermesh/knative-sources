@@ -24,20 +24,3 @@ subjects:
 - kind: ServiceAccount
   name: *app
   namespace: triggermesh
-
----
-
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRoleBinding
-metadata:
-  name: slack-source-controller-addressable-resolver
-# An aggregated ClusterRole for all Addressable CRDs.
-# Ref: https://github.com/knative/serving/blob/master/config/core/roles/addressable-resolvers-clusterrole.yaml
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
-  name: addressable-resolver
-subjects:
-- kind: ServiceAccount
-  name: slack-source-controller
-  namespace: triggermesh

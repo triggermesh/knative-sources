@@ -1,11 +1,11 @@
 /*
-Copyright 2020 The Knative Authors.
+Copyright (c) 2020 TriggerMesh Inc.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+   http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -29,9 +29,8 @@ import (
 // +genclient
 // +genreconciler
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
-// +k8s:openapi-gen=true
-// +kubebuilder:subresource:status
-// +kubebuilder:categories=all,knative,eventing,sources
+
+// SlackSource is the schema for the Slack source
 type SlackSource struct {
 	metav1.TypeMeta `json:",inline"`
 	// +optional
@@ -56,11 +55,6 @@ var _ kmeta.OwnerRefable = (*SlackSource)(nil)
 // Check that SlackSource implements the Conditions duck type.
 var _ = duck.VerifyType(&SlackSource{}, &duckv1.Conditions{})
 
-const (
-	// SlackSourceEventType is the SlackSource CloudEvent type.
-	SlackSourceEventType = "dev.knative.slack.source"
-)
-
 // SlackSourceSpec holds the desired state of the SlackSource (from the client).
 type SlackSourceSpec struct {
 	// inherits duck/v1 SourceSpec, which currently provides:
@@ -70,20 +64,16 @@ type SlackSourceSpec struct {
 	//   and modifications of the event sent to the sink.
 	duckv1.SourceSpec `json:",inline"`
 
-	// ServiceAccountName holds the name of the Kubernetes service account
-	// as which the underlying K8s resources should be run. If unspecified
-	// this will default to the "default" service account for the namespace
-	// in which the SlackSource exists.
+	// Token can be set to the value of Slack subscription token
+	// to authenticate callbacks. See: https://api.slack.com/events-api
 	// +optional
-	ServiceAccountName string `json:"serviceAccountName,omitempty"`
+	Token *SecretValueFromSource `json:"token,omitempty"`
 
-	// SlackToken is the Kubernetes secret containing the Slack secret token.
-	SlackToken SecretValueFromSource `json:"slackToken"`
-
-	// Threadiness indicates how many threads will be dedicated to parsing incoming
-	// messages from slack
+	// AppID identifies the Slack application generating this event.
+	// It helps identifying the App sourcing events when multiple Slack
+	// applications shared an endpoint. See: https://api.slack.com/events-api
 	// +optional
-	Threadiness int `json:"threadiness,omitempty"`
+	AppID *string `json:"appID,omitempty"`
 }
 
 // SecretValueFromSource represents the source of a secret value
@@ -94,14 +84,8 @@ type SecretValueFromSource struct {
 
 // SlackSourceStatus communicates the observed state of the SlackSource (from the controller).
 type SlackSourceStatus struct {
-	// inherits duck/v1 SourceStatus, which currently provides:
-	// * ObservedGeneration - the 'Generation' of the Service that was last
-	//   processed by the controller.
-	// * Conditions - the latest available observations of a resource's current
-	//   state.
-	// * SinkURI - the current active sink URI that has been configured for the
-	//   Source.
-	duckv1.SourceStatus `json:",inline"`
+	duckv1.SourceStatus  `json:",inline"`
+	duckv1.AddressStatus `json:",inline"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object

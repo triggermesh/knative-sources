@@ -18,9 +18,9 @@ metadata:
   name: slack-source-controller
 rules:
 - apiGroups:
-  - apps
+  - serving.knative.dev
   resources:
-  - deployments
+  - services
   verbs: &everything
   - get
   - list
@@ -29,13 +29,6 @@ rules:
   - update
   - patch
   - delete
-
-# - apiGroups:
-#   - rbac.authorization.k8s.io
-#   resources:
-#   - clusterroles
-#   verbs:
-#   - list
 
 # Record Kubernetes events
 - apiGroups:
@@ -51,7 +44,7 @@ rules:
   - sources.triggermesh.io
   resources:
   - slacksources
-  verbs: &reader
+  verbs:
   - list
   - watch
   - get
@@ -63,23 +56,46 @@ rules:
   verbs:
   - update
 
-- apiGroups:
-    - sources.knative.dev
-  resources:
-    - sinkbindings
-  verbs: *everything
-- apiGroups:
-    - sources.knative.dev
-  resources:
-    - sinkbindings/status
-  verbs: *reader
-
+# Read controller configurations
 - apiGroups:
   - ''
   resources:
-  - secrets
   - configmaps
-  verbs: *reader
+  verbs: &listwatch
+  - list
+  - watch
+- apiGroups:
+  - ''
+  resources:
+  - configmaps
+  resourceNames:
+  - config-logging
+  - config-observability
+  - config-leader-election
+  verbs:
+  - get
+
+# Resolve sink URIs
+- apiGroups:
+  - ''
+  resources:
+  - services
+  verbs: *listwatch
+- apiGroups:
+  - serving.knative.dev
+  resources:
+  - services
+  verbs: *listwatch
+- apiGroups:
+  - eventing.knative.dev
+  resources:
+  - brokers
+  verbs: *listwatch
+- apiGroups:
+  - messaging.knative.dev
+  resources:
+  - channels
+  verbs: *listwatch
 
 ---
 # The role is needed for the aggregated role source-observer in knative-eventing to provide readonly access to "Sources".

@@ -31,6 +31,6 @@ LABEL description "This is the Triggermesh Knative Event Source Adapter for Zend
 
 COPY licenses/ /licenses/
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
-COPY --from=builder /bin/zendesk-adapter /slack-adapter
+COPY --from=builder /bin/zendesk-adapter /zendesk-adapter
 
 ENTRYPOINT ["/zendesk-adapter"]

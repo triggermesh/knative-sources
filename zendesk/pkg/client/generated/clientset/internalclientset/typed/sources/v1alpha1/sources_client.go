@@ -19,14 +19,14 @@ limitations under the License.
 package v1alpha1
 
 import (
-	v1alpha1 "github.com/triggermesh/knative-sources/slack/pkg/apis/sources/v1alpha1"
-	"github.com/triggermesh/knative-sources/slack/pkg/client/generated/clientset/internalclientset/scheme"
+	v1alpha1 "github.com/triggermesh/knative-sources/zendesk/pkg/apis/sources/v1alpha1"
+	"github.com/triggermesh/knative-sources/zendesk/pkg/client/generated/clientset/internalclientset/scheme"
 	rest "k8s.io/client-go/rest"
 )
 
 type SourcesV1alpha1Interface interface {
 	RESTClient() rest.Interface
-	SlackSourcesGetter
+	ZendeskSourcesGetter
 }
 
 // SourcesV1alpha1Client is used to interact with features provided by the sources.triggermesh.io group.
@@ -34,8 +34,8 @@ type SourcesV1alpha1Client struct {
 	restClient rest.Interface
 }
 
-func (c *SourcesV1alpha1Client) SlackSources(namespace string) SlackSourceInterface {
-	return newSlackSources(c, namespace)
+func (c *SourcesV1alpha1Client) ZendeskSources(namespace string) ZendeskSourceInterface {
+	return newZendeskSources(c, namespace)
 }
 
 // NewForConfig creates a new SourcesV1alpha1Client for the given config.

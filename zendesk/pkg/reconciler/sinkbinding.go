@@ -20,7 +20,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/triggermesh/knative-sources/slack/pkg/reconciler/resources"
+	"github.com/triggermesh/knative-sources/zendesk/pkg/reconciler/resources"
 	"go.uber.org/zap"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/equality"

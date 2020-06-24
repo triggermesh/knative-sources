@@ -19,7 +19,7 @@ package resources
 const (
 	// controllerAgentName is the string used by this controller to identify
 	// itself when creating events.
-	controllerAgentName = "slack-source-controller"
+	controllerAgentName = "zendesk-source-controller"
 )
 
 func Labels(name string) map[string]string {

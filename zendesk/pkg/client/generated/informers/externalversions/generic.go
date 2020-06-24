@@ -21,7 +21,7 @@ package externalversions
 import (
 	"fmt"
 
-	v1alpha1 "github.com/triggermesh/knative-sources/slack/pkg/apis/sources/v1alpha1"
+	v1alpha1 "github.com/triggermesh/knative-sources/zendesk/pkg/apis/sources/v1alpha1"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"
 	cache "k8s.io/client-go/tools/cache"
 )
@@ -53,8 +53,8 @@ func (f *genericInformer) Lister() cache.GenericLister {
 func (f *sharedInformerFactory) ForResource(resource schema.GroupVersionResource) (GenericInformer, error) {
 	switch resource {
 	// Group=sources.triggermesh.io, Version=v1alpha1
-	case v1alpha1.SchemeGroupVersion.WithResource("slacksources"):
-		return &genericInformer{resource: resource.GroupResource(), informer: f.Sources().V1alpha1().SlackSources().Informer()}, nil
+	case v1alpha1.SchemeGroupVersion.WithResource("zendesksources"):
+		return &genericInformer{resource: resource.GroupResource(), informer: f.Sources().V1alpha1().ZendeskSources().Informer()}, nil
 
 	}
 

@@ -12,7 +12,7 @@ func EnvAccesor() adapter.EnvConfigAccessor {
 type envAccessor struct {
 	adapter.EnvConfig
 
-	Threadiness int    `envconfig:"THREADINESS" default:"1"`
-	Token       string `envconfig:"SLACK_TOKEN" required:"true"` //TODO::
+	Threadiness int `envconfig:"THREADINESS" default:"1"`
+	//Token       string `envconfig:"ZENDESK_TOKEN" required:"true"` //TODO::
 
 }

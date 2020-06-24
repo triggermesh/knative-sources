@@ -19,7 +19,7 @@ limitations under the License.
 package scheme
 
 import (
-	sourcesv1alpha1 "github.com/triggermesh/knative-sources/slack/pkg/apis/sources/v1alpha1"
+	sourcesv1alpha1 "github.com/triggermesh/knative-sources/zendesk/pkg/apis/sources/v1alpha1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"

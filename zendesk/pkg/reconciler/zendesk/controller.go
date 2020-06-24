@@ -14,12 +14,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package slack
+package zendesk
 
 import (
 	"context"
 
-	"github.com/triggermesh/knative-sources/slack/pkg/apis/sources/v1alpha1"
+	"github.com/triggermesh/knative-sources/zendesk/pkg/apis/sources/v1alpha1"
 
 	"github.com/kelseyhightower/envconfig"
 	"k8s.io/client-go/tools/cache"
@@ -28,10 +28,10 @@ import (
 	"knative.dev/pkg/controller"
 	"knative.dev/pkg/logging"
 
-	"github.com/triggermesh/knative-sources/slack/pkg/reconciler"
+	"github.com/triggermesh/knative-sources/zendesk/pkg/reconciler"
 
-	slacksourceinformer "github.com/triggermesh/knative-sources/slack/pkg/client/generated/injection/informers/sources/v1alpha1/slacksource"
-	"github.com/triggermesh/knative-sources/slack/pkg/client/generated/injection/reconciler/sources/v1alpha1/slacksource"
+	zendesksourceinformer "github.com/triggermesh/knative-sources/zendesk/pkg/client/generated/injection/informers/sources/v1alpha1/zendesksource"
+	"github.com/triggermesh/knative-sources/zendesk/pkg/client/generated/injection/reconciler/sources/v1alpha1/zendesksource"
 	eventingclient "knative.dev/eventing/pkg/client/injection/client"
 	sinkbindinginformer "knative.dev/eventing/pkg/client/injection/informers/sources/v1alpha2/sinkbinding"
 	kubeclient "knative.dev/pkg/client/injection/kube/client"
@@ -46,7 +46,7 @@ func NewController(
 ) *controller.Impl {
 	deploymentInformer := deploymentinformer.Get(ctx)
 	sinkBindingInformer := sinkbindinginformer.Get(ctx)
-	slackSourceInformer := slacksourceinformer.Get(ctx)
+	zendeskSourceInformer := zendesksourceinformer.Get(ctx)
 
 	r := &Reconciler{
 		kubeClientSet: kubeclient.Get(ctx),
@@ -58,19 +58,19 @@ func NewController(
 		logging.FromContext(ctx).Panicf("required environment variable is not defined: %v", err)
 	}
 
-	impl := slacksource.NewImpl(ctx, r)
+	impl := zendesksource.NewImpl(ctx, r)
 
 	logging.FromContext(ctx).Info("Setting up event handlers")
 
-	slackSourceInformer.Informer().AddEventHandler(controller.HandleAll(impl.Enqueue))
+	zendeskSourceInformer.Informer().AddEventHandler(controller.HandleAll(impl.Enqueue))
 
 	deploymentInformer.Informer().AddEventHandler(cache.FilteringResourceEventHandler{
-		FilterFunc: controller.FilterGroupKind(v1alpha1.Kind("SlackSource")),
+		FilterFunc: controller.FilterGroupKind(v1alpha1.Kind("ZendeskSource")),
 		Handler:    controller.HandleAll(impl.EnqueueControllerOf),
 	})
 
 	sinkBindingInformer.Informer().AddEventHandler(cache.FilteringResourceEventHandler{
-		FilterFunc: controller.FilterGroupKind(v1alpha1.Kind("SlackSource")),
+		FilterFunc: controller.FilterGroupKind(v1alpha1.Kind("ZendeskSource")),
 		Handler:    controller.HandleAll(impl.EnqueueControllerOf),
 	})
 

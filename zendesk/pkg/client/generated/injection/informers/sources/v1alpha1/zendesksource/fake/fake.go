@@ -21,13 +21,13 @@ package fake
 import (
 	context "context"
 
-	fake "github.com/triggermesh/knative-sources/slack/pkg/client/generated/injection/informers/factory/fake"
-	slacksource "github.com/triggermesh/knative-sources/slack/pkg/client/generated/injection/informers/sources/v1alpha1/slacksource"
+	fake "github.com/triggermesh/knative-sources/zendesk/pkg/client/generated/injection/informers/factory/fake"
+	zendesksource "github.com/triggermesh/knative-sources/zendesk/pkg/client/generated/injection/informers/sources/v1alpha1/zendesksource"
 	controller "knative.dev/pkg/controller"
 	injection "knative.dev/pkg/injection"
 )
 
-var Get = slacksource.Get
+var Get = zendesksource.Get
 
 func init() {
 	injection.Fake.RegisterInformer(withInformer)
@@ -35,6 +35,6 @@ func init() {
 
 func withInformer(ctx context.Context) (context.Context, controller.Informer) {
 	f := fake.Get(ctx)
-	inf := f.Sources().V1alpha1().SlackSources()
-	return context.WithValue(ctx, slacksource.Key{}, inf), inf.Informer()
+	inf := f.Sources().V1alpha1().ZendeskSources()
+	return context.WithValue(ctx, zendesksource.Key{}, inf), inf.Informer()
 }

@@ -18,10 +18,10 @@ limitations under the License.
 
 package v1alpha1
 
-// SlackSourceListerExpansion allows custom methods to be added to
-// SlackSourceLister.
-type SlackSourceListerExpansion interface{}
+// ZendeskSourceListerExpansion allows custom methods to be added to
+// ZendeskSourceLister.
+type ZendeskSourceListerExpansion interface{}
 
-// SlackSourceNamespaceListerExpansion allows custom methods to be added to
-// SlackSourceNamespaceLister.
-type SlackSourceNamespaceListerExpansion interface{}
+// ZendeskSourceNamespaceListerExpansion allows custom methods to be added to
+// ZendeskSourceNamespaceLister.
+type ZendeskSourceNamespaceListerExpansion interface{}

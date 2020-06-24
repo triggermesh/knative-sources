@@ -78,11 +78,6 @@ func makeEnv(eventSource string, spec *v1alpha1.ZendeskSourceSpec) []corev1.EnvV
 		Name:  "EVENT_SOURCE",
 		Value: eventSource,
 	}, {
-		Name: "ZENDESK_TOKEN",
-		ValueFrom: &corev1.EnvVarSource{
-			SecretKeyRef: spec.ZendeskToken.SecretKeyRef,
-		},
-	}, {
 		Name:  "THREADINESS",
 		Value: strconv.Itoa(spec.Threadiness),
 	}, {

@@ -19,7 +19,7 @@ limitations under the License.
 package fake
 
 import (
-	v1alpha1 "github.com/triggermesh/knative-sources/slack/pkg/client/generated/clientset/internalclientset/typed/sources/v1alpha1"
+	v1alpha1 "github.com/triggermesh/knative-sources/zendesk/pkg/client/generated/clientset/internalclientset/typed/sources/v1alpha1"
 	rest "k8s.io/client-go/rest"
 	testing "k8s.io/client-go/testing"
 )
@@ -28,8 +28,8 @@ type FakeSourcesV1alpha1 struct {
 	*testing.Fake
 }
 
-func (c *FakeSourcesV1alpha1) SlackSources(namespace string) v1alpha1.SlackSourceInterface {
-	return &FakeSlackSources{c, namespace}
+func (c *FakeSourcesV1alpha1) ZendeskSources(namespace string) v1alpha1.ZendeskSourceInterface {
+	return &FakeZendeskSources{c, namespace}
 }
 
 // RESTClient returns a RESTClient that is used to communicate

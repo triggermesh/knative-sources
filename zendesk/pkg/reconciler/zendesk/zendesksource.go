@@ -58,11 +58,6 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, src *v1alpha1.ZendeskSou
 	src.Status.InitializeConditions()
 	src.Status.ObservedGeneration = src.Generation
 
-	_, err := r.secretFrom(ctx, src.Namespace, src.Spec.ZendeskToken.SecretKeyRef)
-	if err != nil {
-		src.Status.MarkNoSecrets("AccessTokenNotFound", "%s", err)
-		return err
-	}
 	src.Status.MarkSecrets()
 
 	ra, event := r.dr.ReconcileDeployment(ctx, src, resources.MakeReceiveAdapter(&resources.ReceiveAdapterArgs{

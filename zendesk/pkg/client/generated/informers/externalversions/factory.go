@@ -23,9 +23,9 @@ import (
 	sync "sync"
 	time "time"
 
-	internalclientset "github.com/triggermesh/knative-sources/slack/pkg/client/generated/clientset/internalclientset"
-	internalinterfaces "github.com/triggermesh/knative-sources/slack/pkg/client/generated/informers/externalversions/internalinterfaces"
-	sources "github.com/triggermesh/knative-sources/slack/pkg/client/generated/informers/externalversions/sources"
+	internalclientset "github.com/triggermesh/knative-sources/zendesk/pkg/client/generated/clientset/internalclientset"
+	internalinterfaces "github.com/triggermesh/knative-sources/zendesk/pkg/client/generated/informers/externalversions/internalinterfaces"
+	sources "github.com/triggermesh/knative-sources/zendesk/pkg/client/generated/informers/externalversions/sources"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"

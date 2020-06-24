@@ -19,13 +19,13 @@ limitations under the License.
 package v1alpha1
 
 import (
-	internalinterfaces "github.com/triggermesh/knative-sources/slack/pkg/client/generated/informers/externalversions/internalinterfaces"
+	internalinterfaces "github.com/triggermesh/knative-sources/zendesk/pkg/client/generated/informers/externalversions/internalinterfaces"
 )
 
 // Interface provides access to all the informers in this group version.
 type Interface interface {
-	// SlackSources returns a SlackSourceInformer.
-	SlackSources() SlackSourceInformer
+	// ZendeskSources returns a ZendeskSourceInformer.
+	ZendeskSources() ZendeskSourceInformer
 }
 
 type version struct {
@@ -39,7 +39,7 @@ func New(f internalinterfaces.SharedInformerFactory, namespace string, tweakList
 	return &version{factory: f, namespace: namespace, tweakListOptions: tweakListOptions}
 }
 
-// SlackSources returns a SlackSourceInformer.
-func (v *version) SlackSources() SlackSourceInformer {
-	return &slackSourceInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
+// ZendeskSources returns a ZendeskSourceInformer.
+func (v *version) ZendeskSources() ZendeskSourceInformer {
+	return &zendeskSourceInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
 }

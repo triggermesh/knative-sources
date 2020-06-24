@@ -15,10 +15,10 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: &app slack-source-controller
+  name: &app zendesk-source-controller
   namespace: triggermesh
   labels:
-    control-plane: slack-source-controller-manager
+    control-plane: zendesk-source-controller-manager
 spec:
   replicas: 1
   selector:
@@ -36,7 +36,7 @@ spec:
       containers:
       - name: controller
         terminationMessagePolicy: FallbackToLogsOnError
-        image: ko://github.com/triggermesh/knative-sources/slack/cmd/controller
+        image: ko://github.com/triggermesh/knative-sources/zendesk/cmd/controller
         resources:
           requests:
             cpu: 50m
@@ -53,8 +53,8 @@ spec:
             value: config-observability
           - name: METRICS_DOMAIN
             value: knative.dev/sources
-          - name: SLACK_SOURCE_RA_IMAGE
-            value: ko://github.com/triggermesh/knative-sources/slack/cmd/adapter
+          - name: ZENDESK_SOURCE_RA_IMAGE
+            value: ko://github.com/triggermesh/knative-sources/zendesk/cmd/adapter
 
         securityContext:
           allowPrivilegeEscalation: false

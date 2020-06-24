@@ -15,7 +15,6 @@ apiVersion: sources.triggermesh.io/v1alpha1
 kind: SlackSource
 metadata:
   name: triggermesh-knbot
-  namespace: knative-samples
 spec:
   slackToken:
     secretKeyRef:
@@ -24,7 +23,8 @@ spec:
   threadiness: 1
   sink:
     ref:
-      apiVersion: serving.knative.dev/v1
-      kind: Service
-      name: event-display
+      apiVersion: targets.triggermesh.io/v1alpha1
+      kind: ZendeskTarget
+      name: triggermesh-zendesk
+
 

@@ -19,8 +19,8 @@ limitations under the License.
 package sources
 
 import (
-	internalinterfaces "github.com/triggermesh/knative-sources/slack/pkg/client/generated/informers/externalversions/internalinterfaces"
-	v1alpha1 "github.com/triggermesh/knative-sources/slack/pkg/client/generated/informers/externalversions/sources/v1alpha1"
+	internalinterfaces "github.com/triggermesh/knative-sources/zendesk/pkg/client/generated/informers/externalversions/internalinterfaces"
+	v1alpha1 "github.com/triggermesh/knative-sources/zendesk/pkg/client/generated/informers/externalversions/sources/v1alpha1"
 )
 
 // Interface provides access to each of this group's versions.

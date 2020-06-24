@@ -77,9 +77,6 @@ type ZendeskSourceSpec struct {
 	// +optional
 	ServiceAccountName string `json:"serviceAccountName,omitempty"`
 
-	// ZendeskToken is the Kubernetes secret containing the Zendesk secret token.
-	ZendeskToken SecretValueFromSource `json:"zendeskToken"`
-
 	// Threadiness indicates how many threads will be dedicated to parsing incoming
 	// messages from zendesk
 	// +optional

@@ -11,8 +11,15 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-apiVersion: v1
-kind: Namespace
+apiVersion: sources.triggermesh.io/v1alpha1
+kind: ZendeskSource
 metadata:
-  name: knative-samples
+  name: triggermesh-zendesk
+spec:
+  threadiness: 1
+  # sink:
+  #   ref:
+  #     apiVersion: serving.knative.dev/v1
+  #     kind: Service
+  #     name: event-display
+

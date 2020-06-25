@@ -39,7 +39,7 @@ spec:
         image: ko://github.com/triggermesh/knative-sources/slack/cmd/controller
         resources:
           requests:
-            cpu: 50m
+            cpu: 20m
             memory: 20Mi
 
         env:
@@ -47,13 +47,15 @@ spec:
             valueFrom:
               fieldRef:
                 fieldPath: metadata.namespace
+          # Logging/observability configuration
           - name: CONFIG_LOGGING_NAME
             value: config-logging
           - name: CONFIG_OBSERVABILITY_NAME
             value: config-observability
           - name: METRICS_DOMAIN
-            value: knative.dev/sources
-          - name: SLACK_SOURCE_RA_IMAGE
+            value: triggermesh.io/sources
+          # Adapters
+          - name: SLACKSOURCE_ADAPTER_IMAGE
             value: ko://github.com/triggermesh/knative-sources/slack/cmd/adapter
 
         securityContext:

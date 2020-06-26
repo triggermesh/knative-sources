@@ -27,6 +27,7 @@ func EnvAccesor() adapter.EnvConfigAccessor {
 
 type envAccessor struct {
 	adapter.EnvConfig
-	AppID string `envconfig:"APP_ID"`
-	Token string `envconfig:"ZENDESK_TOKEN"`
+
+	//Token string `envconfig:"ZENDESK_TOKEN"`
+	Threadiness int `envconfig:"THREADINESS" default:"1"`
 }

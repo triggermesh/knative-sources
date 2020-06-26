@@ -65,16 +65,13 @@ type ZendeskSourceSpec struct {
 	duckv1.SourceSpec `json:",inline"`
 
 	// Token can be set to the value of Zendesk subscription token
-	// to authenticate callbacks. See: https://api.zendesk.com/events-api
-	// +optional
+	// to authenticate callbacks. See:
 	Token *SecretValueFromSource `json:"token,omitempty"`
 
 	// Email identifies the email used for authentication
-	// +optional
 	Email *string `json:"email,omitempty"`
 
 	// Subdomain identifies Zendesk subdomain
-	// +optional
 	Subdomain *string `json:"subdomain,omitempty"`
 
 	// Username used for basic authentication

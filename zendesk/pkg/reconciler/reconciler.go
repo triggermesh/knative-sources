@@ -62,17 +62,20 @@ func (r *reconciler) ReconcileKind(ctx context.Context, src *v1alpha1.ZendeskSou
 	adapter, event := r.ksvcr.ReconcileKService(ctx, src, makeAdapter(src, r.adapterCfg))
 	src.Status.PropagateAvailability(adapter)
 
-	err = createTarget(ctx)
+	err = createTarget(ctx, src)
 	if err != nil {
-
 		src.Status.MarkNoTarget("Could not create a new Zendesk Target: %s", err.Error())
-
 	}
+
 	return event
 }
 
-//I need to see if a current target with a matching name is pre-existing.
-func createTarget(ctx context.Context) error {
+//TODO:
+//See if a current target with a matching name is pre-existing. It is currently creating 7 Targets.
+//Replace hardcoding
+//Fix MarkNoTarget
+// createTarget creates a new zendesk target
+func createTarget(ctx context.Context, src *v1alpha1.ZendeskSource) error {
 	client, err := zendesk.NewClient(nil)
 	if err != nil {
 		return err
@@ -88,9 +91,9 @@ func createTarget(ctx context.Context) error {
 	t.Type = "http_target"
 	t.Method = "post"
 	t.ContentType = "application/x-www-form-urlencoded"
-	t.Password = "newpass"
-	t.Username = "newusr"
-	t.Title = "k"
+	t.Password = "S"
+	t.Username = "s"
+	t.Title = "x"
 
 	_, error := client.CreateTarget(ctx, t)
 	if error != nil {

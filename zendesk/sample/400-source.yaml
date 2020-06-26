@@ -17,7 +17,9 @@ kind: ZendeskSource
 metadata:
   name: triggermesh-zendesk
 spec:
-
+  email: jeffthenaef@gmail.com
+  username: bob
+  password: sag
   sink:
     ref:
       apiVersion: serving.knative.dev/v1

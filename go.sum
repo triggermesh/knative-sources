@@ -468,6 +468,7 @@ github.com/google/go-containerregistry v0.0.0-20200331213917-3d03ed9b1ca2/go.mod
 github.com/google/go-github v17.0.0+incompatible/go.mod h1:zLgOLi98H3fifZn+44m+umXrS52loVEgC2AApnigrVQ=
 github.com/google/go-github/v27 v27.0.6/go.mod h1:/0Gr8pJ55COkmv+S/yPKCczSkUPIM/LnFyubufRNIS0=
 github.com/google/go-licenses v0.0.0-20191112164736-212ea350c932/go.mod h1:16wa6pRqNDUIhOtwF0GcROVqMeXHZJ7H6eGDFUh5Pfk=
+github.com/google/go-querystring v1.0.0 h1:Xkwi/a1rcvNg1PPYe5vI8GbeBY/jrVuDX5ASuANWTrk=
 github.com/google/go-querystring v1.0.0/go.mod h1:odCYkC5MyYFN7vkCjXpyrEuKhc/BUO6wN/zVPAxq5ck=
 github.com/google/go-replayers/grpcreplay v0.1.0/go.mod h1:8Ig2Idjpr6gifRd6pNVggX6TC1Zw6Jx74AKp7QNH2QE=
 github.com/google/go-replayers/httpreplay v0.1.0/go.mod h1:YKZViNhiGgqdBlUbI2MwGpq4pXxNmhJLPHQ7cv2b5no=
@@ -713,6 +714,8 @@ github.com/nats-io/stan.go v0.6.0/go.mod h1:eIcD5bi3pqbHT/xIIvXMwvzXYElgouBvaVRf
 github.com/nbio/st v0.0.0-20140626010706-e9e8d9816f32/go.mod h1:9wM+0iRr9ahx58uYLpLIr5fm8diHn0JbqRycJi6w0Ms=
 github.com/ncw/swift v1.0.47/go.mod h1:23YIA4yWVnGwv2dQlN4bB7egfYX6YLn0Yo/S6zZO/ZM=
 github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e/go.mod h1:zD1mROLANZcx1PVRCS0qkT7pwLkGfwJo4zjcN/Tysno=
+github.com/nukosuke/go-zendesk v0.7.5 h1:u2XFPYArPYaxKNjDee5rLSFqL792545+YkwaEDVzrUA=
+github.com/nukosuke/go-zendesk v0.7.5/go.mod h1:67QLlIaXpEcJAhZpAwCOSuZEjTgHjKSDbsU50gSu6LM=
 github.com/nwaples/rardecode v1.0.0/go.mod h1:5DzqNKiOdpKKBH87u8VlvAnPZMXcGRhxWkRpHbbfGS0=
 github.com/oklog/ulid v1.3.1/go.mod h1:CirwcVhetQ6Lv90oh/F+FBtV6XMibvdAFo93nm5qn4U=
 github.com/olekukonko/tablewriter v0.0.0-20170122224234-a0225b3f23b5/go.mod h1:vsDQFd/mU46D+Z4whnwzcISnGGzXWMclvtLoiIKAKIo=
@@ -1486,6 +1489,7 @@ knative.dev/pkg v0.0.0-20200616180924-0d967ff0d878 h1:Mux+6oPnhwgz7KrGhcNyaII9mL
 knative.dev/pkg v0.0.0-20200616180924-0d967ff0d878/go.mod h1:NtvASnZHh7yo6VBfGk7dXdpAK2vJyrDc/+Syk4os8xk=
 knative.dev/pkg v0.0.0-20200619214325-bfb590781363 h1:y7x/rR8aYa+h+/Is0PtKo6dV3eJ7M6KEYSkplmoP//4=
 knative.dev/pkg v0.0.0-20200619214325-bfb590781363/go.mod h1:DquzK0hsLDcg2q63Sn+CngAyRwv4cKMpt5F19YzBfb0=
+knative.dev/pkg v0.0.0-20200626022628-f1ee372577e1 h1:4Fi/WnI7uwbop8gjebSfJbPdJd20XWt66ugzEYunlUA=
 knative.dev/serving v0.15.1 h1:QU73BFJezlUPtWWL8yslv7qpMNq8GlcKdAscHHpms5s=
 knative.dev/serving v0.15.1/go.mod h1:M8e9RHN3SfC18iEhRso2nj0YjIv3N8poTpSZgfQRfZM=
 knative.dev/test-infra v0.0.0-20200407185800-1b88cb3b45a5/go.mod h1:xcdUkMJrLlBswIZqL5zCuBFOC22WIPMQoVX1L35i0vQ=

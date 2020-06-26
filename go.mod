@@ -11,9 +11,11 @@ replace (
 )
 
 require (
+	github.com/cloudevents/sdk-go v1.2.0
 	github.com/cloudevents/sdk-go/v2 v2.0.0
 	github.com/imdario/mergo v0.3.9 // indirect
 	github.com/kelseyhightower/envconfig v1.4.0
+	github.com/nukosuke/go-zendesk v0.7.5
 	github.com/stretchr/testify v1.6.1
 	go.uber.org/zap v1.15.0
 	k8s.io/api v0.17.6

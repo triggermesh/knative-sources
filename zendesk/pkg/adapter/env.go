@@ -29,8 +29,8 @@ type envAccessor struct {
 	adapter.EnvConfig
 
 	Token     string `envconfig:"ZENDESK_TOKEN" `
-	Email     string `envconfig:"EMAIL" `
-	Subdomain string `envconfig:"SUBDOMAIN" `
+	Email     string `envconfig:"EMAIL" `     // donmt think i need this here
+	Subdomain string `envconfig:"SUBDOMAIN" ` // donmt think i need this here
 	Username  string `envconfig:"USERNAME" `
 	Password  string `envconfig:"PASSWORD" `
 }

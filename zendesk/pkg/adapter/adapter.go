@@ -18,21 +18,20 @@ import (
 
 // New adapter implementation
 func New(ctx context.Context, aEnv adapter.EnvConfigAccessor, ceClient cloudevents.Client) adapter.Adapter {
-	env := aEnv.(*envAccessor)
+	//env := aEnv.(*envAccessor)
 	logger := logging.FromContext(ctx)
 
 	return &zendeskAdapter{
-		client: ceClient,
+		ceClient: ceClient,
 
-		threadiness: env.Threadiness,
-		logger:      logger,
+		logger: logger,
 	}
 }
 
 var _ adapter.Adapter = (*zendeskAdapter)(nil)
 
 type zendeskAdapter struct {
-	client cloudevents.Client
+	ceClient cloudevents.Client
 
 	threadiness int
 	logger      *zap.SugaredLogger
@@ -58,7 +57,7 @@ func (a *zendeskAdapter) Start(stopCh <-chan struct{}) error {
 		cancel()
 	}()
 
-	http.HandleFunc("/", handler)
+	http.HandleFunc("/", a.handler)
 	//http.HandleFunc("/health", healthCheckHandler)
 
 	server := &http.Server{Addr: ":" + serverPort}
@@ -117,7 +116,7 @@ func (a *zendeskAdapter) sendCloudEvent(ceCh <-chan cloudevents.Event, stopCh <-
 		select {
 		case ce := <-ceCh:
 			a.logger.Infof("received CloudEvent: %+v", ce)
-			if err := a.client.Send(context.Background(), ce); err != nil {
+			if err := a.ceClient.Send(context.Background(), ce); err != nil {
 				a.logger.Errorw("failed to send event", zap.String("event", ce.String()), zap.Error(err))
 			}
 		case <-stopCh:
@@ -127,7 +126,8 @@ func (a *zendeskAdapter) sendCloudEvent(ceCh <-chan cloudevents.Event, stopCh <-
 	}
 }
 
-func handler(w http.ResponseWriter, r *http.Request) {
+func (a *zendeskAdapter) handler(w http.ResponseWriter, r *http.Request) {
+
 	fmt.Println("-------------------HEADER--------------------------")
 
 	hdr := r.Header
@@ -169,9 +169,29 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	fmt.Println("authenticated")
+
 	// do a back flip
+	// if result := a.ceClient.Send(context.Background(), *event); !cloudevents.IsACK(result) {
+	// 	h.handleError(err, w)
+	// }
 
 	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 	w.WriteHeader(http.StatusOK)
 	fmt.Fprintln(w, "OK")
 }
+
+// func sendCloudEvent() error {
+// 	event := cloudevents.NewEvent(cloudevents.VersionV1)
+
+// 	event.SetID(wrapper.EventID)
+// 	event.SetType(v1alpha1.SlackSourceEventType)
+// 	event.SetSource(wrapper.TeamID)
+// 	event.SetExtension("api_app_id", wrapper.APIAppID)
+// 	event.SetTime(time.Unix(int64(wrapper.EventTime), 0))
+// 	event.SetSubject(wrapper.Event.Type())
+// 	if err := event.SetData(cloudevents.ApplicationJSON, wrapper.Event); err != nil {
+// 		return nil, err
+// 	}
+
+// 	return nil
+// }

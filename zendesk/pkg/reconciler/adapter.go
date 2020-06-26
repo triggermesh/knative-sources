@@ -93,19 +93,40 @@ func makeSinkEnv(url *apis.URL) []corev1.EnvVar {
 func makeAppEnv(spec *v1alpha1.ZendeskSourceSpec) []corev1.EnvVar {
 	env := []corev1.EnvVar{}
 
-	if spec.AppID != nil {
-		env = append(env, corev1.EnvVar{
-			Name:  "APP_ID",
-			Value: *spec.AppID,
-		})
-	}
-
 	if spec.Token != nil {
 		env = append(env, corev1.EnvVar{
 			Name: "ZENDESK_TOKEN",
 			ValueFrom: &corev1.EnvVarSource{
 				SecretKeyRef: spec.Token.SecretKeyRef,
 			},
+		})
+	}
+
+	if spec.Email != nil {
+		env = append(env, corev1.EnvVar{
+			Name:  "EMAIL",
+			Value: *spec.Email,
+		})
+	}
+
+	if spec.Subdomain != nil {
+		env = append(env, corev1.EnvVar{
+			Name:  "SUBDOMAIN",
+			Value: *spec.Subdomain,
+		})
+	}
+
+	if spec.Username != nil {
+		env = append(env, corev1.EnvVar{
+			Name:  "USERNAME",
+			Value: *spec.Username,
+		})
+	}
+
+	if spec.Password != nil {
+		env = append(env, corev1.EnvVar{
+			Name:  "PASSWORD",
+			Value: *spec.Password,
 		})
 	}
 

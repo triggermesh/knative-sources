@@ -28,6 +28,9 @@ func EnvAccesor() adapter.EnvConfigAccessor {
 type envAccessor struct {
 	adapter.EnvConfig
 
-	//Token string `envconfig:"ZENDESK_TOKEN"`
-	Threadiness int `envconfig:"THREADINESS" default:"1"`
+	Token     string `envconfig:"ZENDESK_TOKEN" `
+	Email     string `envconfig:"EMAIL" `
+	Subdomain string `envconfig:"SUBDOMAIN" `
+	Username  string `envconfig:"USERNAME" `
+	Password  string `envconfig:"PASSWORD" `
 }

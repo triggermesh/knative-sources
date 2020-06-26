@@ -69,11 +69,19 @@ type ZendeskSourceSpec struct {
 	// +optional
 	Token *SecretValueFromSource `json:"token,omitempty"`
 
-	// AppID identifies the Zendesk application generating this event.
-	// It helps identifying the App sourcing events when multiple Zendesk
-	// applications shared an endpoint. See: https://api.zendesk.com/events-api
+	// Email identifies the email used for authentication
 	// +optional
-	AppID *string `json:"appID,omitempty"`
+	Email *string `json:"email,omitempty"`
+
+	// Subdomain identifies Zendesk subdomain
+	// +optional
+	Subdomain *string `json:"subdomain,omitempty"`
+
+	// Username used for basic authentication
+	Username *string `json:"username,omitempty"`
+
+	// Password used for basic authentication
+	Password *string `json:"password,omitempty"`
 }
 
 // SecretValueFromSource represents the source of a secret value

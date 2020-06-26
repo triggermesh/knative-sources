@@ -116,8 +116,23 @@ func (in *ZendeskSourceSpec) DeepCopyInto(out *ZendeskSourceSpec) {
 		*out = new(SecretValueFromSource)
 		(*in).DeepCopyInto(*out)
 	}
-	if in.AppID != nil {
-		in, out := &in.AppID, &out.AppID
+	if in.Email != nil {
+		in, out := &in.Email, &out.Email
+		*out = new(string)
+		**out = **in
+	}
+	if in.Subdomain != nil {
+		in, out := &in.Subdomain, &out.Subdomain
+		*out = new(string)
+		**out = **in
+	}
+	if in.Username != nil {
+		in, out := &in.Username, &out.Username
+		*out = new(string)
+		**out = **in
+	}
+	if in.Password != nil {
+		in, out := &in.Password, &out.Password
 		*out = new(string)
 		**out = **in
 	}

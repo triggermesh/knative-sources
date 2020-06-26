@@ -24,6 +24,7 @@ import (
 	pkgreconciler "knative.dev/pkg/reconciler"
 	"knative.dev/pkg/resolver"
 
+	"github.com/nukosuke/go-zendesk/zendesk"
 	srcreconciler "github.com/triggermesh/knative-sources/pkg/reconciler"
 	"github.com/triggermesh/knative-sources/zendesk/pkg/apis/sources/v1alpha1"
 	reconcilerzendesksource "github.com/triggermesh/knative-sources/zendesk/pkg/client/generated/injection/reconciler/sources/v1alpha1/zendesksource"
@@ -61,5 +62,40 @@ func (r *reconciler) ReconcileKind(ctx context.Context, src *v1alpha1.ZendeskSou
 	adapter, event := r.ksvcr.ReconcileKService(ctx, src, makeAdapter(src, r.adapterCfg))
 	src.Status.PropagateAvailability(adapter)
 
+	err = createTarget(ctx)
+	if err != nil {
+
+		src.Status.MarkNoTarget("Could not create a new Zendesk Target: %s", err.Error())
+
+	}
 	return event
+}
+
+//I need to see if a current target with a matching name is pre-existing.
+func createTarget(ctx context.Context) error {
+	client, err := zendesk.NewClient(nil)
+	if err != nil {
+		return err
+	}
+	if err := client.SetSubdomain("tmdev1"); err != nil {
+		return err
+	}
+	client.SetCredential(zendesk.NewAPITokenCredential("jeff@triggermesh.com", "YU0qskXOY2JT0x0XvxD9II9nfscusjtBNBAf4OFF"))
+
+	t := zendesk.Target{}
+
+	t.TargetURL = "https://ed-wkq6gxeuua-ue.a.run.app"
+	t.Type = "http_target"
+	t.Method = "post"
+	t.ContentType = "application/x-www-form-urlencoded"
+	t.Password = "newpass"
+	t.Username = "newusr"
+	t.Title = "k"
+
+	_, error := client.CreateTarget(ctx, t)
+	if error != nil {
+		return error
+	}
+
+	return nil
 }

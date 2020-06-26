@@ -29,6 +29,8 @@ const (
 	ConditionSinkProvided apis.ConditionType = "SinkProvided"
 	// ConditionDeployed has status True when the ZendeskSource has had it's deployment created.
 	ConditionDeployed apis.ConditionType = "Deployed"
+	// ConditionTargetCreated has status True when the ZendeskSource has created a Zendesk Target
+	ConditionTargetCreated apis.ConditionType = "TargetCreated"
 )
 
 // Reasons for status conditions
@@ -40,6 +42,9 @@ const (
 	ReasonSinkNotFound = "SinkNotFound"
 	// ReasonSinkEmpty is set on a SinkProvided condition when a sink URI is empty.
 	ReasonSinkEmpty = "EmptySinkURI"
+
+	// ReasonNoTarget is set on TargetCreated condtion when a Zendesk Target creation failed
+	ReasonNoTarget = "ZendeskTargetNotCreated"
 )
 
 const (
@@ -51,6 +56,7 @@ const (
 var ZendeskCondSet = apis.NewLivingConditionSet(
 	ConditionSinkProvided,
 	ConditionDeployed,
+	ConditionTargetCreated,
 )
 
 // InitializeConditions sets relevant unset conditions to Unknown state.
@@ -101,3 +107,18 @@ func (s *ZendeskSourceStatus) MarkNoSink(messageFormat string, messageA ...inter
 func (s *ZendeskSourceStatus) IsReady() bool {
 	return ZendeskCondSet.Manage(s).IsHappy()
 }
+
+// MarkNoTarget sets the condition that the source was not able to properly configure a Zendesk Target
+func (s *ZendeskSourceStatus) MarkNoTarget(messageFormat string, messageA ...interface{}) {
+	ZendeskCondSet.Manage(s).MarkFalse(ConditionTargetCreated, ReasonNoTarget, messageFormat, messageA...)
+}
+
+// // MarkTarget sets the condition that the source was able to properly configure a Zendesk Target
+// func (s *ZendeskSourceStatus) MarkTarget(messageFormat string, messageA ...interface{}) {
+// 	s.SinkURI = uri
+// 	if len(uri.String()) > 0 {
+// 		ZendeskCondSet.Manage(s).MarkTrue(ConditionSinkProvided)
+// 	} else {
+// 		ZendeskCondSet.Manage(s).MarkUnknown(ConditionSinkProvided, ReasonSinkEmpty, "Sink has resolved to empty.")
+// 	}
+// }

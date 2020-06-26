@@ -17,10 +17,7 @@ kind: ZendeskSource
 metadata:
   name: triggermesh-zendesk
 spec:
-  # optional, making sure we are receiving events on behalf of Zendesk
-  threadiness: 1
-  # optional, making sure the events are being sent for this integration
-  appID: AXXXXXXXXX
+
   sink:
     ref:
       apiVersion: serving.knative.dev/v1

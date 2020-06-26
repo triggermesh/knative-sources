@@ -93,7 +93,7 @@ func createTarget(ctx context.Context, src *v1alpha1.ZendeskSource) error {
 	t.ContentType = "application/x-www-form-urlencoded"
 	t.Password = "S"
 	t.Username = "s"
-	t.Title = "x"
+	t.Title = "xs"
 
 	_, error := client.CreateTarget(ctx, t)
 	if error != nil {

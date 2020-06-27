@@ -34,7 +34,7 @@ func New(ctx context.Context, aEnv adapter.EnvConfigAccessor, ceClient cloudeven
 	logger := logging.FromContext(ctx)
 
 	return &slackAdapter{
-		handler: NewSlackEventAPIHandler(ceClient, defaultListenPort, env.Token, env.AppID, logger.Named("handler")),
+		handler: NewSlackEventAPIHandler(ceClient, defaultListenPort, env.SigningSecret, env.AppID, standardTime{}, logger.Named("handler")),
 		logger:  logger,
 	}
 }

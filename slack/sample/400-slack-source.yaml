@@ -18,10 +18,10 @@ metadata:
   name: triggermesh-knbot
 spec:
   # optional, making sure we are receiving events on behalf of Slack
-  token:
+  signingSecret:
     secretKeyRef:
       name: slack
-      key: token
+      key: signingSecret
   # optional, making sure the events are being sent for this integration
   appID: AXXXXXXXXX
   sink:

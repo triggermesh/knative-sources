@@ -37,24 +37,26 @@ type SlackEventAPIHandler interface {
 }
 
 type slackEventAPIHandler struct {
-	port  int
-	token string
-	appID string
+	port          int
+	signingSecret string
+	appID         string
 
 	ceClient cloudevents.Client
 	srv      *http.Server
 
+	time   timeWrap
 	logger *zap.SugaredLogger
 }
 
 // NewSlackEventAPIHandler creates the default implementation of the Slack API Events handler
-func NewSlackEventAPIHandler(ceClient cloudevents.Client, port int, token, appID string, logger *zap.SugaredLogger) SlackEventAPIHandler {
+func NewSlackEventAPIHandler(ceClient cloudevents.Client, port int, signingSecret, appID string, tw timeWrap, logger *zap.SugaredLogger) SlackEventAPIHandler {
 	return &slackEventAPIHandler{
-		port:  port,
-		token: token,
-		appID: appID,
+		port:          port,
+		signingSecret: signingSecret,
+		appID:         appID,
 
 		ceClient: ceClient,
+		time:     tw,
 		logger:   logger,
 	}
 }
@@ -89,38 +91,39 @@ func (h *slackEventAPIHandler) Start(stopCh <-chan struct{}) error {
 // is up to this function to parse event wrapper and dispatch.
 func (h *slackEventAPIHandler) handleAll(w http.ResponseWriter, r *http.Request) {
 	if r.Body == nil {
-		h.handleError(errors.New("request without body not supported"), w)
+		h.handleError(errors.New("request without body not supported"), http.StatusBadRequest, w)
 		return
 	}
 
 	defer r.Body.Close()
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		h.handleError(err, w)
+		h.handleError(err, http.StatusInternalServerError, w)
 		return
+	}
+
+	if h.signingSecret != "" {
+		err = h.verifySigning(r.Header, body)
+		if err != nil {
+			h.handleError(err, http.StatusUnauthorized, w)
+			return
+		}
 	}
 
 	event := &SlackEventWrapper{}
 	err = json.Unmarshal(body, event)
 	if err != nil {
-		h.handleError(fmt.Errorf("could not unmarshall JSON request: %s", err.Error()), w)
+		h.handleError(fmt.Errorf("could not unmarshall JSON request: %s", err.Error()), http.StatusBadRequest, w)
 		return
 	}
 
-	// All paths that are not managed by this integration need
-	// to return 2xx withing 3 seconds to Slack API, otherwise
-	// the message will be retried.
-	// Responses for those cases are returned in order to
-	// achieve that, logs are written if relevant.
+	// All paths that are not managed by this integration and are
+	// not errors need to return 2xx withing 3 seconds to Slack API.
+	// Otherwise the message will be retried.
 
 	if h.appID != "" && event.APIAppID != h.appID {
 		// silently ignore, some other integration should take
 		// care of this event.
-		return
-	}
-
-	if h.token != "" && event.Token != h.token {
-		h.logger.Error("Received wrong token for this integration")
 		return
 	}
 
@@ -153,9 +156,9 @@ func (h *slackEventAPIHandler) gracefulShutdown(stopCh <-chan struct{}, done cha
 	close(done)
 }
 
-func (h *slackEventAPIHandler) handleError(err error, w http.ResponseWriter) {
+func (h *slackEventAPIHandler) handleError(err error, code int, w http.ResponseWriter) {
 	h.logger.Error("An error ocurred", zap.Error(err))
-	http.Error(w, err.Error(), http.StatusInternalServerError)
+	http.Error(w, err.Error(), code)
 }
 
 func (h *slackEventAPIHandler) handleChallenge(body []byte, w http.ResponseWriter) {
@@ -164,14 +167,14 @@ func (h *slackEventAPIHandler) handleChallenge(body []byte, w http.ResponseWrite
 
 	err := json.Unmarshal(body, c)
 	if err != nil {
-		h.handleError(err, w)
+		h.handleError(err, http.StatusBadRequest, w)
 		return
 	}
 
 	cr := &SlackChallengeResponse{Challenge: c.Challenge}
 	res, err := json.Marshal(cr)
 	if err != nil {
-		h.handleError(err, w)
+		h.handleError(err, http.StatusBadRequest, w)
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -179,7 +182,7 @@ func (h *slackEventAPIHandler) handleChallenge(body []byte, w http.ResponseWrite
 
 	_, err = w.Write(res)
 	if err != nil {
-		h.handleError(err, w)
+		h.handleError(err, http.StatusInternalServerError, w)
 	}
 }
 
@@ -188,12 +191,12 @@ func (h *slackEventAPIHandler) handleCallback(wrapper *SlackEventWrapper, w http
 
 	event, err := cloudEventFromEventWrapper(wrapper)
 	if err != nil {
-		h.handleError(err, w)
+		h.handleError(err, http.StatusBadRequest, w)
 		return
 	}
 
 	if result := h.ceClient.Send(context.Background(), *event); !cloudevents.IsACK(result) {
-		h.handleError(err, w)
+		h.handleError(err, http.StatusInternalServerError, w)
 	}
 }
 

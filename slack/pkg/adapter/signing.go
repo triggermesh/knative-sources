@@ -76,7 +76,7 @@ func (h *slackEventAPIHandler) verifySigning(header http.Header, body []byte) er
 	signString := "v0:" + timestamp + ":" + string(body)
 	hm := hmac.New(sha256.New, []byte(h.signingSecret))
 	if _, err := hm.Write([]byte(signString)); err != nil {
-		return fmt.Errorf("error writing signing string into hmac: %s", err.Error())
+		return fmt.Errorf("error writing signing string into hmac: %w", err)
 	}
 
 	hash := hm.Sum(nil)

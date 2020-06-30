@@ -57,13 +57,13 @@ Deploy the Slack source in 3 steps:
 
 1. Deploy the Slack Source at the cluster, retieve exposed endpoint.
 2. Configure Slack App to send events to the Slack Source endpoint.
-3. (optional) Modify the Slack Source to add Signing secret and AppID from the configured App.
+3. (optional) Modify the Slack Source to add Signing Secret and AppID from the configured App.
 
 ### Deploy Slack Source
 
 An instance of the Slack Source is created by applying a manifest that fullfills its CRD schema. Accepted Spec parameters are:
 
-- `signingSecret` (optional), a kubernetes secret that holds the signing secret that verifies messages from the Slack App.
+- `signingSecret` (optional), a kubernetes secret that holds the Signing Secret that verifies messages from the Slack App.
 - `appID` (optional), to identify the Slack App when multiple integrations use the same endpoint.
 - `sink`, the addressable where cloud events generated from this source will be sent. Refer to Knative's documentation.
 
@@ -116,7 +116,7 @@ triggermesh-knbot   True             https://slacksource-triggermesh-knbot.odacr
 
     ![Install to workspace](./docs/images/05install.png)
 
-6. (Optional)Return to the application's `Basic Information` and take note of `App ID` and `Signing secret`
+6. (Optional)Return to the application's `Basic Information` and take note of `App ID` and `Signing Secret`
 
     ![Retrieve info](./docs/images/06appinfo.png)
 
@@ -124,7 +124,7 @@ You will now have a working integration. Any Slack action that matches the confi
 
 ### Secure the Slack Source
 
-To secure the Slack Source edit the manifest to add `Signing secret` as a kubernetes secret. The Application ID is not needed but can also be configured to make sure that the received events match the configured Application.
+To secure the Slack Source edit the manifest to add `Signing Secret` as a kubernetes secret. The Application ID is not needed but can also be configured to make sure that the received events match the configured Application.
 
 ```yaml
 apiVersion: sources.triggermesh.io/v1alpha1

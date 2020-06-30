@@ -113,7 +113,7 @@ func (h *slackEventAPIHandler) handleAll(w http.ResponseWriter, r *http.Request)
 	event := &SlackEventWrapper{}
 	err = json.Unmarshal(body, event)
 	if err != nil {
-		h.handleError(fmt.Errorf("could not unmarshall JSON request: %s", err.Error()), http.StatusBadRequest, w)
+		h.handleError(fmt.Errorf("could not unmarshall JSON request: %w", err), http.StatusBadRequest, w)
 		return
 	}
 

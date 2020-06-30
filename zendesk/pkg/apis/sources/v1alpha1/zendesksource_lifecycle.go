@@ -108,17 +108,12 @@ func (s *ZendeskSourceStatus) IsReady() bool {
 	return ZendeskCondSet.Manage(s).IsHappy()
 }
 
-// MarkNoTarget sets the condition that the source was not able to properly configure a Zendesk Target
-func (s *ZendeskSourceStatus) MarkNoTarget(messageFormat string, messageA ...interface{}) {
+// MarkNoTargetCreated sets the condition that the source was not able to properly configure a Zendesk Target
+func (s *ZendeskSourceStatus) MarkNoTargetCreated(messageFormat string, messageA ...interface{}) {
 	ZendeskCondSet.Manage(s).MarkFalse(ConditionTargetCreated, ReasonNoTarget, messageFormat, messageA...)
 }
 
-// // MarkTarget sets the condition that the source was able to properly configure a Zendesk Target
-// func (s *ZendeskSourceStatus) MarkTarget(messageFormat string, messageA ...interface{}) {
-// 	s.SinkURI = uri
-// 	if len(uri.String()) > 0 {
-// 		ZendeskCondSet.Manage(s).MarkTrue(ConditionSinkProvided)
-// 	} else {
-// 		ZendeskCondSet.Manage(s).MarkUnknown(ConditionSinkProvided, ReasonSinkEmpty, "Sink has resolved to empty.")
-// 	}
-// }
+// MarkTargetCreated sets the condition that the source was able to properly configure a Zendesk Target
+func (s *ZendeskSourceStatus) MarkTargetCreated() {
+	ZendeskCondSet.Manage(s).MarkTrue(ConditionTargetCreated)
+}

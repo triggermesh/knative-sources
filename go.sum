@@ -1490,6 +1490,7 @@ knative.dev/pkg v0.0.0-20200616180924-0d967ff0d878/go.mod h1:NtvASnZHh7yo6VBfGk7
 knative.dev/pkg v0.0.0-20200619214325-bfb590781363 h1:y7x/rR8aYa+h+/Is0PtKo6dV3eJ7M6KEYSkplmoP//4=
 knative.dev/pkg v0.0.0-20200619214325-bfb590781363/go.mod h1:DquzK0hsLDcg2q63Sn+CngAyRwv4cKMpt5F19YzBfb0=
 knative.dev/pkg v0.0.0-20200626022628-f1ee372577e1 h1:4Fi/WnI7uwbop8gjebSfJbPdJd20XWt66ugzEYunlUA=
+knative.dev/pkg v0.0.0-20200629195729-e16ecb840d88 h1:k+CKhEFTrpNFOvnGlcIK3tGjq1Spw7b9zJVASy/BbP8=
 knative.dev/serving v0.15.1 h1:QU73BFJezlUPtWWL8yslv7qpMNq8GlcKdAscHHpms5s=
 knative.dev/serving v0.15.1/go.mod h1:M8e9RHN3SfC18iEhRso2nj0YjIv3N8poTpSZgfQRfZM=
 knative.dev/test-infra v0.0.0-20200407185800-1b88cb3b45a5/go.mod h1:xcdUkMJrLlBswIZqL5zCuBFOC22WIPMQoVX1L35i0vQ=

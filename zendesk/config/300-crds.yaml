@@ -38,6 +38,9 @@ spec:
     - name: Sink
       type: string
       JSONPath: ".status.sinkUri"
+    - name: ZendeskTargetCreation
+      type: string
+      JSONPath: ".status.conditions.ConditionTargetCreated" 
     - name: Age
       type: date
       JSONPath: .metadata.creationTimestamp
@@ -167,6 +170,9 @@ spec:
               type: string
               description: SinkURI is the current active sink URI that has been configured
                 for the Source.
+            ZendeskTargetCreation:
+              type: string
+              description: ZendeskTargetCreation is the result of an attempt by the reconicler to register a zendesk target
           type: object
       required:
       - spec

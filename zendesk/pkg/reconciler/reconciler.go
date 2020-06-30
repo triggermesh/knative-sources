@@ -18,6 +18,7 @@ package reconciler
 
 import (
 	"context"
+	"fmt"
 
 	duckv1 "knative.dev/pkg/apis/duck/v1"
 	"knative.dev/pkg/controller"
@@ -29,6 +30,8 @@ import (
 	"github.com/triggermesh/knative-sources/zendesk/pkg/apis/sources/v1alpha1"
 	reconcilerzendesksource "github.com/triggermesh/knative-sources/zendesk/pkg/client/generated/injection/reconciler/sources/v1alpha1/zendesksource"
 )
+
+const Title = "triggermeshTitle"
 
 // Reconciler reconciles a ZendeskSource object
 type reconciler struct {
@@ -62,16 +65,31 @@ func (r *reconciler) ReconcileKind(ctx context.Context, src *v1alpha1.ZendeskSou
 	adapter, event := r.ksvcr.ReconcileKService(ctx, src, makeAdapter(src, r.adapterCfg))
 	src.Status.PropagateAvailability(adapter)
 
-	err = createTarget(ctx, src)
+	// Does a target exist with the Title?
+	check, err := r.checkTargetExistance(Title)
 	if err != nil {
-		src.Status.MarkNoTarget("Could not create a new Zendesk Target: %s", err.Error())
+		src.Status.MarkNoTargetCreated("Could not create a new Zendesk Target: %s", err.Error())
+		return controller.NewPermanentError(err)
+	}
+
+	// if it does not exist : create it
+	if check == false {
+		err := createTarget(ctx, src)
+		if err != nil {
+			src.Status.MarkNoTargetCreated("Could not create a new Zendesk Target: %s", err.Error())
+			return controller.NewPermanentError(err)
+		}
+		src.Status.MarkTargetCreated()
+	}
+	// if it does exist mark it as created
+	if check == true {
+		src.Status.MarkTargetCreated()
 	}
 
 	return event
 }
 
 //TODO:
-//See if a current target with a matching name is pre-existing. It is currently creating 7 Targets.
 //Replace hardcoding
 //Fix MarkNoTarget
 // createTarget creates a new zendesk target
@@ -90,10 +108,10 @@ func createTarget(ctx context.Context, src *v1alpha1.ZendeskSource) error {
 	t.TargetURL = "https://ed-wkq6gxeuua-ue.a.run.app"
 	t.Type = "http_target"
 	t.Method = "post"
-	t.ContentType = "application/x-www-form-urlencoded"
-	t.Password = "S"
-	t.Username = "s"
-	t.Title = "xs"
+	t.ContentType = "application/json"
+	t.Password = "pass"
+	t.Username = "pass"
+	t.Title = Title
 
 	_, error := client.CreateTarget(ctx, t)
 	if error != nil {
@@ -101,4 +119,33 @@ func createTarget(ctx context.Context, src *v1alpha1.ZendeskSource) error {
 	}
 
 	return nil
+}
+
+// checkTargetExistance checks to see if a target with a matching "Title" exisits.
+func (r *reconciler) checkTargetExistance(search string) (bool, error) {
+	ctx := context.Background()
+	client, err := zendesk.NewClient(nil)
+	if err != nil {
+		return false, err
+	}
+	if err := client.SetSubdomain("tmdev1"); err != nil {
+		fmt.Println("big fucked setting subdomain")
+	}
+	client.SetCredential(zendesk.NewAPITokenCredential("jeff@triggermesh.com", "YU0qskXOY2JT0x0XvxD9II9nfscusjtBNBAf4OFF"))
+
+	Target, _, err := client.GetTargets(ctx)
+	for _, t := range Target {
+
+		if t.Title == search {
+			if t.Active == true {
+				fmt.Println("Found a matching title on target :", t)
+				return true, nil
+			}
+		}
+	}
+	if err != nil {
+		fmt.Println("getTragets big fucked")
+		return false, err
+	}
+	return false, nil
 }

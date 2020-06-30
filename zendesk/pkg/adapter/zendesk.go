@@ -75,7 +75,7 @@ func (h *zendeskAPIHandler) Start(stopCh <-chan struct{}) error {
 	done := make(chan bool, 1)
 	go h.gracefulShutdown(stopCh, done)
 
-	h.logger.Infof("Server is ready to handle requests at %s", h.srv.Addr)
+	h.logger.Infof("Zendesk Source is ready to handle requests at %s", h.srv.Addr)
 	if err := h.srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 		return fmt.Errorf("could not listen on %s: %v", h.srv.Addr, err)
 	}
@@ -85,37 +85,49 @@ func (h *zendeskAPIHandler) Start(stopCh <-chan struct{}) error {
 	return nil
 }
 
-// handleAll receives all Zendesk events at a single resource, it
-// is up to this function to parse event wrapper and dispatch.
-func (h *zendeskAPIHandler) handleAll(w http.ResponseWriter, r *http.Request) {
+func (h *zendeskAPIHandler) authenticate(r *http.Request) (bool, error) {
 
 	s := strings.SplitN(r.Header.Get("Authorization"), " ", 2)
 	if len(s) != 2 {
-		http.Error(w, "Not authorized", 401)
-		return
+		return false, errors.New("Not authorized")
 	}
 
 	b, err := base64.StdEncoding.DecodeString(s[1])
 	if err != nil {
-		http.Error(w, err.Error(), 401)
-		return
+		return false, errors.New("Not authorized")
 	}
 
 	pair := strings.SplitN(string(b), ":", 2)
 	if len(pair) != 2 {
-		http.Error(w, "Not authorized", 401)
-		return
+
+		return false, errors.New("Not authorized")
 	}
 
 	if pair[0] != "username" || pair[1] != "password" {
-		http.Error(w, "Not authorized", 401)
-		return
+		return false, errors.New("Not authorized")
 	}
 
-	fmt.Println("authenticated")
+	return true, nil
+
+}
+
+// handleAll receives all Zendesk events at a single resource, it
+// is up to this function to parse event wrapper and dispatch.
+func (h *zendeskAPIHandler) handleAll(w http.ResponseWriter, r *http.Request) {
 
 	if r.Body == nil {
 		h.handleError(errors.New("request without body not supported"), w)
+		return
+	}
+
+	authStatus, err := h.authenticate(r)
+	if err != nil {
+		h.handleError(err, w)
+		return
+	}
+
+	if authStatus == false {
+		h.handleError(errors.New("Authentication FAILED"), w)
 		return
 	}
 
@@ -190,39 +202,3 @@ func cloudEventFromEventWrapper(wrapper *ZendeskEventWrapper) (*cloudevents.Even
 
 	return &event, nil
 }
-
-// func (a *zendeskAdapter) handler(w http.ResponseWriter, r *http.Request) {
-
-// 	s := strings.SplitN(r.Header.Get("Authorization"), " ", 2)
-// 	if len(s) != 2 {
-// 		http.Error(w, "Not authorized", 401)
-// 		return
-// 	}
-
-// 	b, err := base64.StdEncoding.DecodeString(s[1])
-// 	if err != nil {
-// 		http.Error(w, err.Error(), 401)
-// 		return
-// 	}
-
-// 	pair := strings.SplitN(string(b), ":", 2)
-// 	if len(pair) != 2 {
-// 		http.Error(w, "Not authorized", 401)
-// 		return
-// 	}
-
-// 	if pair[0] != "username" || pair[1] != "password" {
-// 		http.Error(w, "Not authorized", 401)
-// 		return
-// 	}
-
-// 	fmt.Println("authenticated")
-
-// 	// do a back flip
-// 	//create and return cloud event
-// 	//a.sendCloudEvent()
-
-// 	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
-// 	w.WriteHeader(http.StatusOK)
-// 	fmt.Fprintln(w, "OK")
-// }

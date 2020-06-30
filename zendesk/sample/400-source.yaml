@@ -17,7 +17,7 @@ kind: ZendeskSource
 metadata:
   name: triggermesh-zendesk
 spec:
-  email: jeffthenaef@gmail.com
+  email: dev@triggermesh.com
   username: bob
   password: sag
   sink:

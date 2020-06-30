@@ -48,7 +48,7 @@ func NewScheme() *runtime.Scheme {
 
 	sb := runtime.NewSchemeBuilder(clientSetSchemes...)
 	if err := sb.AddToScheme(scheme); err != nil {
-		panic(fmt.Errorf("error building Scheme: %s", err))
+		panic(fmt.Errorf("error building Scheme: %w", err))
 	}
 
 	return scheme

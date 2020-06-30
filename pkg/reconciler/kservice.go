@@ -18,6 +18,7 @@ package reconciler
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	corev1 "k8s.io/api/core/v1"
@@ -106,7 +107,7 @@ func (r *kServiceReconciler) ReconcileKService(ctx context.Context, owner kmeta.
 
 	case len(ksvcs) > 1:
 		// Not expected, return an error and wait for manual intervention
-		return nil, fmt.Errorf("there is more than one Knative service controlled by ")
+		return nil, errors.New("there is more than one Knative service being controlled")
 	}
 
 	ksvc := ksvcs[0]

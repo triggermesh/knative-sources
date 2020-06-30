@@ -79,7 +79,7 @@ func (h *slackEventAPIHandler) Start(stopCh <-chan struct{}) error {
 
 	h.logger.Infof("Server is ready to handle requests at %s", h.srv.Addr)
 	if err := h.srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-		return fmt.Errorf("could not listen on %s: %v", h.srv.Addr, err)
+		return fmt.Errorf("could not listen on %s: %w", h.srv.Addr, err)
 	}
 
 	<-done

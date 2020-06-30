@@ -116,7 +116,7 @@ triggermesh-knbot   True             https://slacksource-triggermesh-knbot.odacr
 
     ![Install to workspace](./docs/images/05install.png)
 
-6. (Optional)Return to the application's `Basic Information` and take note of `App ID` and `Sign secret`
+6. (Optional)Return to the application's `Basic Information` and take note of `App ID` and `Signing secret`
 
     ![Retrieve info](./docs/images/06appinfo.png)
 

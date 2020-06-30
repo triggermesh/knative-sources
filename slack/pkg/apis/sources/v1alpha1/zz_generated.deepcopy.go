@@ -111,8 +111,8 @@ func (in *SlackSourceList) DeepCopyObject() runtime.Object {
 func (in *SlackSourceSpec) DeepCopyInto(out *SlackSourceSpec) {
 	*out = *in
 	in.SourceSpec.DeepCopyInto(&out.SourceSpec)
-	if in.Token != nil {
-		in, out := &in.Token, &out.Token
+	if in.SigningSecret != nil {
+		in, out := &in.SigningSecret, &out.SigningSecret
 		*out = new(SecretValueFromSource)
 		(*in).DeepCopyInto(*out)
 	}

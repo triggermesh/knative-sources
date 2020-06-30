@@ -64,10 +64,11 @@ type SlackSourceSpec struct {
 	//   and modifications of the event sent to the sink.
 	duckv1.SourceSpec `json:",inline"`
 
-	// Token can be set to the value of Slack subscription token
-	// to authenticate callbacks. See: https://api.slack.com/events-api
+	// SigningSecret can be set to the value of Slack request signing secret
+	// to authenticate callbacks.
+	// See: https://api.slack.com/authentication/verifying-requests-from-slack
 	// +optional
-	Token *SecretValueFromSource `json:"token,omitempty"`
+	SigningSecret *SecretValueFromSource `json:"signingSecret,omitempty"`
 
 	// AppID identifies the Slack application generating this event.
 	// It helps identifying the App sourcing events when multiple Slack

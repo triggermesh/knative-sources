@@ -95,16 +95,16 @@ func makeAppEnv(spec *v1alpha1.SlackSourceSpec) []corev1.EnvVar {
 
 	if spec.AppID != nil {
 		env = append(env, corev1.EnvVar{
-			Name:  "APP_ID",
+			Name:  "SLACK_APP_ID",
 			Value: *spec.AppID,
 		})
 	}
 
-	if spec.Token != nil {
+	if spec.SigningSecret != nil {
 		env = append(env, corev1.EnvVar{
-			Name: "SLACK_TOKEN",
+			Name: "SLACK_SIGNING_SECRET",
 			ValueFrom: &corev1.EnvVarSource{
-				SecretKeyRef: spec.Token.SecretKeyRef,
+				SecretKeyRef: spec.SigningSecret.SecretKeyRef,
 			},
 		})
 	}

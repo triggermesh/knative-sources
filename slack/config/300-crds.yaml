@@ -112,9 +112,10 @@ spec:
                 oneOf:
                 - required: ['ref']
                 - required: ['uri']
-              token:
-                description: 'Token can be set to the value of Slack subscription token
-                  to authenticate callbacks. See: https://api.slack.com/events-api.'
+              signingSecret:
+                description: 'SigningSecret can be set to the value of Slack request signing secret
+	                to authenticate callbacks.
+	                See: https://api.slack.com/authentication/verifying-requests-from-slack.'
                 properties:
                   secretKeyRef:
                     description: The Secret key to select from.

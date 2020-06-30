@@ -27,6 +27,6 @@ func EnvAccesor() adapter.EnvConfigAccessor {
 
 type envAccessor struct {
 	adapter.EnvConfig
-	AppID string `envconfig:"APP_ID"`
-	Token string `envconfig:"SLACK_TOKEN"`
+	AppID         string `envconfig:"SLACK_APP_ID"`
+	SigningSecret string `envconfig:"SLACK_SIGNING_SECRET"`
 }

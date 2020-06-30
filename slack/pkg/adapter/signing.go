@@ -65,7 +65,7 @@ func (h *slackEventAPIHandler) verifySigning(header http.Header, body []byte) er
 
 	ts, err := strconv.ParseInt(timestamp, 10, 64)
 	if err != nil {
-		return fmt.Errorf("error parsing header timestamp: %s", err.Error())
+		return fmt.Errorf("error parsing header timestamp: %w", err)
 	}
 
 	now := int64(h.time.Now().Unix())

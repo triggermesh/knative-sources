@@ -95,7 +95,7 @@ func makeAppEnv(spec *v1alpha1.SlackSourceSpec) []corev1.EnvVar {
 
 	if spec.AppID != nil {
 		env = append(env, corev1.EnvVar{
-			Name:  "APP_ID",
+			Name:  "SLACK_APP_ID",
 			Value: *spec.AppID,
 		})
 	}

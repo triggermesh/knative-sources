@@ -55,7 +55,7 @@ func (h *slackEventAPIHandler) verifySigning(header http.Header, body []byte) er
 	}
 
 	if signature[:3] != "v0=" {
-		return errors.New("wrong signature header format")
+		return fmt.Errorf(`signature header format does not begin with "v0=": %s`, signature)
 	}
 
 	timestamp := header.Get(signatureTimestampHeader)

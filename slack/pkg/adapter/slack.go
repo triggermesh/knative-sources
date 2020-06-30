@@ -120,6 +120,7 @@ func (h *slackEventAPIHandler) handleAll(w http.ResponseWriter, r *http.Request)
 	// All paths that are not managed by this integration and are
 	// not errors need to return 2xx withing 3 seconds to Slack API.
 	// Otherwise the message will be retried.
+	// See: https://api.slack.com/events-api#receiving_events (Responding to Events)
 
 	if h.appID != "" && event.APIAppID != h.appID {
 		// silently ignore, some other integration should take

@@ -152,7 +152,7 @@ func TestSlackEvent(t *testing.T) {
 			headers:       map[string]string{signatureHeader: "x2=aaa"},
 
 			expectedCode:     http.StatusUnauthorized,
-			expectedContains: "wrong signature header format",
+			expectedContains: `signature header format does not begin with "v0=": x2=aaa`,
 		},
 
 		"missing signing timestamp": {

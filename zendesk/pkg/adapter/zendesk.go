@@ -149,23 +149,26 @@ func (h *zendeskAPIHandler) handleAll(w http.ResponseWriter, r *http.Request) {
 	// Getting `runtime error: invalid memory address or nil pointer dereference` herre
 	// See the full error message at the bottom of this file
 
-	// cEvent, err := cloudEventFromEventWrapper(event)
-	// if err != nil {
-	// 	h.handleError(err, w)
-	// }
-	// if result := h.ceClient.Send(context.Background(), *cEvent); !cloudevents.IsACK(result) {
-	// 	h.handleError(err, w)
-	// }
+	cEvent, err := h.cloudEventFromEventWrapper(event)
+	if err != nil {
+		h.logger.Info("Error Creating CloudEvent")
+		h.handleError(err, w)
+	}
+	if result := h.ceClient.Send(context.Background(), *cEvent); !cloudevents.IsACK(result) {
+		h.logger.Info("Error Sending CloudEvent")
+		h.handleError(result, w)
+	}
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	// fix this
-	res, err := json.Marshal(`{"d":"2"}`)
+	res, err := json.Marshal(`200:Big Pog! Thanks Zendesk!`)
 	if err != nil {
 		h.handleError(err, w)
 	}
 	_, err = w.Write(res)
 	if err != nil {
+		h.logger.Info("Error Writing HTTP response")
 		h.handleError(err, w)
 	}
 }
@@ -190,22 +193,23 @@ func (h *zendeskAPIHandler) handleError(err error, w http.ResponseWriter) {
 }
 
 // fix this
-func cloudEventFromEventWrapper(wrapper *ZendeskEventWrapper) (*cloudevents.Event, error) {
-	// data, err := json.Marshal(wrapper)
-	// if err != nil {
-	// 	return nil, err
-	// }
+func (h *zendeskAPIHandler) cloudEventFromEventWrapper(wrapper *ZendeskEventWrapper) (*cloudevents.Event, error) {
+	h.logger.Info("Proccesing Zendesk event")
+	data, err := json.Marshal(wrapper)
+	if err != nil {
+		return nil, err
+	}
 	event := cloudevents.NewEvent(cloudevents.VersionV1)
 
 	event.SetID("wrapper.EventID")
 	event.SetType("functions.zendessk.sources.triggermesh.io")
-	event.SetSource(`os.Getenv("NAMESPACE") + "/" + os.Getenv("NAME")`)
+	event.SetSource("https://github.com/cloudevents/spec/pull")
 	//event.SetExtension("api_app_id", "wrapper.APIAppID")
 	//event.SetTime(time.Unix(int64(120), 0))
 	event.SetSubject("New Zendesk Ticket")
-	// if err := event.SetData(cloudevents.ApplicationJSON, data); err != nil {
-	// 	return nil, err
-	// }
+	if err := event.SetData(cloudevents.ApplicationJSON, data); err != nil {
+		return nil, fmt.Errorf("failed to set event data: %w", err)
+	}
 
 	return &event, nil
 }

@@ -199,8 +199,8 @@ func (h *zendeskAPIHandler) cloudEventFromEventWrapper(wrapper *ZendeskEventWrap
 	event := cloudevents.NewEvent(cloudevents.VersionV1)
 
 	event.SetID("wrapper.EventID")
-	event.SetType("functions.zendessk.sources.triggermesh.io")
-	event.SetSource("https://github.com/cloudevents/spec/pull")
+	event.SetType("com.zendesk.ticket.create")
+	event.SetSource("com.zendesk.source")
 	//event.SetExtension("api_app_id", "wrapper.APIAppID")
 	//event.SetTime(time.Unix(int64(120), 0))
 	event.SetSubject("New Zendesk Ticket")

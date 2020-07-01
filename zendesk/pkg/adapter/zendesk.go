@@ -29,6 +29,7 @@ import (
 	"time"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
+	"github.com/nukosuke/go-zendesk/zendesk"
 	"go.uber.org/zap"
 )
 
@@ -137,7 +138,7 @@ func (h *zendeskAPIHandler) handleAll(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	event := &ZendeskEventWrapper{}
+	event := &zendesk.Ticket{}
 	err = json.Unmarshal(body, event)
 	if err != nil {
 		h.handleError(fmt.Errorf("could not unmarshall JSON request: %s", err.Error()), w)
@@ -190,7 +191,7 @@ func (h *zendeskAPIHandler) handleError(err error, w http.ResponseWriter) {
 }
 
 // fix this
-func (h *zendeskAPIHandler) cloudEventFromEventWrapper(wrapper *ZendeskEventWrapper) (*cloudevents.Event, error) {
+func (h *zendeskAPIHandler) cloudEventFromEventWrapper(wrapper *zendesk.Ticket) (*cloudevents.Event, error) {
 	h.logger.Info("Proccesing Zendesk event")
 	data, err := json.Marshal(wrapper)
 	if err != nil {
@@ -199,7 +200,7 @@ func (h *zendeskAPIHandler) cloudEventFromEventWrapper(wrapper *ZendeskEventWrap
 	event := cloudevents.NewEvent(cloudevents.VersionV1)
 
 	event.SetID("wrapper.EventID")
-	event.SetType("com.zendesk.ticket.create")
+	event.SetType("com.zendesk.ticket.new")
 	event.SetSource("com.zendesk.source")
 	//event.SetExtension("api_app_id", "wrapper.APIAppID")
 	//event.SetTime(time.Unix(int64(120), 0))

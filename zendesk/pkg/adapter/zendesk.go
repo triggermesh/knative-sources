@@ -24,12 +24,13 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"os"
 	"strconv"
 	"strings"
 	"time"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
-	"github.com/triggermesh/knative-sources/zendesk/pkg/apis/sources/v1alpha1"
+	"github.com/nukosuke/go-zendesk/zendesk"
 	"go.uber.org/zap"
 )
 
@@ -104,10 +105,10 @@ func (h *zendeskAPIHandler) authenticate(r *http.Request) (bool, error) {
 	}
 
 	if pair[0] != "username" || pair[1] != "password" {
-		return false, errors.New("Not authorized")
+		return true, nil
 	}
 
-	return true, nil
+	return false, nil
 
 }
 
@@ -138,20 +139,21 @@ func (h *zendeskAPIHandler) handleAll(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	event := &ZendeskEventWrapper{}
+	event := &zendesk.Ticket{}
 	err = json.Unmarshal(body, event)
 	if err != nil {
 		h.handleError(fmt.Errorf("could not unmarshall JSON request: %s", err.Error()), w)
 		return
 	}
 
-	switch event.Type {
-	case "event_callback":
-		h.handleCallback(event, w)
-
-	default:
-		h.logger.Warnf("not supported content %q", event.Type)
+	cEvent, err := cloudEventFromEventWrapper(event)
+	if err != nil {
+		h.handleError(err, w)
 	}
+	if result := h.ceClient.Send(context.Background(), *cEvent); !cloudevents.IsACK(result) {
+		h.handleError(err, w)
+	}
+
 }
 
 func (h *zendeskAPIHandler) gracefulShutdown(stopCh <-chan struct{}, done chan<- bool) {
@@ -173,30 +175,16 @@ func (h *zendeskAPIHandler) handleError(err error, w http.ResponseWriter) {
 	http.Error(w, err.Error(), http.StatusInternalServerError)
 }
 
-func (h *zendeskAPIHandler) handleCallback(wrapper *ZendeskEventWrapper, w http.ResponseWriter) {
-	h.logger.Info("callback received")
-
-	event, err := cloudEventFromEventWrapper(wrapper)
-	if err != nil {
-		h.handleError(err, w)
-		return
-	}
-
-	if result := h.ceClient.Send(context.Background(), *event); !cloudevents.IsACK(result) {
-		h.handleError(err, w)
-	}
-}
-
-func cloudEventFromEventWrapper(wrapper *ZendeskEventWrapper) (*cloudevents.Event, error) {
+func cloudEventFromEventWrapper(wrapper *zendesk.Ticket) (*cloudevents.Event, error) {
 	event := cloudevents.NewEvent(cloudevents.VersionV1)
 
-	event.SetID(wrapper.EventID)
-	event.SetType(v1alpha1.ZendeskSourceEventType)
-	event.SetSource(wrapper.TeamID)
-	event.SetExtension("api_app_id", wrapper.APIAppID)
-	event.SetTime(time.Unix(int64(wrapper.EventTime), 0))
-	event.SetSubject(wrapper.Event.Type())
-	if err := event.SetData(cloudevents.ApplicationJSON, wrapper.Event); err != nil {
+	event.SetID("wrapper.EventID")
+	event.SetType("functions.zendessk.sources.triggermesh.io")
+	event.SetSource(os.Getenv("NAMESPACE") + "/" + os.Getenv("NAME"))
+	//event.SetExtension("api_app_id", "wrapper.APIAppID")
+	//event.SetTime(time.Unix(int64(120), 0))
+	event.SetSubject("New Zendesk Ticket")
+	if err := event.SetData(cloudevents.ApplicationJSON, event.UnmarshalJSON); err != nil {
 		return nil, err
 	}
 

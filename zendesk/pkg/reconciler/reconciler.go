@@ -65,26 +65,12 @@ func (r *reconciler) ReconcileKind(ctx context.Context, src *v1alpha1.ZendeskSou
 	adapter, event := r.ksvcr.ReconcileKService(ctx, src, makeAdapter(src, r.adapterCfg))
 	src.Status.PropagateAvailability(adapter)
 
-	// Does a target exist with the Title?
-	check, err := r.checkTargetExistance(Title)
+	err = r.createTarget(ctx, src)
 	if err != nil {
 		src.Status.MarkNoTargetCreated("Could not create a new Zendesk Target: %s", err.Error())
 		return controller.NewPermanentError(err)
 	}
-
-	// if it does not exist : create it
-	if check == false {
-		err := createTarget(ctx, src)
-		if err != nil {
-			src.Status.MarkNoTargetCreated("Could not create a new Zendesk Target: %s", err.Error())
-			return controller.NewPermanentError(err)
-		}
-		src.Status.MarkTargetCreated()
-	}
-	// if it does exist mark it as created
-	if check == true {
-		src.Status.MarkTargetCreated()
-	}
+	src.Status.MarkTargetCreated()
 
 	return event
 }
@@ -93,31 +79,43 @@ func (r *reconciler) ReconcileKind(ctx context.Context, src *v1alpha1.ZendeskSou
 //Replace hardcoding
 //Fix MarkNoTarget
 // createTarget creates a new zendesk target
-func createTarget(ctx context.Context, src *v1alpha1.ZendeskSource) error {
-	client, err := zendesk.NewClient(nil)
+func (r *reconciler) createTarget(ctx context.Context, src *v1alpha1.ZendeskSource) error {
+	// Does a target exist with the Title? if so return
+	check, err := r.checkTargetExistance(Title)
 	if err != nil {
-		return err
+		return controller.NewPermanentError(err)
 	}
-	if err := client.SetSubdomain("tmdev1"); err != nil {
-		return err
+	// if it does not exist : create it
+	if check == false {
+		client, err := zendesk.NewClient(nil)
+		if err != nil {
+			return err
+		}
+		if err := client.SetSubdomain("tmdev1"); err != nil {
+			return err
+		}
+		client.SetCredential(zendesk.NewAPITokenCredential("jeff@triggermesh.com", "YU0qskXOY2JT0x0XvxD9II9nfscusjtBNBAf4OFF"))
+
+		t := zendesk.Target{}
+
+		t.TargetURL = "https://ed-wkq6gxeuua-ue.a.run.app"
+		t.Type = "http_target"
+		t.Method = "post"
+		t.ContentType = "application/json"
+		t.Password = "pass"
+		t.Username = "pass"
+		t.Title = Title
+
+		_, error := client.CreateTarget(ctx, t)
+		if error != nil {
+			return error
+		}
+
+		return nil
 	}
-	client.SetCredential(zendesk.NewAPITokenCredential("jeff@triggermesh.com", "YU0qskXOY2JT0x0XvxD9II9nfscusjtBNBAf4OFF"))
-
-	t := zendesk.Target{}
-
-	t.TargetURL = "https://ed-wkq6gxeuua-ue.a.run.app"
-	t.Type = "http_target"
-	t.Method = "post"
-	t.ContentType = "application/json"
-	t.Password = "pass"
-	t.Username = "pass"
-	t.Title = Title
-
-	_, error := client.CreateTarget(ctx, t)
-	if error != nil {
-		return error
+	if check == true {
+		return nil
 	}
-
 	return nil
 }
 
@@ -132,19 +130,15 @@ func (r *reconciler) checkTargetExistance(search string) (bool, error) {
 		fmt.Println("big fucked setting subdomain")
 	}
 	client.SetCredential(zendesk.NewAPITokenCredential("jeff@triggermesh.com", "YU0qskXOY2JT0x0XvxD9II9nfscusjtBNBAf4OFF"))
-
 	Target, _, err := client.GetTargets(ctx)
 	for _, t := range Target {
-
 		if t.Title == search {
 			if t.Active == true {
-				fmt.Println("Found a matching title on target :", t)
 				return true, nil
 			}
 		}
 	}
 	if err != nil {
-		fmt.Println("getTragets big fucked")
 		return false, err
 	}
 	return false, nil

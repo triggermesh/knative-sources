@@ -146,9 +146,6 @@ func (h *zendeskAPIHandler) handleAll(w http.ResponseWriter, r *http.Request) {
 	h.logger.Info("got event:")
 	h.logger.Info(event)
 
-	// Getting `runtime error: invalid memory address or nil pointer dereference` herre
-	// See the full error message at the bottom of this file
-
 	cEvent, err := h.cloudEventFromEventWrapper(event)
 	if err != nil {
 		h.logger.Info("Error Creating CloudEvent")
@@ -213,25 +210,3 @@ func (h *zendeskAPIHandler) cloudEventFromEventWrapper(wrapper *ZendeskEventWrap
 
 	return &event, nil
 }
-
-// (*ServeMux).ServeHTTP\n\tnet/http/server.go:2387\nnet/http.serverHandler.ServeHTTP\n\tnet/http/server.go:2807\nnet/http.(*conn).serve\n\tnet/http/server.go:1895"}
-// 2020/07/01 07:04:29 http: panic serving 10.1.8.1:49486: runtime error: invalid memory address or nil pointer dereference
-// goroutine 76 [running]:
-// net/http.(*conn).serve.func1(0xc000676780)
-// 	net/http/server.go:1772 +0x139
-// panic(0x159ca80, 0x2698a20)
-// 	runtime/panic.go:975 +0x3e3
-// github.com/triggermesh/knative-sources/zendesk/pkg/adapter.(*zendeskAPIHandler).handleError(0xc00017a980, 0x0, 0x0, 0x1ad6920, 0xc0000d2000)
-// 	github.com/triggermesh/knative-sources/zendesk/pkg/adapter/zendesk.go:186 +0x1fc
-// github.com/triggermesh/knative-sources/zendesk/pkg/adapter.(*zendeskAPIHandler).handleAll(0xc00017a980, 0x1ad6920, 0xc0000d2000, 0xc0000c2c00)
-// 	github.com/triggermesh/knative-sources/zendesk/pkg/adapter/zendesk.go:154 +0x623
-// net/http.HandlerFunc.ServeHTTP(0xc0004fe490, 0x1ad6920, 0xc0000d2000, 0xc0000c2c00)
-// 	net/http/server.go:2012 +0x44
-// net/http.(*ServeMux).ServeHTTP(0xc00017aa00, 0x1ad6920, 0xc0000d2000, 0xc0000c2c00)
-// 	net/http/server.go:2387 +0x1a5
-// net/http.serverHandler.ServeHTTP(0xc000424380, 0x1ad6920, 0xc0000d2000, 0xc0000c2c00)
-// 	net/http/server.go:2807 +0xa3
-// net/http.(*conn).serve(0xc000676780, 0x1ada0e0, 0xc0006566c0)
-// 	net/http/server.go:1895 +0x86c
-// created by net/http.(*Server).Serve
-// 	net/http/server.go:2933 +0x35c

@@ -24,13 +24,11 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"os"
 	"strconv"
 	"strings"
 	"time"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
-	"github.com/nukosuke/go-zendesk/zendesk"
 	"go.uber.org/zap"
 )
 
@@ -139,12 +137,14 @@ func (h *zendeskAPIHandler) handleAll(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	event := &zendesk.Ticket{}
+	event := &ZendeskEventWrapper{}
 	err = json.Unmarshal(body, event)
 	if err != nil {
 		h.handleError(fmt.Errorf("could not unmarshall JSON request: %s", err.Error()), w)
 		return
 	}
+	h.logger.Info("got event:")
+	h.logger.Info(event)
 
 	cEvent, err := cloudEventFromEventWrapper(event)
 	if err != nil {
@@ -154,6 +154,17 @@ func (h *zendeskAPIHandler) handleAll(w http.ResponseWriter, r *http.Request) {
 		h.handleError(err, w)
 	}
 
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	// fix this
+	res, err := json.Marshal(`{"d":"2"}`)
+	if err != nil {
+		h.handleError(err, w)
+	}
+	_, err = w.Write(res)
+	if err != nil {
+		h.handleError(err, w)
+	}
 }
 
 func (h *zendeskAPIHandler) gracefulShutdown(stopCh <-chan struct{}, done chan<- bool) {
@@ -175,18 +186,23 @@ func (h *zendeskAPIHandler) handleError(err error, w http.ResponseWriter) {
 	http.Error(w, err.Error(), http.StatusInternalServerError)
 }
 
-func cloudEventFromEventWrapper(wrapper *zendesk.Ticket) (*cloudevents.Event, error) {
+// fix this
+func cloudEventFromEventWrapper(wrapper *ZendeskEventWrapper) (*cloudevents.Event, error) {
+	// data, err := json.Marshal(wrapper)
+	// if err != nil {
+	// 	return nil, err
+	// }
 	event := cloudevents.NewEvent(cloudevents.VersionV1)
 
 	event.SetID("wrapper.EventID")
 	event.SetType("functions.zendessk.sources.triggermesh.io")
-	event.SetSource(os.Getenv("NAMESPACE") + "/" + os.Getenv("NAME"))
+	event.SetSource(`os.Getenv("NAMESPACE") + "/" + os.Getenv("NAME")`)
 	//event.SetExtension("api_app_id", "wrapper.APIAppID")
 	//event.SetTime(time.Unix(int64(120), 0))
 	event.SetSubject("New Zendesk Ticket")
-	if err := event.SetData(cloudevents.ApplicationJSON, event.UnmarshalJSON); err != nil {
-		return nil, err
-	}
+	// if err := event.SetData(cloudevents.ApplicationJSON, data); err != nil {
+	// 	return nil, err
+	// }
 
 	return &event, nil
 }

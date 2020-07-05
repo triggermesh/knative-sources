@@ -29,7 +29,6 @@ import (
 	"time"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
-	"github.com/nukosuke/go-zendesk/zendesk"
 	"go.uber.org/zap"
 )
 
@@ -39,8 +38,10 @@ type ZendeskAPIHandler interface {
 }
 
 type zendeskAPIHandler struct {
-	port  int
-	token string
+	port     int
+	token    string
+	username string
+	password string
 
 	ceClient cloudevents.Client
 	srv      *http.Server
@@ -49,10 +50,12 @@ type zendeskAPIHandler struct {
 }
 
 // NewZendeskAPIHandler creates the default implementation of the Zendesk API Events handler
-func NewZendeskAPIHandler(ceClient cloudevents.Client, port int, token, username, password string, logger *zap.SugaredLogger) ZendeskAPIHandler {
+func NewZendeskAPIHandler(ceClient cloudevents.Client, por int, tok, user, pass string, logger *zap.SugaredLogger) ZendeskAPIHandler {
 	return &zendeskAPIHandler{
-		port:  port,
-		token: token,
+		port:     por,
+		token:    tok,
+		username: user,
+		password: pass,
 
 		ceClient: ceClient,
 		logger:   logger,
@@ -138,7 +141,7 @@ func (h *zendeskAPIHandler) handleAll(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	event := &zendesk.Ticket{}
+	event := &ZendeskEventWrapper{}
 	err = json.Unmarshal(body, event)
 	if err != nil {
 		h.handleError(fmt.Errorf("could not unmarshall JSON request: %s", err.Error()), w)
@@ -191,7 +194,7 @@ func (h *zendeskAPIHandler) handleError(err error, w http.ResponseWriter) {
 }
 
 // fix this
-func (h *zendeskAPIHandler) cloudEventFromEventWrapper(wrapper *zendesk.Ticket) (*cloudevents.Event, error) {
+func (h *zendeskAPIHandler) cloudEventFromEventWrapper(wrapper *ZendeskEventWrapper) (*cloudevents.Event, error) {
 	h.logger.Info("Proccesing Zendesk event")
 	data, err := json.Marshal(wrapper)
 	if err != nil {

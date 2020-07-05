@@ -18,7 +18,6 @@ package reconciler
 
 import (
 	"context"
-	"fmt"
 
 	duckv1 "knative.dev/pkg/apis/duck/v1"
 	"knative.dev/pkg/controller"
@@ -127,7 +126,7 @@ func (r *reconciler) checkTargetExistance(search string) (bool, error) {
 		return false, err
 	}
 	if err := client.SetSubdomain("tmdev1"); err != nil {
-		fmt.Println("big fucked setting subdomain")
+		return false, err
 	}
 	client.SetCredential(zendesk.NewAPITokenCredential("jeff@triggermesh.com", "YU0qskXOY2JT0x0XvxD9II9nfscusjtBNBAf4OFF"))
 	Target, _, err := client.GetTargets(ctx)

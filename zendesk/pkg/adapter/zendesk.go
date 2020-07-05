@@ -50,12 +50,12 @@ type zendeskAPIHandler struct {
 }
 
 // NewZendeskAPIHandler creates the default implementation of the Zendesk API Events handler
-func NewZendeskAPIHandler(ceClient cloudevents.Client, por int, tok, user, pass string, logger *zap.SugaredLogger) ZendeskAPIHandler {
+func NewZendeskAPIHandler(ceClient cloudevents.Client, port int, token, username, password string, logger *zap.SugaredLogger) ZendeskAPIHandler {
 	return &zendeskAPIHandler{
-		port:     por,
-		token:    tok,
-		username: user,
-		password: pass,
+		port:     port,
+		token:    token,
+		username: username,
+		password: password,
 
 		ceClient: ceClient,
 		logger:   logger,

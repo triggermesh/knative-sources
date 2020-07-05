@@ -15,13 +15,20 @@
 apiVersion: sources.triggermesh.io/v1alpha1
 kind: ZendeskSource
 metadata:
-  name: triggermesh-zendesk
+  name: zendesksource
 spec:
   email: dev@triggermesh.com
   username: bob
-  password: sag
+  token:
+            secretKeyRef:
+              name: zendesksource
+              key: token
+  password:
+            secretKeyRef:
+              name: zendesksource
+              key: password            
   sink:
     ref:
-      apiVersion: serving.knative.dev/v1
-      kind: Service
-      name: event-display
+      apiVersion: eventing.knative.dev/v1beta1
+      kind: Broker
+      name: zendesk

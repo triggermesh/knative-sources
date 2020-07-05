@@ -1,6 +1,18 @@
-# This needs to be updated
+# Copyright (c) 2020 TriggerMesh Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
-apiVersion: apiextensions.k8s.io/v1beta1
+apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   name: zendesksources.sources.triggermesh.io
@@ -11,10 +23,11 @@ metadata:
   annotations:
     registry.knative.dev/eventTypes: |
       [
-        { "type": "com.zendesk/message" },
+        { "type": "com.zendesk.events" },
       ]
 spec:
   group: sources.triggermesh.io
+  scope: Namespaced
   names:
     kind: ZendeskSource
     listKind: ZendeskSourceList
@@ -25,166 +38,204 @@ spec:
     - knative
     - eventing
     - sources
-  scope: Namespaced
-  subresources:
-    status: {}
-  additionalPrinterColumns:
-    - name: Ready
-      type: string
-      JSONPath: ".status.conditions[?(@.type=='Ready')].status"
-    - name: Reason
-      type: string
-      JSONPath: ".status.conditions[?(@.type=='Ready')].reason"
-    - name: Sink
-      type: string
-      JSONPath: ".status.sinkUri"
-    - name: ZendeskTargetCreation
-      type: string
-      JSONPath: ".status.conditions.ConditionTargetCreated" 
-    - name: Age
-      type: date
-      JSONPath: .metadata.creationTimestamp
-  validation:
-    openAPIV3Schema:
-      properties:
-        apiVersion:
-          description: 'APIVersion defines the versioned schema of this representation
-            of an object. Servers should convert recognized schemas to the latest
-            internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
-          type: string
-        kind:
-          description: 'Kind is a string value representing the REST resource this
-            object represents. Servers may infer this from the endpoint the client
-            submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
-          type: string
-        metadata:
-          type: object
-        spec:
-          description: ZendeskSourceSpec holds the desired state of the ZendeskSource
-            (from the client).
-          properties:
-            ceOverrides:
-              description: CloudEventOverrides defines overrides to control the output
-                format and modifications of the event sent to the sink.
-              properties:
-                extensions:
-                  additionalProperties:
-                    type: string
-                  description: Extensions specify what attribute are added or overridden
-                    on the outbound event. Each `Extensions` key-value pair are set
-                    on the event as an attribute extension independently.
-                  type: object
-              type: object
-            serviceAccountName:
-              description: ServiceAccountName holds the name of the Kubernetes service
-                account as which the underlying K8s resources should be run. If unspecified
-                this will default to the "default" service account for the namespace
-                in which the ZendeskSource exists.
-              type: string
-            sink:
-              description: Sink is a reference to an object that will resolve to a
-                uri to use as the sink.
-              properties:
-                ref:
-                  description: Ref points to an Addressable.
-                  properties:
-                    apiVersion:
-                      description: API version of the referent.
-                      type: string
-                    kind:
-                      description: 'Kind of the referent. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
-                      type: string
-                    name:
-                      description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names'
-                      type: string
-                    namespace:
-                      description: 'Namespace of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/
-                        This is optional field, it gets defaulted to the object holding
-                        it if left out.'
-                      type: string
-                  required:
-                  - apiVersion
-                  - kind
-                  - name
-                  type: object
-                uri:
-                  type: string
-                  description: URI can be an absolute URL(non-empty scheme and non-empty
-                    host) pointing to the target or a relative URI. Relative URIs
-                    will be resolved using the base URI retrieved from Ref.
-              type: object
-            threadiness:
-              description: Threadiness indicates how many threads will be dedicated
-                to parsing incoming messages from zendesk
-              type: integer
-
-        status:
-          description: ZendeskSourceStatus communicates the observed state of the ZendeskSource
-            (from the controller).
-          properties:
-            ceAttributes:
-              description: CloudEventAttributes are the specific attributes that the
-                Source uses as part of its CloudEvents.
-              items:
-                description: CloudEventAttributes specifies the attributes that a
-                  Source uses as part of its CloudEvents.
-                properties:
-                  source:
-                    description: Source is the CloudEvents source attribute.
-                    type: string
-                  type:
-                    description: Type refers to the CloudEvent type attribute.
-                    type: string
-                type: object
-              type: array
-            conditions:
-              items:
-                properties:
-                  lastTransitionTime:
-                    # we use a string in the stored object but a wrapper object
-                    # at runtime.
-                    type: string
-                  message:
-                    type: string
-                  reason:
-                    type: string
-                  severity:
-                    type: string
-                  status:
-                    type: string
-                  type:
-                    type: string
-                required:
-                - type
-                - status
-                type: object
-              type: array
-              description: Conditions the latest available observations of a resource's
-                current state.
-            observedGeneration:
-              description: ObservedGeneration is the 'Generation' of the Service that
-                was last processed by the controller.
-              format: int64
-              type: integer
-            sinkUri:
-              type: string
-              description: SinkURI is the current active sink URI that has been configured
-                for the Source.
-            ZendeskTargetCreation:
-              type: string
-              description: ZendeskTargetCreation is the result of an attempt by the reconicler to register a zendesk target
-          type: object
-      required:
-      - spec
-      type: object
-  version: v1alpha1
   versions:
   - name: v1alpha1
     served: true
     storage: true
-status:
-  acceptedNames:
-    kind: ""
-    plural: ""
-  conditions: []
-  storedVersions: []
+    subresources:
+      status: {}
+    schema:
+      openAPIV3Schema:
+        type: object
+        properties:
+          apiVersion:
+            description: 'APIVersion defines the versioned schema of this representation
+              of an object. Servers should convert recognized schemas to the latest
+              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            type: string
+          kind:
+            description: 'Kind is a string value representing the REST resource this
+              object represents. Servers may infer this from the endpoint the client
+              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: ZendeskSourceSpec holds the desired state of the ZendeskSource
+              (from the client).
+            type: object
+            properties:
+              ceOverrides:
+                description: CloudEventOverrides defines overrides to control the output
+                  format and modifications of the event sent to the sink.
+                properties:
+                  extensions:
+                    additionalProperties:
+                      type: string
+                    description: Extensions specify what attribute are added or overridden
+                      on the outbound event. Each `Extensions` key-value pair are set
+                      on the event as an attribute extension independently.
+                    type: object
+                type: object
+              sink:
+                description: Sink is a reference to an object that will resolve to a
+                  uri to use as the sink.
+                properties:
+                  ref:
+                    description: Ref points to an Addressable.
+                    properties:
+                      apiVersion:
+                        description: API version of the referent.
+                        type: string
+                      kind:
+                        description: 'Kind of the referent. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+                        type: string
+                      name:
+                        description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names'
+                        type: string
+                      namespace:
+                        description: 'Namespace of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/
+                          This is optional field, it gets defaulted to the object holding
+                          it if left out.'
+                        type: string
+                    required:
+                    - apiVersion
+                    - kind
+                    - name
+                    type: object
+                  uri:
+                    type: string
+                    description: URI can be an absolute URL(non-empty scheme and non-empty
+                      host) pointing to the target or a relative URI. Relative URIs
+                      will be resolved using the base URI retrieved from Ref.
+                type: object
+                oneOf:
+                - required: ['ref']
+                - required: ['uri']
+              Token:
+                description: 'Token is the Zendesk Token required to automate integration with Zendesk'
+                properties:
+                  secretKeyRef:
+                    description: The Secret key to select from.
+                    properties:
+                      key:
+                        description: The key of the secret to select from.  Must be
+                          a valid secret key.
+                        type: string
+                      name:
+                        description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                          TODO: Add other useful fields. apiVersion, kind, uid?'
+                        type: string
+                      optional:
+                        description: Specify whether the Secret or its key must be defined
+                        type: boolean
+                    required:
+                    - key
+                    type: object
+                type: object
+              Password:
+                description: 'Passwrd is the Zendesk Password required to automate integration with Zendesk. This will be used to assign the Basic Authentication Password for the Zendesk Extention'
+                properties:
+                  secretKeyRef:
+                    description: The Secret key to select from.
+                    properties:
+                      key:
+                        description: The key of the secret to select from.  Must be
+                          a valid secret key.
+                        type: string
+                      name:
+                        description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                          TODO: Add other useful fields. apiVersion, kind, uid?'
+                        type: string
+                      optional:
+                        description: Specify whether the Secret or its key must be defined
+                        type: boolean
+                    required:
+                    - key
+                    type: object
+                type: object
+              Username:
+                description: 'Username is the Zendesk Password required to automate integration with Zendesk. This will be used to assign the Basic Authentication Username for the Zendesk Extention'
+                type: string
+              Email:
+                description: 'Email is the Zendesk Password required to automate integration with Zendesk. This will be used to create a Zendesk Client'
+                type: string
+              Subdomain:
+                description: 'Subdomain is the Zendesk Password required to automate integration with Zendesk. This will be used to create a Zendesk Client'
+                type: string  
+          status:
+            description: ZendeskSourceStatus communicates the observed state of the ZendeskSource.
+            type: object
+            properties:
+              ceAttributes:
+                description: CloudEventAttributes are the specific attributes that the
+                  Source uses as part of its CloudEvents.
+                items:
+                  description: CloudEventAttributes specifies the attributes that a
+                    Source uses as part of its CloudEvents.
+                  properties:
+                    source:
+                      description: Source is the CloudEvents source attribute.
+                      type: string
+                    type:
+                      description: Type refers to the CloudEvent type attribute.
+                      type: string
+                  type: object
+                type: array
+              conditions:
+                items:
+                  properties:
+                    lastTransitionTime:
+                      # we use a string in the stored object but a wrapper object
+                      # at runtime.
+                      type: string
+                    message:
+                      type: string
+                    reason:
+                      type: string
+                    severity:
+                      type: string
+                    status:
+                      type: string
+                    type:
+                      type: string
+                  required:
+                  - type
+                  - status
+                  type: object
+                type: array
+                description: Conditions the latest available observations of a resource's
+                  current state.
+              observedGeneration:
+                description: ObservedGeneration is the 'Generation' of the Service that
+                  was last processed by the controller.
+                format: int64
+                type: integer
+              sinkUri:
+                type: string
+                description: SinkURI is the current active sink URI that has been configured
+                  for the Source.
+              address:
+                type: object
+                properties:
+                  url:
+                    type: string
+        required:
+        - spec
+
+    additionalPrinterColumns:
+    - name: Ready
+      type: string
+      jsonPath: ".status.conditions[?(@.type=='Ready')].status"
+    - name: Reason
+      type: string
+      jsonPath: ".status.conditions[?(@.type=='Ready')].reason"
+    - name: URL
+      type: string
+      jsonPath: .status.address.url
+    - name: Sink
+      type: string
+      jsonPath: ".status.sinkUri"
+    - name: Age
+      type: date
+      jsonPath: .metadata.creationTimestamp

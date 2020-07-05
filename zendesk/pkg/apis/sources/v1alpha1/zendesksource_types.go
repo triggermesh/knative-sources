@@ -68,17 +68,17 @@ type ZendeskSourceSpec struct {
 	// to authenticate callbacks. See:
 	Token *SecretValueFromSource `json:"token,omitempty"`
 
+	// Password used for basic authentication
+	Password *SecretValueFromSource `json:"password,omitempty"`
+
+	// Username used for basic authentication
+	Username *string `json:"username,omitempty"`
+
 	// Email identifies the email used for authentication
 	Email *string `json:"email,omitempty"`
 
 	// Subdomain identifies Zendesk subdomain
 	Subdomain *string `json:"subdomain,omitempty"`
-
-	// Username used for basic authentication
-	Username *string `json:"username,omitempty"`
-
-	// Password used for basic authentication
-	Password *string `json:"password,omitempty"`
 }
 
 // SecretValueFromSource represents the source of a secret value

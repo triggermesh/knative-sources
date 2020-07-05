@@ -102,6 +102,15 @@ func makeAppEnv(spec *v1alpha1.ZendeskSourceSpec) []corev1.EnvVar {
 		})
 	}
 
+	if spec.Password != nil {
+		env = append(env, corev1.EnvVar{
+			Name: "PASSWORD",
+			ValueFrom: &corev1.EnvVarSource{
+				SecretKeyRef: spec.Password.SecretKeyRef,
+			},
+		})
+	}
+
 	if spec.Email != nil {
 		env = append(env, corev1.EnvVar{
 			Name:  "EMAIL",
@@ -120,13 +129,6 @@ func makeAppEnv(spec *v1alpha1.ZendeskSourceSpec) []corev1.EnvVar {
 		env = append(env, corev1.EnvVar{
 			Name:  "USERNAME",
 			Value: *spec.Username,
-		})
-	}
-
-	if spec.Password != nil {
-		env = append(env, corev1.EnvVar{
-			Name:  "PASSWORD",
-			Value: *spec.Password,
 		})
 	}
 

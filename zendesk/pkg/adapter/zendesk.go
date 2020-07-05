@@ -49,7 +49,7 @@ type zendeskAPIHandler struct {
 }
 
 // NewZendeskAPIHandler creates the default implementation of the Zendesk API Events handler
-func NewZendeskAPIHandler(ceClient cloudevents.Client, port int, token string, logger *zap.SugaredLogger) ZendeskAPIHandler {
+func NewZendeskAPIHandler(ceClient cloudevents.Client, port int, token, username, password string, logger *zap.SugaredLogger) ZendeskAPIHandler {
 	return &zendeskAPIHandler{
 		port:  port,
 		token: token,
@@ -126,7 +126,7 @@ func (h *zendeskAPIHandler) handleAll(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if authStatus == false {
+	if !authStatus {
 		h.handleError(errors.New("Authentication FAILED"), w)
 		return
 	}

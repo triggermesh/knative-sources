@@ -85,7 +85,7 @@ func (r *reconciler) createTarget(ctx context.Context, src *v1alpha1.ZendeskSour
 		return controller.NewPermanentError(err)
 	}
 	// if it does not exist : create it
-	if check == false {
+	if !check {
 		client, err := zendesk.NewClient(nil)
 		if err != nil {
 			return err
@@ -102,7 +102,7 @@ func (r *reconciler) createTarget(ctx context.Context, src *v1alpha1.ZendeskSour
 		t.Method = "post"
 		t.ContentType = "application/json"
 		t.Password = "pass"
-		t.Username = "pass"
+		t.Username = "user"
 		t.Title = Title
 
 		_, error := client.CreateTarget(ctx, t)
@@ -112,7 +112,7 @@ func (r *reconciler) createTarget(ctx context.Context, src *v1alpha1.ZendeskSour
 
 		return nil
 	}
-	if check == true {
+	if check {
 		return nil
 	}
 	return nil
@@ -132,7 +132,7 @@ func (r *reconciler) checkTargetExistance(search string) (bool, error) {
 	Target, _, err := client.GetTargets(ctx)
 	for _, t := range Target {
 		if t.Title == search {
-			if t.Active == true {
+			if t.Active {
 				return true, nil
 			}
 		}

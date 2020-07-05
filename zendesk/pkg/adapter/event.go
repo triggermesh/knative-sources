@@ -31,7 +31,7 @@ func (e ZendeskEvent) Type() string {
 // ZendeskEventWrapper contains a common wrapper for all Ticket events.
 // more information on Zendesk "Ticket" -> https://developer.zendesk.com/rest_api/docs/support/tickets
 type ZendeskEventWrapper struct {
-	ID          int64  `json:"id,omitempty"`
+	ID          string `json:"id,omitempty"`
 	Title       string `json:"title"`
 	Description string `json:"description"`
 }

@@ -30,7 +30,7 @@ import (
 	reconcilerzendesksource "github.com/triggermesh/knative-sources/zendesk/pkg/client/generated/injection/reconciler/sources/v1alpha1/zendesksource"
 )
 
-const Title = "TriggermeshExtension"
+const Title = "tmExtension"
 
 // Reconciler reconciles a ZendeskSource object
 type reconciler struct {
@@ -97,7 +97,7 @@ func (r *reconciler) createTarget(ctx context.Context, src *v1alpha1.ZendeskSour
 
 		t := zendesk.Target{}
 
-		t.TargetURL = "https://zendesksource-triggermesh-zendesksource.jnlasersolutions.dev.munu.io/"
+		t.TargetURL = "https://zendesksource-zendesksource.jnlasersolutions.dev.munu.io"
 		t.Type = "http_target"
 		t.Method = "post"
 		t.ContentType = "application/json"

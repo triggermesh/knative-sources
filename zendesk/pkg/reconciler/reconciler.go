@@ -90,10 +90,10 @@ func (r *reconciler) createTarget(ctx context.Context, src *v1alpha1.ZendeskSour
 		if err != nil {
 			return err
 		}
-		if err := client.SetSubdomain("tmdev1"); err != nil {
+		if err := client.SetSubdomain(*src.Spec.Subdomain); err != nil {
 			return err
 		}
-		client.SetCredential(zendesk.NewAPITokenCredential("jeff@triggermesh.com", "YU0qskXOY2JT0x0XvxD9II9nfscusjtBNBAf4OFF"))
+		client.SetCredential(zendesk.NewAPITokenCredential(*src.Spec.Email, src.Spec.Token.SecretKeyRef.Key))
 
 		t := zendesk.Target{}
 
@@ -101,8 +101,8 @@ func (r *reconciler) createTarget(ctx context.Context, src *v1alpha1.ZendeskSour
 		t.Type = "http_target"
 		t.Method = "post"
 		t.ContentType = "application/json"
-		t.Password = "pass"
-		t.Username = "user"
+		t.Password = src.Spec.Password.SecretKeyRef.Key
+		t.Username = *src.Spec.Username
 		t.Title = Title
 
 		_, error := client.CreateTarget(ctx, t)

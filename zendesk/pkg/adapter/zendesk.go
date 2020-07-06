@@ -37,6 +37,14 @@ type ZendeskAPIHandler interface {
 	Start(stopCh <-chan struct{}) error
 }
 
+// constats for the CE data
+const (
+	ceID      = "wrapper.EventID"
+	ceType    = "com.zendesk.ticket.new"
+	ceSource  = "com.zendesk.source"
+	ceSubject = "New Zendesk Ticket"
+)
+
 type zendeskAPIHandler struct {
 	port     int
 	token    string
@@ -106,7 +114,7 @@ func (h *zendeskAPIHandler) authenticate(r *http.Request) (bool, error) {
 		return false, errors.New("Not Authorized")
 	}
 
-	if pair[0] != "username" || pair[1] != "password" {
+	if pair[0] != h.username || pair[1] != h.password {
 		return true, nil
 	}
 
@@ -163,7 +171,7 @@ func (h *zendeskAPIHandler) handleAll(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	// fix this
-	res, err := json.Marshal(`200:Big Pog! Thanks Zendesk!`)
+	res, err := json.Marshal(`200: Thanks Zendesk!`)
 	if err != nil {
 		h.handleError(err, w)
 	}
@@ -202,12 +210,12 @@ func (h *zendeskAPIHandler) cloudEventFromEventWrapper(wrapper *ZendeskEventWrap
 	}
 	event := cloudevents.NewEvent(cloudevents.VersionV1)
 
-	event.SetID("wrapper.EventID")
-	event.SetType("com.zendesk.ticket.new")
-	event.SetSource("com.zendesk.source")
+	event.SetID(ceID)
+	event.SetType(ceType)
+	event.SetSource(ceSource)
 	//event.SetExtension("api_app_id", "wrapper.APIAppID")
 	//event.SetTime(time.Unix(int64(120), 0))
-	event.SetSubject("New Zendesk Ticket")
+	event.SetSubject(ceSubject)
 	if err := event.SetData(cloudevents.ApplicationJSON, data); err != nil {
 		return nil, fmt.Errorf("failed to set event data: %w", err)
 	}

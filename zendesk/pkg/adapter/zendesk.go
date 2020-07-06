@@ -92,18 +92,18 @@ func (h *zendeskAPIHandler) authenticate(r *http.Request) (bool, error) {
 
 	s := strings.SplitN(r.Header.Get("Authorization"), " ", 2)
 	if len(s) != 2 {
-		return false, errors.New("Not authorized")
+		return false, errors.New("Not authorized: No Auth Params")
 	}
 
 	b, err := base64.StdEncoding.DecodeString(s[1])
 	if err != nil {
-		return false, errors.New("Not authorized")
+		return false, errors.New("Not authorized: could not decode")
 	}
 
 	pair := strings.SplitN(string(b), ":", 2)
 	if len(pair) != 2 {
 
-		return false, errors.New("Not authorized")
+		return false, errors.New("Not Authorized")
 	}
 
 	if pair[0] != "username" || pair[1] != "password" {
@@ -129,7 +129,7 @@ func (h *zendeskAPIHandler) handleAll(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if !authStatus {
+	if authStatus {
 		h.handleError(errors.New("Authentication FAILED"), w)
 		return
 	}

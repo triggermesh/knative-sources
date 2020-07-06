@@ -19,7 +19,7 @@ package adapter
 // ZendeskEvent contains the event payload
 type ZendeskEvent map[string]interface{}
 
-// Type for the event
+// Type incoming zendesk event for the event
 func (e ZendeskEvent) Type() string {
 	s, ok := e["type"]
 	if !ok {
@@ -31,7 +31,7 @@ func (e ZendeskEvent) Type() string {
 // ZendeskEventWrapper contains a common wrapper for all Ticket events.
 // more information on Zendesk "Ticket" -> https://developer.zendesk.com/rest_api/docs/support/tickets
 type ZendeskEventWrapper struct {
-	ID          string `json:"id,omitempty"` // issue here  when unmarshaling json data
+	ID          string `json:"id,omitempty"`
 	Title       string `json:"title"`
 	Description string `json:"description"`
 }

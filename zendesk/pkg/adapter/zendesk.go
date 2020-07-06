@@ -45,6 +45,13 @@ const (
 	ceSubject = "New Zendesk Ticket"
 )
 
+const (
+	// Response for successfully receiving an event from Zendesk
+	rOK = `200: Thanks Zendesk!`
+	// Response for failing authentication (sometimes used as a prefix to the reason)
+	rAuthFailed = `Authentication FAILED`
+)
+
 type zendeskAPIHandler struct {
 	port     int
 	token    string
@@ -100,21 +107,21 @@ func (h *zendeskAPIHandler) authenticate(r *http.Request) (bool, error) {
 
 	s := strings.SplitN(r.Header.Get("Authorization"), " ", 2)
 	if len(s) != 2 {
-		return false, errors.New("Not authorized: No Auth Params")
+		return false, errors.New(rAuthFailed + ": No Auth Params")
 	}
 
 	b, err := base64.StdEncoding.DecodeString(s[1])
 	if err != nil {
-		return false, errors.New("Not authorized: could not decode")
+		return false, errors.New(rAuthFailed + ": could not decode")
 	}
 
 	pair := strings.SplitN(string(b), ":", 2)
 	if len(pair) != 2 {
 
-		return false, errors.New("Not Authorized")
+		return false, errors.New(rAuthFailed)
 	}
 
-	if pair[0] != h.username || pair[1] != h.password {
+	if pair[0] != h.username || pair[1] != h.password { // Should this be '&|' instead of "||" ??
 		return true, nil
 	}
 
@@ -138,7 +145,7 @@ func (h *zendeskAPIHandler) handleAll(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if authStatus {
-		h.handleError(errors.New("Authentication FAILED"), w)
+		h.handleError(errors.New(rAuthFailed), w)
 		return
 	}
 
@@ -171,7 +178,7 @@ func (h *zendeskAPIHandler) handleAll(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	// fix this
-	res, err := json.Marshal(`200: Thanks Zendesk!`)
+	res, err := json.Marshal(rOK)
 	if err != nil {
 		h.handleError(err, w)
 	}

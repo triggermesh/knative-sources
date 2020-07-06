@@ -28,6 +28,13 @@ import (
 
 const defaultListenPort = 8080
 
+var _ adapter.Adapter = (*zendeskAdapter)(nil)
+
+type zendeskAdapter struct {
+	handler ZendeskAPIHandler
+	logger  *zap.SugaredLogger
+}
+
 // New adapter implementation
 func New(ctx context.Context, aEnv adapter.EnvConfigAccessor, ceClient cloudevents.Client) adapter.Adapter {
 	env := aEnv.(*envAccessor)
@@ -37,13 +44,6 @@ func New(ctx context.Context, aEnv adapter.EnvConfigAccessor, ceClient cloudeven
 		handler: NewZendeskAPIHandler(ceClient, defaultListenPort, env.Token, env.Username, env.Password, logger.Named("handler")),
 		logger:  logger,
 	}
-}
-
-var _ adapter.Adapter = (*zendeskAdapter)(nil)
-
-type zendeskAdapter struct {
-	handler ZendeskAPIHandler
-	logger  *zap.SugaredLogger
 }
 
 // Start runs the Zendesk handler.

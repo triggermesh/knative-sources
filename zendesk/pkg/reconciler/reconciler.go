@@ -30,7 +30,7 @@ import (
 	reconcilerzendesksource "github.com/triggermesh/knative-sources/zendesk/pkg/client/generated/injection/reconciler/sources/v1alpha1/zendesksource"
 )
 
-const Title = "tmExtension"
+const title = "TriggermeshxExtension"
 
 // Reconciler reconciles a ZendeskSource object
 type reconciler struct {
@@ -80,10 +80,11 @@ func (r *reconciler) ReconcileKind(ctx context.Context, src *v1alpha1.ZendeskSou
 // createTarget creates a new zendesk target
 func (r *reconciler) createTarget(ctx context.Context, src *v1alpha1.ZendeskSource) error {
 	// Does a target exist with the Title? if so return
-	check, err := r.checkTargetExistance(Title)
+	check, err := r.checkTargetExistance(title)
 	if err != nil {
 		return controller.NewPermanentError(err)
 	}
+
 	// if it does not exist : create it
 	if !check {
 		client, err := zendesk.NewClient(nil)
@@ -103,7 +104,7 @@ func (r *reconciler) createTarget(ctx context.Context, src *v1alpha1.ZendeskSour
 		t.ContentType = "application/json"
 		t.Password = src.Spec.Password.SecretKeyRef.Key
 		t.Username = *src.Spec.Username
-		t.Title = Title
+		t.Title = title
 
 		_, error := client.CreateTarget(ctx, t)
 		if error != nil {
@@ -118,7 +119,7 @@ func (r *reconciler) createTarget(ctx context.Context, src *v1alpha1.ZendeskSour
 	return nil
 }
 
-// checkTargetExistance checks to see if a target with a matching "Title" exisits.
+// checkTargetExistance checks to see if a target with a matching "Title" exisits & if the target is active.
 func (r *reconciler) checkTargetExistance(search string) (bool, error) {
 	ctx := context.Background()
 	client, err := zendesk.NewClient(nil)

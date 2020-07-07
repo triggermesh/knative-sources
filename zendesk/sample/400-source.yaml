@@ -17,9 +17,9 @@ kind: ZendeskSource
 metadata:
   name: zendesksource
 spec:
-  email: jeffthenaef@gmail.com 
-  username: jeff 
-  subdomain: tmdev2 
+  email: '' # Example: jeffthenaef@gmail.com 
+  username: '' # Example: jeff 
+  subdomain: '' # Example: tmdev2 
   token:
             secretKeyRef:
               name: zendesksource

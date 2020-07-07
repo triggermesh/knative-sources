@@ -12,24 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-apiVersion: sources.triggermesh.io/v1alpha1
-kind: ZendeskSource
+apiVersion: serving.knative.dev/v1
+kind: Service
 metadata:
-  name: zendesksource
+  name: event-display
 spec:
-  email: jeffthenaef@gmail.com 
-  username: jeff 
-  subdomain: tmdev2 
-  token:
-            secretKeyRef:
-              name: zendesksource
-              key: token
-  password:
-            secretKeyRef:
-              name: zendesksource
-              key: password            
-  sink:
-    ref:
-      apiVersion: serving.knative.dev/v1
-      kind: Service
-      name: event-display
+  template:
+    spec:
+      containers:
+        - image: gcr.io/knative-releases/knative.dev/eventing-contrib/cmd/event_display
+

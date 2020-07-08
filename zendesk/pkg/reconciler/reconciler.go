@@ -171,7 +171,7 @@ func createTrigger(ctx context.Context, client *zendesk.Client, t zendesk.Target
 
 	// is there a pre existing trigger that matches the Trigger Actions we need?? if so return
 	// more info in Zendesk Trigger Actions -> https://developer.zendesk.com/rest_api/docs/support/triggers#actions
-	chk, err := checkTrigger(ctx, client, newTrigger, tA)
+	chk, err := ensureTrigger(ctx, client, newTrigger, tA)
 	if err != nil {
 		return err
 	}
@@ -194,9 +194,9 @@ func createTrigger(ctx context.Context, client *zendesk.Client, t zendesk.Target
 
 }
 
-// checkTrigger see if a Zendesk 'Trigger' with a matching 'Title' exisits & if the 'Trigger' is has the proper URL associated . <-- that part is not done
+// ensureTrigger see if a Zendesk 'Trigger' with a matching 'Title' exisits & if the 'Trigger' is has the proper URL associated . <-- that part is not done
 // more info on Zendesk 'Trigger's' -> https://developer.zendesk.com/rest_api/docs/support/triggers
-func checkTrigger(ctx context.Context, client *zendesk.Client, t zendesk.Trigger, ta zendesk.TriggerAction) (bool, error) {
+func ensureTrigger(ctx context.Context, client *zendesk.Client, t zendesk.Trigger, ta zendesk.TriggerAction) (bool, error) {
 
 	tlo := &zendesk.TriggerListOptions{}
 	tlo.Active = true

@@ -117,11 +117,10 @@ func (h *zendeskAPIHandler) authenticate(r *http.Request) (bool, error) {
 
 	pair := strings.SplitN(string(b), ":", 2)
 	if len(pair) != 2 {
-
 		return false, errors.New(rAuthFailed)
 	}
 
-	if pair[0] != h.username || pair[1] != h.password { // Should this be '&|' instead of "||" ??
+	if pair[0] == h.username && pair[1] == h.password {
 		return true, nil
 	}
 
@@ -162,8 +161,6 @@ func (h *zendeskAPIHandler) handleAll(w http.ResponseWriter, r *http.Request) {
 		h.handleError(fmt.Errorf("could not unmarshall JSON request: %s", err.Error()), w)
 		return
 	}
-	h.logger.Info("got event:")
-	h.logger.Info(event)
 
 	cEvent, err := h.cloudEventFromEventWrapper(event)
 	if err != nil {

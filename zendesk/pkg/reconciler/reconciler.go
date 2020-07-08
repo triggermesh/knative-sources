@@ -72,7 +72,7 @@ func (r *reconciler) ReconcileKind(ctx context.Context, src *v1alpha1.ZendeskSou
 	}
 
 	// TODO : Add a flag here to skip this
-	err = createIntegration(ctx, src)
+	err = ensureIntegration(ctx, src)
 	if err != nil {
 		src.Status.MarkNoTargetCreated("Could not create a new Zendesk Target: %s", err.Error())
 		return controller.NewPermanentError(err)
@@ -81,8 +81,8 @@ func (r *reconciler) ReconcileKind(ctx context.Context, src *v1alpha1.ZendeskSou
 	return event
 }
 
-// createIntegration handles all the parts required to create a new webhook integration
-func createIntegration(ctx context.Context, src *v1alpha1.ZendeskSource) error {
+// ensureIntegration handles all the parts required to create a new webhook integration
+func ensureIntegration(ctx context.Context, src *v1alpha1.ZendeskSource) error {
 
 	// create a new zendesk client
 	client, err := zendesk.NewClient(nil)

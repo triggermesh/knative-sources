@@ -196,19 +196,15 @@ func ensureTrigger(ctx context.Context, client *zendesk.Client, t zendesk.Trigge
 
 	for _, Trigger := range trigggers {
 
-		if Trigger.Title == tmTitle {
+		if Trigger.Title == tmTitle || Trigger.Actions[0] == t.Actions[0] {
+			fmt.Println("Found a matching trigger!")
+			fmt.Println(Trigger)
+			fmt.Println(Trigger.Title)
+			return true, nil
 
-			if Trigger.Actions[0] == t.Actions[0] {
-				fmt.Println("Found a matching trigger!")
-				fmt.Println(Trigger)
-				fmt.Println(Trigger.Title)
-				return true, nil
-
-			}
 		}
+
 	}
-	if err != nil {
-		return false, err
-	}
+
 	return false, nil
 }

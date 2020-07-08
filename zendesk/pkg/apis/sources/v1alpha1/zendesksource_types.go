@@ -64,21 +64,21 @@ type ZendeskSourceSpec struct {
 	//   and modifications of the event sent to the sink.
 	duckv1.SourceSpec `json:",inline"`
 
-	// Token can be set to the value of Zendesk subscription token
+	// Token identifies the API token used for creating the proper credentials to interface with Zendesk allowing the source to auto-register the needed webhook
 	// to authenticate callbacks. See:
-	Token *SecretValueFromSource `json:"token,omitempty"`
+	Token SecretValueFromSource `json:"token,omitempty"`
 
-	// Password used for basic authentication
-	Password *SecretValueFromSource `json:"password,omitempty"`
+	// Email identifies the email used for creating the proper credentials to interface with Zendesk allowing the source to auto-register the needed webhook
+	Email string `json:"email,omitempty"`
 
-	// Username used for basic authentication
-	Username *string `json:"username,omitempty"`
+	// Password used for basic authentication between Zendesk and the Source
+	Password SecretValueFromSource `json:"password,omitempty"`
 
-	// Email identifies the email used for authentication
-	Email *string `json:"email,omitempty"`
+	// Username used for basic authentication between Zendesk and the Source
+	Username string `json:"username,omitempty"`
 
 	// Subdomain identifies Zendesk subdomain
-	Subdomain *string `json:"subdomain,omitempty"`
+	Subdomain string `json:"subdomain,omitempty"`
 }
 
 // SecretValueFromSource represents the source of a secret value

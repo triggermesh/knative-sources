@@ -67,7 +67,7 @@ func (r *reconciler) ReconcileKind(ctx context.Context, src *v1alpha1.ZendeskSou
 	src.Status.PropagateAvailability(adapter)
 
 	// Prevent the reconciler from trying to create Zendesk integration before spec is avalible
-	if *src.Spec.Subdomain == "" {
+	if src.Spec.Subdomain == "" {
 		return event
 	}
 
@@ -89,11 +89,11 @@ func createIntegration(ctx context.Context, src *v1alpha1.ZendeskSource) error {
 	if err != nil {
 		return err
 	}
-	if err := client.SetSubdomain(*src.Spec.Subdomain); err != nil {
+	if err := client.SetSubdomain(src.Spec.Subdomain); err != nil {
 		return err
 	}
 
-	client.SetCredential(zendesk.NewAPITokenCredential(*src.Spec.Email, src.Spec.Token.SecretKeyRef.Key))
+	client.SetCredential(zendesk.NewAPITokenCredential(src.Spec.Email, src.Spec.Token.SecretKeyRef.Key))
 
 	// Does a target exist with the tm Title? if so return // Todo: Verification of proper URL address
 	check, err := checkTarget(ctx, client)
@@ -110,7 +110,7 @@ func createIntegration(ctx context.Context, src *v1alpha1.ZendeskSource) error {
 		t.Method = "post"
 		t.ContentType = "application/json"
 		t.Password = src.Spec.Password.SecretKeyRef.Key
-		t.Username = *src.Spec.Username
+		t.Username = src.Spec.Username
 		t.Title = tmTitle
 
 		// registers a new zendesk webook to recieve events

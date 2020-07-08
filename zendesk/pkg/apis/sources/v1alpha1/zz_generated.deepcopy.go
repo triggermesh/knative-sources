@@ -111,31 +111,8 @@ func (in *ZendeskSourceList) DeepCopyObject() runtime.Object {
 func (in *ZendeskSourceSpec) DeepCopyInto(out *ZendeskSourceSpec) {
 	*out = *in
 	in.SourceSpec.DeepCopyInto(&out.SourceSpec)
-	if in.Token != nil {
-		in, out := &in.Token, &out.Token
-		*out = new(SecretValueFromSource)
-		(*in).DeepCopyInto(*out)
-	}
-	if in.Password != nil {
-		in, out := &in.Password, &out.Password
-		*out = new(SecretValueFromSource)
-		(*in).DeepCopyInto(*out)
-	}
-	if in.Username != nil {
-		in, out := &in.Username, &out.Username
-		*out = new(string)
-		**out = **in
-	}
-	if in.Email != nil {
-		in, out := &in.Email, &out.Email
-		*out = new(string)
-		**out = **in
-	}
-	if in.Subdomain != nil {
-		in, out := &in.Subdomain, &out.Subdomain
-		*out = new(string)
-		**out = **in
-	}
+	in.Token.DeepCopyInto(&out.Token)
+	in.Password.DeepCopyInto(&out.Password)
 	return
 }
 

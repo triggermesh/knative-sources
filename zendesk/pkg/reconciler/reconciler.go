@@ -152,26 +152,24 @@ func createTrigger(ctx context.Context, client *zendesk.Client, t zendesk.Target
 	// convert from int64 -> int -> string
 	targetID := strconv.Itoa(int(t.ID))
 
-	var tC = zendesk.TriggerCondition{
-		Field:    "update_type",
-		Operator: "is",
-		Value:    "Create",
-	}
-
-	tA := zendesk.TriggerAction{
+	ta := zendesk.TriggerAction{
 		Field: "notification_target",
 		Value: targetID + `,"{"id":"{{ticket.id}}","description":"{{ticket.description}}"}"`,
 	}
 
 	var newTrigger = zendesk.Trigger{}
 	newTrigger.Title = tmTitle
+	newTrigger.Conditions.All = []zendesk.TriggerCondition{{
+		Field:    "update_type",
+		Operator: "is",
+		Value:    "Create",
+	}}
 
-	newTrigger.Conditions.All = append(newTrigger.Conditions.All, tC)
-	newTrigger.Actions = append(newTrigger.Actions, tA)
+	newTrigger.Actions = append(newTrigger.Actions, ta)
 
 	// is there a pre existing trigger that matches the Trigger Actions we need?? if so return
 	// more info in Zendesk Trigger Actions -> https://developer.zendesk.com/rest_api/docs/support/triggers#actions
-	chk, err := ensureTrigger(ctx, client, newTrigger, tA)
+	chk, err := ensureTrigger(ctx, client, newTrigger)
 	if err != nil {
 		return err
 	}
@@ -196,7 +194,7 @@ func createTrigger(ctx context.Context, client *zendesk.Client, t zendesk.Target
 
 // ensureTrigger see if a Zendesk 'Trigger' with a matching 'Title' exisits & if the 'Trigger' is has the proper URL associated . <-- that part is not done
 // more info on Zendesk 'Trigger's' -> https://developer.zendesk.com/rest_api/docs/support/triggers
-func ensureTrigger(ctx context.Context, client *zendesk.Client, t zendesk.Trigger, ta zendesk.TriggerAction) (bool, error) {
+func ensureTrigger(ctx context.Context, client *zendesk.Client, t zendesk.Trigger) (bool, error) {
 
 	tlo := &zendesk.TriggerListOptions{}
 	tlo.Active = true
@@ -210,7 +208,7 @@ func ensureTrigger(ctx context.Context, client *zendesk.Client, t zendesk.Trigge
 		// Does this trigger match our title?
 		if Trigger.Title == tmTitle {
 			// Do the trigger actions match our current ones?
-			if Trigger.Actions[0] == ta {
+			if Trigger.Actions[0] == t.Actions[0] {
 				fmt.Println("Found a matching trigger!")
 				fmt.Println(Trigger)
 				fmt.Println(Trigger.Title)

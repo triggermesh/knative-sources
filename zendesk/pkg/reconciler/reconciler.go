@@ -96,7 +96,7 @@ func createIntegration(ctx context.Context, src *v1alpha1.ZendeskSource) error {
 	client.SetCredential(zendesk.NewAPITokenCredential(src.Spec.Email, src.Spec.Token.SecretKeyRef.Key))
 
 	// Does a target exist with the tm Title? if so return // Todo: Verification of proper URL address
-	check, err := checkTarget(ctx, client)
+	check, err := checkTargetExists(ctx, client)
 	if err != nil {
 		return controller.NewPermanentError(err)
 	}
@@ -131,9 +131,9 @@ func createIntegration(ctx context.Context, src *v1alpha1.ZendeskSource) error {
 	return nil
 }
 
-// checkTarget checks if a Zendesk 'Target' with a matching "Title" exists and if the target is active.
+// checkTargetExists checks if a Zendesk 'Target' with a matching "Title" exists and if the target is active.
 // More info on Zendesk Target's: https://developer.zendesk.com/rest_api/docs/support/targets
-func checkTarget(ctx context.Context, client *zendesk.Client) (bool, error) {
+func checkTargetExists(ctx context.Context, client *zendesk.Client) (bool, error) {
 
 	Target, _, err := client.GetTargets(ctx)
 	if err != nil {

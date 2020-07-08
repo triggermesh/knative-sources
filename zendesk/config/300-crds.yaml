@@ -61,8 +61,7 @@ spec:
           metadata:
             type: object
           spec:
-            description: ZendeskSourceSpec holds the desired state of the ZendeskSource
-              (from the client).
+            description: ZendeskSourceSpec holds the desired state of the ZendeskSource (from the client).
             type: object
             properties:
               ceOverrides:
@@ -159,7 +158,11 @@ spec:
                 type: string
               subdomain:
                 description: 'Subdomain is required to automate integration with Zendesk. This will be used to create a Zendesk Client'
-                type: string  
+                type: string
+            required:
+                - username
+                - email
+                - subdomain    
           status:
             description: ZendeskSourceStatus communicates the observed state of the ZendeskSource.
             type: object

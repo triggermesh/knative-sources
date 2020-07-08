@@ -96,13 +96,13 @@ func ensureIntegration(ctx context.Context, src *v1alpha1.ZendeskSource) error {
 	client.SetCredential(zendesk.NewAPITokenCredential(src.Spec.Email, src.Spec.Token.SecretKeyRef.Key))
 
 	// Does a target exist with the tm Title? if so return // Todo: Verification of proper URL address
-	check, err := checkTargetExists(ctx, client)
+	exists, err := checkTargetExists(ctx, client)
 	if err != nil {
 		return controller.NewPermanentError(err)
 	}
 
 	// if it does not exist : create it
-	if !check {
+	if !exists {
 
 		t := zendesk.Target{}
 		t.TargetURL = "https://zendesksource-zendesksource.jnlasersolutions.dev.munu.io"
@@ -125,9 +125,7 @@ func ensureIntegration(ctx context.Context, src *v1alpha1.ZendeskSource) error {
 		}
 		return nil
 	}
-	if check {
-		return nil
-	}
+
 	return nil
 }
 

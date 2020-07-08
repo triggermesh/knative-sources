@@ -84,7 +84,6 @@ func (r *reconciler) ReconcileKind(ctx context.Context, src *v1alpha1.ZendeskSou
 // ensureIntegration handles all the parts required to create a new webhook integration
 func ensureIntegration(ctx context.Context, src *v1alpha1.ZendeskSource) error {
 
-	// create a new zendesk client
 	client, err := zendesk.NewClient(nil)
 	if err != nil {
 		return err
@@ -101,7 +100,6 @@ func ensureIntegration(ctx context.Context, src *v1alpha1.ZendeskSource) error {
 		return controller.NewPermanentError(err)
 	}
 
-	// if it does not exist : create it
 	if !exists {
 
 		t := zendesk.Target{}
@@ -113,7 +111,6 @@ func ensureIntegration(ctx context.Context, src *v1alpha1.ZendeskSource) error {
 		t.Username = src.Spec.Username
 		t.Title = tmTitle
 
-		// registers a new zendesk webook to recieve events
 		createdTarget, err := client.CreateTarget(ctx, t)
 		if err != nil {
 			return err
@@ -149,7 +146,6 @@ func checkTargetExists(ctx context.Context, client *zendesk.Client) (bool, error
 // more info on Zendesk 'Trigger's' -> https://developer.zendesk.com/rest_api/docs/support/triggers
 func createTrigger(ctx context.Context, client *zendesk.Client, t zendesk.Target) error {
 
-	// convert from int64 -> int -> string
 	targetID := strconv.Itoa(int(t.ID))
 
 	ta := zendesk.TriggerAction{
@@ -174,12 +170,10 @@ func createTrigger(ctx context.Context, client *zendesk.Client, t zendesk.Target
 		return err
 	}
 
-	// if our trigger check found a matching trigger we are done. return here
 	if chk {
 		return nil
 	}
 
-	// ask Zendesk to create our trigger
 	nT, err := client.CreateTrigger(ctx, newTrigger)
 	if err != nil {
 		return err
@@ -187,7 +181,6 @@ func createTrigger(ctx context.Context, client *zendesk.Client, t zendesk.Target
 	fmt.Println("created trigger:")
 	fmt.Println(nT.ID)
 
-	// everything is happy :)
 	return nil
 
 }
@@ -205,9 +198,9 @@ func ensureTrigger(ctx context.Context, client *zendesk.Client, t zendesk.Trigge
 	}
 
 	for _, Trigger := range trigggers {
-		// Does this trigger match our title?
+
 		if Trigger.Title == tmTitle {
-			// Do the trigger actions match our current ones?
+
 			if Trigger.Actions[0] == t.Actions[0] {
 				fmt.Println("Found a matching trigger!")
 				fmt.Println(Trigger)

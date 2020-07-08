@@ -189,10 +189,7 @@ func createTrigger(ctx context.Context, client *zendesk.Client, t zendesk.Target
 // more info on Zendesk 'Trigger's' -> https://developer.zendesk.com/rest_api/docs/support/triggers
 func ensureTrigger(ctx context.Context, client *zendesk.Client, t zendesk.Trigger) (bool, error) {
 
-	tlo := &zendesk.TriggerListOptions{}
-	tlo.Active = true
-
-	trigggers, _, err := client.GetTriggers(ctx, tlo)
+	trigggers, _, err := client.GetTriggers(ctx, &zendesk.TriggerListOptions{Active: true})
 	if err != nil {
 		return false, err
 	}
@@ -206,6 +203,7 @@ func ensureTrigger(ctx context.Context, client *zendesk.Client, t zendesk.Trigge
 				fmt.Println(Trigger)
 				fmt.Println(Trigger.Title)
 				return true, nil
+
 			}
 		}
 	}

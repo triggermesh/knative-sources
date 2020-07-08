@@ -136,15 +136,13 @@ func createIntegration(ctx context.Context, src *v1alpha1.ZendeskSource) error {
 func checkTarget(ctx context.Context, client *zendesk.Client) (bool, error) {
 
 	Target, _, err := client.GetTargets(ctx)
-	for _, t := range Target {
-		if t.Title == tmTitle {
-			if t.Active {
-				return true, nil
-			}
-		}
-	}
 	if err != nil {
 		return false, err
+	}
+	for _, t := range Target {
+		if t.Active && t.Title == tmTitle {
+			return true, nil
+		}
 	}
 	return false, nil
 }

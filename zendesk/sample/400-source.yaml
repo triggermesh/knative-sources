@@ -17,17 +17,17 @@ kind: ZendeskSource
 metadata:
   name: zendesksource
 spec:
-  email: '' # Example: jeffthenaef@gmail.com 
-  username: '' # Example: jeff 
-  subdomain: '' # Example: tmdev2 
+  email: '' # Example: Joe@AutoParts.com 
+  username: '' # Example: Joe 
+  subdomain: '' # Example:  AutoParts
   token:
-            secretKeyRef:
-              name: zendesksource
-              key: token
+    secretKeyRef:
+      name: zendesksource
+      key: token
   password:
-            secretKeyRef:
-              name: zendesksource
-              key: password            
+    secretKeyRef:
+      name: zendesksource
+      key: password            
   sink:
     ref:
       apiVersion: serving.knative.dev/v1

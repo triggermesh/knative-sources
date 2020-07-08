@@ -29,8 +29,9 @@ const (
 	ConditionSinkProvided apis.ConditionType = "SinkProvided"
 	// ConditionDeployed has status True when the ZendeskSource has had it's deployment created.
 	ConditionDeployed apis.ConditionType = "Deployed"
-	// ConditionTargetCreated has status True when the ZendeskSource has created a Zendesk Target
-	ConditionTargetCreated apis.ConditionType = "TargetCreated"
+	// ConditionTargetCreated has status True when the Zendesk Source has created a Zendesk Target
+	// More information on Zendesk Target's here -> https://developer.zendesk.com/rest_api/docs/support/targets
+	ConditionTargetCreated apis.ConditionType = "ZendeskTargetCreated"
 )
 
 // Reasons for status conditions

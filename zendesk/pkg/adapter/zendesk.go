@@ -47,7 +47,7 @@ const (
 
 const (
 	// Response for successfully receiving an event from Zendesk
-	rOK = `200: Thanks Zendesk!`
+	rOK = `{"200" : "Thanks Zendesk!"}`
 	// Response for failing authentication (sometimes used as a prefix to the reason)
 	rAuthFailed = `Authentication FAILED`
 )
@@ -205,7 +205,6 @@ func (h *zendeskAPIHandler) handleError(err error, w http.ResponseWriter) {
 	http.Error(w, err.Error(), http.StatusInternalServerError)
 }
 
-// fix this
 func (h *zendeskAPIHandler) cloudEventFromEventWrapper(wrapper *ZendeskEventWrapper) (*cloudevents.Event, error) {
 	h.logger.Info("Proccesing Zendesk event")
 	data, err := json.Marshal(wrapper)

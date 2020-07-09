@@ -70,7 +70,7 @@ func NewZendeskAPIHandler(ceClient cloudevents.Client, port int, username, passw
 
 // Start the server for receiving Zendesk events. Will block until the stop channel closes.
 func (h *zendeskAPIHandler) Start(stopCh <-chan struct{}) error {
-	h.logger.Info("Starting Zendesk event handler..")
+	h.logger.Info("Starting Zendesk event handler...")
 
 	m := http.NewServeMux()
 	m.HandleFunc("/", h.handleAll)

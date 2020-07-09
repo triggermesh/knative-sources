@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"strconv"
 
+	"k8s.io/client-go/kubernetes"
 	duckv1 "knative.dev/pkg/apis/duck/v1"
 	"knative.dev/pkg/controller"
 	pkgreconciler "knative.dev/pkg/reconciler"
@@ -32,12 +33,17 @@ import (
 	reconcilerzendesksource "github.com/triggermesh/knative-sources/zendesk/pkg/client/generated/injection/reconciler/sources/v1alpha1/zendesksource"
 )
 
+// tmTitle is the name of the Zendesk 'Extension' that the source will create
 const tmTitle = "TriggermeshxExtension"
+
+// sourceName is the name of the source deployment. this is needed to form the proper url for the Webhook call's
+const sourceName = "zendesksource-zendesksource"
 
 // Reconciler reconciles a ZendeskSource object
 type reconciler struct {
-	ksvcr        srcreconciler.KServiceReconciler
-	sinkResolver *resolver.URIResolver
+	ksvcr         srcreconciler.KServiceReconciler
+	sinkResolver  *resolver.URIResolver
+	kubeClientSet kubernetes.Interface
 
 	adapterCfg *adapterConfig
 }
@@ -71,7 +77,18 @@ func (r *reconciler) ReconcileKind(ctx context.Context, src *v1alpha1.ZendeskSou
 		return event
 	}
 
-	// TODO : Add a flag here to skip this
+	secretToken, err := r.secretFrom(ctx, src.Namespace, src.Spec.Token.SecretKeyRef)
+	if err != nil {
+		src.Status.MarkNoSecrets("SecretTokenNotFound", "%s", err)
+		return err
+	}
+
+	secretPassword, err := r.secretFrom(ctx, src.Namespace, src.Spec.Password.SecretKeyRef)
+	if err != nil {
+		src.Status.MarkNoSecrets("SecretPasswordNotFound", "%s", err)
+		return err
+	}
+
 	err = ensureIntegration(ctx, src)
 	if err != nil {
 		src.Status.MarkNoTargetCreated("Could not create a new Zendesk Target: %s", err.Error())
@@ -92,9 +109,9 @@ func ensureIntegration(ctx context.Context, src *v1alpha1.ZendeskSource) error {
 		return err
 	}
 
-	client.SetCredential(zendesk.NewAPITokenCredential(src.Spec.Email, src.Spec.Token.SecretKeyRef.Key))
+	client.SetCredential(zendesk.NewAPITokenCredential(src.Spec.Email, secretToken))
 
-	// Does a target exist with the tm Title? if so return // Todo: Verification of proper URL address
+	// Todo: Inclusion & Verification of proper Source URL address
 	exists, err := checkTargetExists(ctx, client)
 	if err != nil {
 		return controller.NewPermanentError(err)
@@ -103,7 +120,7 @@ func ensureIntegration(ctx context.Context, src *v1alpha1.ZendeskSource) error {
 	if !exists {
 
 		t := zendesk.Target{}
-		t.TargetURL = "https://zendesksource-zendesksource.jnlasersolutions.dev.munu.io"
+		t.TargetURL = "https://" + sourceName + "." + src.Namespace + ".dev.munu.io"
 		t.Type = "http_target"
 		t.Method = "post"
 		t.ContentType = "application/json"
@@ -207,4 +224,17 @@ func ensureTrigger(ctx context.Context, client *zendesk.Client, t zendesk.Trigge
 	}
 
 	return false, nil
+}
+
+// secretFrom handles the retrieval of secretes from the within the defined namepace
+func (r *reconciler) secretFrom(ctx context.Context, namespace string, secretKeySelector *corev1.SecretKeySelector) (string, error) {
+	secret, err := r.kubeClientSet.CoreV1().Secrets(namespace).Get(secretKeySelector.Name, metav1.GetOptions{})
+	if err != nil {
+		return "", err
+	}
+	secretVal, ok := secret.Data[secretKeySelector.Key]
+	if !ok {
+		return "", fmt.Errorf(`key "%s" not found in secret "%s"`, secretKeySelector.Key, secretKeySelector.Name)
+	}
+	return string(secretVal), nil
 }

@@ -46,6 +46,12 @@ const (
 
 	// ReasonNoTarget is set on TargetCreated condtion when a Zendesk Target creation failed
 	ReasonNoTarget = "ZendeskTargetNotCreated"
+
+	// ReasonNoToken is set when an API token cannot be found within the specified secret
+	ReasonNoToken = "NoSecretTokenAvalible"
+
+	// ReasonNoPassword is set when a Password cannot be found within the specified secret
+	ReasonNoPassword = "NoSecretPasswordAvalible"
 )
 
 const (

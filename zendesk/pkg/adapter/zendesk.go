@@ -93,48 +93,39 @@ func (h *zendeskAPIHandler) Start(stopCh <-chan struct{}) error {
 	return nil
 }
 
-func (h *zendeskAPIHandler) validateAuthHeader(r *http.Request) (bool, error) {
+func (h *zendeskAPIHandler) validateAuthHeader(r *http.Request) error {
 
 	s := strings.SplitN(r.Header.Get("Authorization"), " ", 2)
 	if len(s) != 2 {
-		return false, errors.New("No Auth Parameters")
+		return errors.New("No Auth Parameters")
 	}
 
 	b, err := base64.StdEncoding.DecodeString(s[1])
 	if err != nil {
-		return false, errors.New("Could not decode the auth header")
+		return errors.New("Could not decode the auth header")
 	}
 
 	pair := strings.SplitN(string(b), ":", 2)
 	if len(pair) != 2 {
-		return false, errors.New("misformated credentials at auth header")
+		return errors.New("misformated credentials at auth header")
 	}
 
 	if pair[0] == h.username && pair[1] == h.password {
-		return true, nil
+		return nil
 	}
-
-	return false, nil
-
+	return nil
 }
 
 // handleAll receives all Zendesk events at a single resource, it
 // is up to this function to parse event wrapper and dispatch.
 func (h *zendeskAPIHandler) handleAll(w http.ResponseWriter, r *http.Request) {
-
 	if r.Body == nil {
 		h.handleError(errors.New("request without body not supported"), w)
 		return
 	}
 
-	authStatus, err := h.validateAuthHeader(r)
-	if err != nil {
+	if err := h.validateAuthHeader(r); err != nil {
 		h.handleError(err, w)
-		return
-	}
-
-	if authStatus {
-		h.handleError(errors.New("Authentication Failed"), w)
 		return
 	}
 

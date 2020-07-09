@@ -97,17 +97,17 @@ func (h *zendeskAPIHandler) validateAuthHeader(r *http.Request) (bool, error) {
 
 	s := strings.SplitN(r.Header.Get("Authorization"), " ", 2)
 	if len(s) != 2 {
-		return false, errors.New("No Auth Params")
+		return false, errors.New("No Auth Parameters")
 	}
 
 	b, err := base64.StdEncoding.DecodeString(s[1])
 	if err != nil {
-		return false, errors.New("Could not decode")
+		return false, errors.New("Could not decode the auth header")
 	}
 
 	pair := strings.SplitN(string(b), ":", 2)
 	if len(pair) != 2 {
-		return false, errors.New("Authentication Failed")
+		return false, errors.New("misformated credentials at auth header")
 	}
 
 	if pair[0] == h.username && pair[1] == h.password {

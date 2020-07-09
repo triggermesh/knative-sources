@@ -93,7 +93,7 @@ func (h *zendeskAPIHandler) Start(stopCh <-chan struct{}) error {
 	return nil
 }
 
-func (h *zendeskAPIHandler) authenticate(r *http.Request) (bool, error) {
+func (h *zendeskAPIHandler) validateAuthHeader(r *http.Request) (bool, error) {
 
 	s := strings.SplitN(r.Header.Get("Authorization"), " ", 2)
 	if len(s) != 2 {
@@ -127,7 +127,7 @@ func (h *zendeskAPIHandler) handleAll(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	authStatus, err := h.authenticate(r)
+	authStatus, err := h.validateAuthHeader(r)
 	if err != nil {
 		h.handleError(err, w)
 		return

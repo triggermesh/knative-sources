@@ -29,6 +29,7 @@ import (
 	"time"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
+	"github.com/nukosuke/go-zendesk/zendesk"
 	"go.uber.org/zap"
 )
 
@@ -39,17 +40,9 @@ type ZendeskAPIHandler interface {
 
 // constats for the CE data
 const (
-	ceID      = "wrapper.EventID"
 	ceType    = "com.zendesk.ticket.new"
 	ceSource  = "com.zendesk.source"
 	ceSubject = "New Zendesk Ticket"
-)
-
-const (
-	// Response for successfully receiving an event from Zendesk
-	rOK = `{"200" : "Thanks Zendesk!"}`
-	// Response for failing authentication (sometimes used as a prefix to the reason)
-	rAuthFailed = `Authentication FAILED`
 )
 
 type zendeskAPIHandler struct {
@@ -104,17 +97,17 @@ func (h *zendeskAPIHandler) authenticate(r *http.Request) (bool, error) {
 
 	s := strings.SplitN(r.Header.Get("Authorization"), " ", 2)
 	if len(s) != 2 {
-		return false, errors.New(rAuthFailed + ": No Auth Params")
+		return false, errors.New("No Auth Params")
 	}
 
 	b, err := base64.StdEncoding.DecodeString(s[1])
 	if err != nil {
-		return false, errors.New(rAuthFailed + ": could not decode")
+		return false, errors.New("Could not decode")
 	}
 
 	pair := strings.SplitN(string(b), ":", 2)
 	if len(pair) != 2 {
-		return false, errors.New(rAuthFailed)
+		return false, errors.New("Authentication Failed")
 	}
 
 	if pair[0] == h.username && pair[1] == h.password {
@@ -141,7 +134,7 @@ func (h *zendeskAPIHandler) handleAll(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if authStatus {
-		h.handleError(errors.New(rAuthFailed), w)
+		h.handleError(errors.New("Authentication Failed"), w)
 		return
 	}
 
@@ -152,18 +145,19 @@ func (h *zendeskAPIHandler) handleAll(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	event := &ZendeskEventWrapper{}
+	event := &zendesk.Ticket{}
 	err = json.Unmarshal(body, event)
 	if err != nil {
 		h.handleError(fmt.Errorf("could not unmarshall JSON request: %s", err.Error()), w)
 		return
 	}
 
-	cEvent, err := h.cloudEventFromEventWrapper(event)
+	cEvent, err := h.cloudEventFromTicket(event)
 	if err != nil {
 		h.logger.Info("Error Creating CloudEvent")
 		h.handleError(err, w)
 	}
+
 	if result := h.ceClient.Send(context.Background(), *cEvent); !cloudevents.IsACK(result) {
 		h.logger.Info("Error Sending CloudEvent")
 		h.handleError(result, w)
@@ -171,12 +165,8 @@ func (h *zendeskAPIHandler) handleAll(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	// fix this
-	res, err := json.Marshal(rOK)
-	if err != nil {
-		h.handleError(err, w)
-	}
-	_, err = w.Write(res)
+
+	_, err = w.Write([]byte("500 - Something bad happened!"))
 	if err != nil {
 		h.logger.Info("Error Writing HTTP response")
 		h.handleError(err, w)
@@ -202,13 +192,15 @@ func (h *zendeskAPIHandler) handleError(err error, w http.ResponseWriter) {
 	http.Error(w, err.Error(), http.StatusInternalServerError)
 }
 
-func (h *zendeskAPIHandler) cloudEventFromEventWrapper(wrapper *ZendeskEventWrapper) (*cloudevents.Event, error) {
+func (h *zendeskAPIHandler) cloudEventFromTicket(ticket *zendesk.Ticket) (*cloudevents.Event, error) {
 	h.logger.Info("Proccesing Zendesk event")
-	data, err := json.Marshal(wrapper)
+	data, err := json.Marshal(ticket)
 	if err != nil {
 		return nil, err
 	}
 	event := cloudevents.NewEvent(cloudevents.VersionV1)
+
+	ceID := strconv.Itoa(int(ticket.ID))
 
 	event.SetID(ceID)
 	event.SetType(ceType)

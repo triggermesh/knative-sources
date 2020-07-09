@@ -41,7 +41,7 @@ func New(ctx context.Context, aEnv adapter.EnvConfigAccessor, ceClient cloudeven
 	logger := logging.FromContext(ctx)
 
 	return &zendeskAdapter{
-		handler: NewZendeskAPIHandler(ceClient, defaultListenPort, env.Token, env.Username, env.Password, logger.Named("handler")),
+		handler: NewZendeskAPIHandler(ceClient, defaultListenPort, env.Username, env.Password, logger.Named("handler")),
 		logger:  logger,
 	}
 }

@@ -32,6 +32,9 @@ const (
 	// ConditionTargetCreated has status True when the Zendesk Source has created a Zendesk Target
 	// More information on Zendesk Target's here -> https://developer.zendesk.com/rest_api/docs/support/targets
 	ConditionTargetCreated apis.ConditionType = "ZendeskTargetCreated"
+
+	// ConditionSecretsProvided has status
+	ConditionSecretsProvided apis.ConditionType = "ZendeskSecretsProvided"
 )
 
 // Reasons for status conditions
@@ -41,17 +44,18 @@ const (
 
 	// ReasonSinkNotFound is set on a SinkProvided condition when a sink does not exist.
 	ReasonSinkNotFound = "SinkNotFound"
+
 	// ReasonSinkEmpty is set on a SinkProvided condition when a sink URI is empty.
 	ReasonSinkEmpty = "EmptySinkURI"
 
 	// ReasonNoTarget is set on TargetCreated condtion when a Zendesk Target creation failed
-	ReasonNoTarget = "ZendeskTargetNotCreated"
+	ReasonNoTarget = "NoZendeskTargetNotCreated"
 
-	// ReasonNoToken is set when an API token cannot be found within the specified secret
-	ReasonNoToken = "NoSecretTokenAvalible"
+	// ReasonNoToken is set when a secret containing a Zendesk API token  is unavalible
+	ReasonNoToken = "SecretTokenAvalible"
 
-	// ReasonNoPassword is set when a Password cannot be found within the specified secret
-	ReasonNoPassword = "NoSecretPasswordAvalible"
+	// ReasonNoPassword is set when a secret containing a password is unavalible
+	ReasonNoPassword = "SecretPasswordAvalible"
 )
 
 const (
@@ -64,6 +68,7 @@ var ZendeskCondSet = apis.NewLivingConditionSet(
 	ConditionSinkProvided,
 	ConditionDeployed,
 	ConditionTargetCreated,
+	ConditionSecretsProvided,
 )
 
 // InitializeConditions sets relevant unset conditions to Unknown state.
@@ -123,4 +128,19 @@ func (s *ZendeskSourceStatus) MarkNoTargetCreated(messageFormat string, messageA
 // MarkTargetCreated sets the condition that the source was able to properly configure a Zendesk Target
 func (s *ZendeskSourceStatus) MarkTargetCreated() {
 	ZendeskCondSet.Manage(s).MarkTrue(ConditionTargetCreated)
+}
+
+// MarkNoToken sets ReasonNoToken to true when a Zendesk API
+func (s *ZendeskSourceStatus) MarkNoToken(messageFormat string, messageA ...interface{}) {
+	ZendeskCondSet.Manage(s).MarkFalse(ConditionSecretsProvided, ReasonNoToken, messageFormat, messageA...)
+}
+
+// MarkNoPassword sets ReasonNoToken to true when a Zendesk API
+func (s *ZendeskSourceStatus) MarkNoPassword(messageFormat string, messageA ...interface{}) {
+	ZendeskCondSet.Manage(s).MarkFalse(ConditionSecretsProvided, ReasonNoPassword, messageFormat, messageA...)
+}
+
+// MarkSecretsFound sets ReasonNoToken to true when a Zendesk API
+func (s *ZendeskSourceStatus) MarkSecretsFound() {
+	ZendeskCondSet.Manage(s).MarkTrue(ConditionSecretsProvided)
 }

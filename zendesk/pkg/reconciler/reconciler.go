@@ -21,6 +21,9 @@ import (
 	"fmt"
 	"strconv"
 
+	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
 	"k8s.io/client-go/kubernetes"
 	duckv1 "knative.dev/pkg/apis/duck/v1"
 	"knative.dev/pkg/controller"
@@ -79,17 +82,19 @@ func (r *reconciler) ReconcileKind(ctx context.Context, src *v1alpha1.ZendeskSou
 
 	secretToken, err := r.secretFrom(ctx, src.Namespace, src.Spec.Token.SecretKeyRef)
 	if err != nil {
-		src.Status.MarkNoSecrets("SecretTokenNotFound", "%s", err)
+		src.Status.MarkNoToken("Could not find a Zendesk API token:%s", err.Error())
 		return err
 	}
 
 	secretPassword, err := r.secretFrom(ctx, src.Namespace, src.Spec.Password.SecretKeyRef)
 	if err != nil {
-		src.Status.MarkNoSecrets("SecretPasswordNotFound", "%s", err)
+		src.Status.MarkNoPassword("Could not find a Password:%s", err.Error())
 		return err
 	}
 
-	err = ensureIntegration(ctx, src)
+	src.Status.MarkSecretsFound()
+
+	err = ensureIntegration(ctx, src, secretToken, secretPassword)
 	if err != nil {
 		src.Status.MarkNoTargetCreated("Could not create a new Zendesk Target: %s", err.Error())
 		return controller.NewPermanentError(err)
@@ -99,7 +104,7 @@ func (r *reconciler) ReconcileKind(ctx context.Context, src *v1alpha1.ZendeskSou
 }
 
 // ensureIntegration handles all the parts required to create a new webhook integration
-func ensureIntegration(ctx context.Context, src *v1alpha1.ZendeskSource) error {
+func ensureIntegration(ctx context.Context, src *v1alpha1.ZendeskSource, token, pass string) error {
 
 	client, err := zendesk.NewClient(nil)
 	if err != nil {
@@ -109,7 +114,7 @@ func ensureIntegration(ctx context.Context, src *v1alpha1.ZendeskSource) error {
 		return err
 	}
 
-	client.SetCredential(zendesk.NewAPITokenCredential(src.Spec.Email, secretToken))
+	client.SetCredential(zendesk.NewAPITokenCredential(src.Spec.Email, token))
 
 	// Todo: Inclusion & Verification of proper Source URL address
 	exists, err := checkTargetExists(ctx, client)
@@ -124,7 +129,7 @@ func ensureIntegration(ctx context.Context, src *v1alpha1.ZendeskSource) error {
 		t.Type = "http_target"
 		t.Method = "post"
 		t.ContentType = "application/json"
-		t.Password = src.Spec.Password.SecretKeyRef.Key
+		t.Password = pass
 		t.Username = src.Spec.Username
 		t.Title = tmTitle
 

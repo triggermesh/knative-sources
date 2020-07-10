@@ -25,6 +25,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"k8s.io/client-go/kubernetes"
+	"knative.dev/pkg/apis"
 	duckv1 "knative.dev/pkg/apis/duck/v1"
 	"knative.dev/pkg/controller"
 	pkgreconciler "knative.dev/pkg/reconciler"
@@ -50,7 +51,8 @@ type integration struct {
 	password string
 	username string
 	title    string
-	url      string
+	url      apis.URL
+	id       int64
 
 	client *zendesk.Client
 }
@@ -60,8 +62,7 @@ var _ reconcilerzendesksource.Interface = (*reconciler)(nil)
 
 // ReconcileKind implements Interface.ReconcileKind.
 func (r *reconciler) ReconcileKind(ctx context.Context, src *v1alpha1.ZendeskSource) pkgreconciler.Event {
-	src.Status.InitializeConditions()
-	src.Status.ObservedGeneration = src.Generation
+
 	src.Status.CloudEventAttributes = []duckv1.CloudEventAttributes{{Type: v1alpha1.ZendeskSourceEventType}}
 	dest := src.Spec.Sink.DeepCopy()
 	if dest.Ref != nil && dest.Ref.Namespace == "" {
@@ -75,15 +76,15 @@ func (r *reconciler) ReconcileKind(ctx context.Context, src *v1alpha1.ZendeskSou
 	}
 
 	src.Status.MarkSink(uri)
-	adapter, event := r.ksvcr.ReconcileKService(ctx, src, makeAdapter(src, r.adapterCfg))
-	src.Status.PropagateAvailability(adapter)
+	ksvc, event := r.ksvcr.ReconcileKService(ctx, src, makeAdapter(src, r.adapterCfg))
+	src.Status.PropagateAvailability(ksvc)
 
 	// Prevent the reconciler from trying to create Zendesk integration before spec is avalible
 	if src.Spec.Subdomain == "" {
 		return event
 	}
 
-	secretToken, err := r.secretFrom(ctx, adapter.Namespace, src.Spec.Token.SecretKeyRef)
+	secretToken, err := r.secretFrom(ctx, ksvc.Namespace, src.Spec.Token.SecretKeyRef)
 	if err != nil {
 		src.Status.MarkNoToken("Could not find a Zendesk API token:%s", err.Error())
 		return err
@@ -97,76 +98,96 @@ func (r *reconciler) ReconcileKind(ctx context.Context, src *v1alpha1.ZendeskSou
 
 	src.Status.MarkSecretsFound()
 
-	// I am still not passing the URL here for the Adapter.. need to figure that out still.
-	i := &integration{username: src.Spec.Username, password: secretPassword, title: adapter.GetName()}
-	i.client, err = zendesk.NewClient(nil)
-	if err != nil {
-		return err
+	if ksvc.Status.GetCondition(apis.ConditionReady).IsTrue() && ksvc.Status.URL != nil {
+
+		i := &integration{url: *ksvc.Status.URL, username: src.Spec.Username, password: secretPassword, title: ksvc.GetName()}
+		i.client, err = zendesk.NewClient(nil)
+		if err != nil {
+			return err
+		}
+
+		if err := i.client.SetSubdomain(src.Spec.Subdomain); err != nil {
+			return err
+		}
+
+		i.client.SetCredential(zendesk.NewAPITokenCredential(src.Spec.Email, secretToken))
+
+		err = i.ensureIntegration(ctx)
+		if err != nil {
+			src.Status.MarkNoTargetCreated("Could not create a new Zendesk Target: %s", err.Error())
+			return err
+		}
+		src.Status.MarkTargetCreated()
+		return event
 	}
 
-	if err := i.client.SetSubdomain(src.Spec.Subdomain); err != nil {
-		return err
-	}
-	i.client.SetCredential(zendesk.NewAPITokenCredential(src.Spec.Email, secretToken))
-
-	err = i.ensureIntegration(ctx)
-	if err != nil {
-		src.Status.MarkNoTargetCreated("Could not create a new Zendesk Target: %s", err.Error())
-		return controller.NewPermanentError(err)
-	}
-	src.Status.MarkTargetCreated()
+	//----------______-----__
+	// IS THIS RIGHT?? TO RETURN AN EVENT? HOW DO I KNOW IT WILL COME BACK IF THE URL WAS NOT READY TO RECONCILE?
+	//----------______-----__
 	return event
 }
 
-// ensureIntegration handles all the parts required to create a new webhook integration
+// newTarget returns a populated zendesk.Target{}
+func (i *integration) newTarget() zendesk.Target {
+	return zendesk.Target{
+		TargetURL:   i.url.String(),
+		Type:        "http_target",
+		Method:      "post",
+		ContentType: "application/json",
+		Password:    i.password,
+		Username:    i.username,
+		Title:       i.title,
+		ID:          i.id,
+	}
+}
+
+// ensureIntegration verifies and or creates a Zendesk 'Target'
 func (i *integration) ensureIntegration(ctx context.Context) error {
 
-	exists, err := i.checkTargetExists(ctx)
+	err := i.checkTargetExists(ctx)
 	if err != nil {
-		return controller.NewPermanentError(err)
+		return err
 	}
-	if !exists {
-		t := zendesk.Target{}
-		t.TargetURL = i.url
-		t.Type = "http_target"
-		t.Method = "post"
-		t.ContentType = "application/json"
-		t.Password = i.password
-		t.Username = i.username
-		t.Title = i.title
-		createdTarget, err := i.client.CreateTarget(ctx, t)
-		if err != nil {
-			return err
-		}
-		err = i.createTrigger(ctx, createdTarget)
-		if err != nil {
-			return err
-		}
-		return nil
+
+	t := i.newTarget()
+
+	if err := i.createTrigger(ctx, t); err != nil {
+		return err
 	}
+
 	return nil
 }
 
-// checkTargetExists checks if a Zendesk 'Target' with a matching "Title" exists and if the target is active.
+// checkTargetExists Retrieves all Zendesk "Target's" and checks If a Zendesk "Target":
+// (Is labeld as 'Active') && (Has a 'Title' == The one we hold) && (The 'TargetURL' == The URL we hold)
 // More info on Zendesk Target's: https://developer.zendesk.com/rest_api/docs/support/targets
-func (i *integration) checkTargetExists(ctx context.Context) (bool, error) {
+func (i *integration) checkTargetExists(ctx context.Context) error {
 	Target, _, err := i.client.GetTargets(ctx)
 	if err != nil {
-		return false, err
+		return err
 	}
 
 	for _, t := range Target {
-		if t.Active && t.Title == i.title {
-			return true, nil
+		if (t.Active) && (t.Title == i.title) && (t.TargetURL == i.url.String()) {
+			i.id = t.ID
+			return nil
 		}
 	}
-	return false, nil
+	return nil
 }
 
 // createTrigger creates a new Zendesk 'Trigger'
 // more info on Zendesk 'Trigger's' -> https://developer.zendesk.com/rest_api/docs/support/triggers
 func (i *integration) createTrigger(ctx context.Context, t zendesk.Target) error {
-	targetID := strconv.Itoa(int(t.ID))
+	var targetID string
+
+	// if there is a value found in i.id. We know that we found a trigger earlier. So set it to this.
+	if i.id >= 0 {
+		targetID = strconv.Itoa(int(i.id))
+		// else set
+	} else {
+		targetID = strconv.Itoa(int(t.ID))
+	}
 
 	ta := zendesk.TriggerAction{
 		Field: "notification_target",

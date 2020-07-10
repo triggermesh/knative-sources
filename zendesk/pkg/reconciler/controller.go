@@ -22,18 +22,18 @@ import (
 	"github.com/kelseyhightower/envconfig"
 	"k8s.io/client-go/tools/cache"
 
+	srcreconciler "github.com/triggermesh/knative-sources/pkg/reconciler"
+	"github.com/triggermesh/knative-sources/zendesk/pkg/apis/sources/v1alpha1"
+	zendesksourceinformer "github.com/triggermesh/knative-sources/zendesk/pkg/client/generated/injection/informers/sources/v1alpha1/zendesksource"
+	"github.com/triggermesh/knative-sources/zendesk/pkg/client/generated/injection/reconciler/sources/v1alpha1/zendesksource"
 	"knative.dev/eventing/pkg/reconciler/source"
+	kubeclient "knative.dev/pkg/client/injection/kube/client"
 	"knative.dev/pkg/configmap"
 	"knative.dev/pkg/controller"
 	"knative.dev/pkg/logging"
 	"knative.dev/pkg/resolver"
 	kserviceclient "knative.dev/serving/pkg/client/injection/client"
 	kserviceinformer "knative.dev/serving/pkg/client/injection/informers/serving/v1/service"
-
-	srcreconciler "github.com/triggermesh/knative-sources/pkg/reconciler"
-	"github.com/triggermesh/knative-sources/zendesk/pkg/apis/sources/v1alpha1"
-	zendesksourceinformer "github.com/triggermesh/knative-sources/zendesk/pkg/client/generated/injection/informers/sources/v1alpha1/zendesksource"
-	"github.com/triggermesh/knative-sources/zendesk/pkg/client/generated/injection/reconciler/sources/v1alpha1/zendesksource"
 )
 
 // NewController initializes the controller and is called by the generated code
@@ -55,8 +55,9 @@ func NewController(
 	zendeskSourceInformer := zendesksourceinformer.Get(ctx)
 
 	r := &reconciler{
-		ksvcr:      srcreconciler.NewKServiceReconciler(kserviceclient.Get(ctx), ksvcInformer.Lister()),
-		adapterCfg: adapterCfg,
+		ksvcr:         srcreconciler.NewKServiceReconciler(kserviceclient.Get(ctx), ksvcInformer.Lister()),
+		adapterCfg:    adapterCfg,
+		kubeClientSet: kubeclient.Get(ctx),
 	}
 
 	impl := zendesksource.NewImpl(ctx, r)

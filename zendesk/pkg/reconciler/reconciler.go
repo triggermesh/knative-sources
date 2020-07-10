@@ -36,9 +36,6 @@ import (
 	reconcilerzendesksource "github.com/triggermesh/knative-sources/zendesk/pkg/client/generated/injection/reconciler/sources/v1alpha1/zendesksource"
 )
 
-// tmTitle is the name of the Zendesk 'Extension' that the source will create
-const tmTitle = "TriggermeshxExtension"
-
 // sourceName is the name of the source deployment. this is needed to form the proper url for the Webhook call's
 const sourceName = "zendesksource-zendesksource"
 
@@ -49,6 +46,16 @@ type reconciler struct {
 	kubeClientSet kubernetes.Interface
 
 	adapterCfg *adapterConfig
+}
+
+// integration bundles the required items to automate the webhook integration with Zendesk
+type integration struct {
+	password string
+	username string
+	title    string
+	url      string
+
+	client *zendesk.Client
 }
 
 // reconciler implements Interface
@@ -93,7 +100,19 @@ func (r *reconciler) ReconcileKind(ctx context.Context, src *v1alpha1.ZendeskSou
 
 	src.Status.MarkSecretsFound()
 
-	err = ensureIntegration(ctx, src, secretToken, secretPassword)
+	// I am still not passing the URL here for the Adapter.. need to figure that out still.
+	i := &integration{username: src.Spec.Username, password: secretPassword, title: adapter.GetName()}
+	i.client, err = zendesk.NewClient(nil)
+	if err != nil {
+		return err
+	}
+
+	if err := i.client.SetSubdomain(src.Spec.Subdomain); err != nil {
+		return err
+	}
+	i.client.SetCredential(zendesk.NewAPITokenCredential(src.Spec.Email, secretToken))
+
+	err = i.ensureIntegration(ctx)
 	if err != nil {
 		src.Status.MarkNoTargetCreated("Could not create a new Zendesk Target: %s", err.Error())
 		return controller.NewPermanentError(err)
@@ -103,33 +122,26 @@ func (r *reconciler) ReconcileKind(ctx context.Context, src *v1alpha1.ZendeskSou
 }
 
 // ensureIntegration handles all the parts required to create a new webhook integration
-func ensureIntegration(ctx context.Context, src *v1alpha1.ZendeskSource, token, pass string) error {
-	client, err := zendesk.NewClient(nil)
-	if err != nil {
-		return err
-	}
-	if err := client.SetSubdomain(src.Spec.Subdomain); err != nil {
-		return err
-	}
-	client.SetCredential(zendesk.NewAPITokenCredential(src.Spec.Email, token))
-	exists, err := checkTargetExists(ctx, client)
+func (i *integration) ensureIntegration(ctx context.Context) error {
+
+	exists, err := i.checkTargetExists(ctx)
 	if err != nil {
 		return controller.NewPermanentError(err)
 	}
 	if !exists {
 		t := zendesk.Target{}
-		t.TargetURL = "https://" + sourceName + "." + src.Namespace + ".dev.munu.io"
+		t.TargetURL = i.url
 		t.Type = "http_target"
 		t.Method = "post"
 		t.ContentType = "application/json"
-		t.Password = pass
-		t.Username = src.Spec.Username
-		t.Title = tmTitle
-		createdTarget, err := client.CreateTarget(ctx, t)
+		t.Password = i.password
+		t.Username = i.username
+		t.Title = i.title
+		createdTarget, err := i.client.CreateTarget(ctx, t)
 		if err != nil {
 			return err
 		}
-		err = createTrigger(ctx, client, createdTarget)
+		err = i.createTrigger(ctx, createdTarget)
 		if err != nil {
 			return err
 		}
@@ -140,14 +152,14 @@ func ensureIntegration(ctx context.Context, src *v1alpha1.ZendeskSource, token, 
 
 // checkTargetExists checks if a Zendesk 'Target' with a matching "Title" exists and if the target is active.
 // More info on Zendesk Target's: https://developer.zendesk.com/rest_api/docs/support/targets
-func checkTargetExists(ctx context.Context, client *zendesk.Client) (bool, error) {
-	Target, _, err := client.GetTargets(ctx)
+func (i *integration) checkTargetExists(ctx context.Context) (bool, error) {
+	Target, _, err := i.client.GetTargets(ctx)
 	if err != nil {
 		return false, err
 	}
 
 	for _, t := range Target {
-		if t.Active && t.Title == tmTitle {
+		if t.Active && t.Title == i.title {
 			return true, nil
 		}
 	}
@@ -156,7 +168,7 @@ func checkTargetExists(ctx context.Context, client *zendesk.Client) (bool, error
 
 // createTrigger creates a new Zendesk 'Trigger'
 // more info on Zendesk 'Trigger's' -> https://developer.zendesk.com/rest_api/docs/support/triggers
-func createTrigger(ctx context.Context, client *zendesk.Client, t zendesk.Target) error {
+func (i *integration) createTrigger(ctx context.Context, t zendesk.Target) error {
 	targetID := strconv.Itoa(int(t.ID))
 
 	ta := zendesk.TriggerAction{
@@ -165,7 +177,7 @@ func createTrigger(ctx context.Context, client *zendesk.Client, t zendesk.Target
 	}
 
 	var newTrigger = zendesk.Trigger{}
-	newTrigger.Title = tmTitle
+	newTrigger.Title = i.title
 	newTrigger.Conditions.All = []zendesk.TriggerCondition{{
 		Field:    "update_type",
 		Operator: "is",
@@ -174,7 +186,7 @@ func createTrigger(ctx context.Context, client *zendesk.Client, t zendesk.Target
 
 	// more info in Zendesk Trigger Actions -> https://developer.zendesk.com/rest_api/docs/support/triggers#actions
 	newTrigger.Actions = append(newTrigger.Actions, ta)
-	chk, err := ensureTrigger(ctx, client, newTrigger)
+	chk, err := i.ensureTrigger(ctx, newTrigger)
 	if err != nil {
 		return err
 	}
@@ -183,7 +195,7 @@ func createTrigger(ctx context.Context, client *zendesk.Client, t zendesk.Target
 		return nil
 	}
 
-	nT, err := client.CreateTrigger(ctx, newTrigger)
+	nT, err := i.client.CreateTrigger(ctx, newTrigger)
 	if err != nil {
 		return err
 	}
@@ -194,14 +206,14 @@ func createTrigger(ctx context.Context, client *zendesk.Client, t zendesk.Target
 
 // ensureTrigger see if a Zendesk 'Trigger' with a matching 'Title' exisits & if the 'Trigger' is has the proper URL associated . <-- that part is not done
 // more info on Zendesk 'Trigger's' -> https://developer.zendesk.com/rest_api/docs/support/triggers
-func ensureTrigger(ctx context.Context, client *zendesk.Client, t zendesk.Trigger) (bool, error) {
-	trigggers, _, err := client.GetTriggers(ctx, &zendesk.TriggerListOptions{Active: true})
+func (i *integration) ensureTrigger(ctx context.Context, t zendesk.Trigger) (bool, error) {
+	trigggers, _, err := i.client.GetTriggers(ctx, &zendesk.TriggerListOptions{Active: true})
 	if err != nil {
 		return false, err
 	}
 
 	for _, Trigger := range trigggers {
-		if Trigger.Title == tmTitle || Trigger.Actions[0] == t.Actions[0] {
+		if Trigger.Title == i.title || Trigger.Actions[0] == t.Actions[0] {
 			fmt.Println("Found a matching trigger!")
 			fmt.Println(Trigger)
 			fmt.Println(Trigger.Title)

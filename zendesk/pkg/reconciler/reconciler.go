@@ -36,9 +36,6 @@ import (
 	reconcilerzendesksource "github.com/triggermesh/knative-sources/zendesk/pkg/client/generated/injection/reconciler/sources/v1alpha1/zendesksource"
 )
 
-// sourceName is the name of the source deployment. this is needed to form the proper url for the Webhook call's
-const sourceName = "zendesksource-zendesksource"
-
 // Reconciler reconciles a ZendeskSource object
 type reconciler struct {
 	ksvcr         srcreconciler.KServiceReconciler

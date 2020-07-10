@@ -42,7 +42,6 @@ type ZendeskAPIHandler interface {
 const (
 	serverPort                = "8080"
 	serverShutdownGracePeriod = time.Second * 10
-	subscriptionRecheckPeriod = time.Second * 10
 )
 
 // constats for the CE data

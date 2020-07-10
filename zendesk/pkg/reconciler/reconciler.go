@@ -186,23 +186,23 @@ func (i *integration) createTrigger(ctx context.Context, t zendesk.Target) error
 
 	// more info in Zendesk Trigger Actions -> https://developer.zendesk.com/rest_api/docs/support/triggers#actions
 	newTrigger.Actions = append(newTrigger.Actions, ta)
-	chk, err := i.ensureTrigger(ctx, newTrigger)
+	exists, err := i.ensureTrigger(ctx, newTrigger)
 	if err != nil {
 		return err
 	}
 
-	if chk {
+	if exists {
 		return nil
 	}
 
-	nT, err := i.client.CreateTrigger(ctx, newTrigger)
-	if err != nil {
+	if _, err = i.client.CreateTrigger(ctx, newTrigger); err != nil {
 		return err
 	}
+
 	return nil
 }
 
-// ensureTrigger see if a Zendesk 'Trigger' with a matching 'Title' exisits & if the 'Trigger' is has the proper URL associated . <-- that part is not done
+// ensureTrigger verifies and or creates the Zendesk webhook integration.
 // more info on Zendesk 'Trigger's' -> https://developer.zendesk.com/rest_api/docs/support/triggers
 func (i *integration) ensureTrigger(ctx context.Context, t zendesk.Trigger) (bool, error) {
 	trigggers, _, err := i.client.GetTriggers(ctx, &zendesk.TriggerListOptions{Active: true})

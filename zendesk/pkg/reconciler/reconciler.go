@@ -121,7 +121,10 @@ func (r *reconciler) ReconcileKind(ctx context.Context, src *v1alpha1.ZendeskSou
 		return event
 	}
 
-	return nil
+	//----------______-----__
+	// IS THIS RIGHT?? TO RETURN AN EVENT? HOW DO I KNOW IT WILL COME BACK IF THE URL WAS NOT READY TO RECONCILE?
+	//----------______-----__
+	return event
 }
 
 // newTarget returns a populated zendesk.Target{}
@@ -148,12 +151,7 @@ func (i *integration) ensureIntegration(ctx context.Context) error {
 
 	t := i.newTarget()
 
-	createdTarget, err := i.client.CreateTarget(ctx, t)
-	if err != nil {
-		return err
-	}
-
-	if err := i.createTrigger(ctx, createdTarget); err != nil {
+	if err := i.createTrigger(ctx, t); err != nil {
 		return err
 	}
 
@@ -170,8 +168,7 @@ func (i *integration) checkTargetExists(ctx context.Context) error {
 	}
 
 	for _, t := range Target {
-		//if t.Active && t.Title == i.title && t.TargetURL == i.url.String() {
-		if t.TargetURL == i.url.String() {
+		if (t.Active) && (t.Title == i.title) && (t.TargetURL == i.url.String()) {
 			i.id = t.ID
 			return nil
 		}
@@ -184,12 +181,13 @@ func (i *integration) checkTargetExists(ctx context.Context) error {
 func (i *integration) createTrigger(ctx context.Context, t zendesk.Target) error {
 	var targetID string
 
-	// if there is a value found in i.id. We know that we found a trigger earlier. So set this.
+	// if there is a value found in i.id. We know that we found a trigger earlier. So set it to this.
 	if i.id >= 0 {
 		targetID = strconv.Itoa(int(i.id))
+		// else set
+	} else {
+		targetID = strconv.Itoa(int(t.ID))
 	}
-
-	targetID = strconv.Itoa(int(t.ID))
 
 	ta := zendesk.TriggerAction{
 		Field: "notification_target",
@@ -197,7 +195,7 @@ func (i *integration) createTrigger(ctx context.Context, t zendesk.Target) error
 	}
 
 	var newTrigger = zendesk.Trigger{}
-	newTrigger.Title = i.title + " Trigger"
+	newTrigger.Title = i.title
 	newTrigger.Conditions.All = []zendesk.TriggerCondition{{
 		Field:    "update_type",
 		Operator: "is",

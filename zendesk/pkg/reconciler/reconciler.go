@@ -86,7 +86,7 @@ func (r *reconciler) ReconcileKind(ctx context.Context, src *v1alpha1.ZendeskSou
 		return event
 	}
 
-	secretToken, err := r.secretFrom(ctx, src.Namespace, src.Spec.Token.SecretKeyRef)
+	secretToken, err := r.secretFrom(ctx, adapter.Namespace, src.Spec.Token.SecretKeyRef)
 	if err != nil {
 		src.Status.MarkNoToken("Could not find a Zendesk API token:%s", err.Error())
 		return err
@@ -199,8 +199,6 @@ func (i *integration) createTrigger(ctx context.Context, t zendesk.Target) error
 	if err != nil {
 		return err
 	}
-	fmt.Println("created trigger:")
-	fmt.Println(nT.ID)
 	return nil
 }
 
@@ -214,9 +212,6 @@ func (i *integration) ensureTrigger(ctx context.Context, t zendesk.Trigger) (boo
 
 	for _, Trigger := range trigggers {
 		if Trigger.Title == i.title || Trigger.Actions[0] == t.Actions[0] {
-			fmt.Println("Found a matching trigger!")
-			fmt.Println(Trigger)
-			fmt.Println(Trigger.Title)
 			return true, nil
 		}
 	}

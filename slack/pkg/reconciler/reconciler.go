@@ -42,8 +42,7 @@ var _ reconcilerslacksource.Interface = (*reconciler)(nil)
 
 // ReconcileKind implements Interface.ReconcileKind.
 func (r *reconciler) ReconcileKind(ctx context.Context, src *v1alpha1.SlackSource) pkgreconciler.Event {
-	src.Status.InitializeConditions()
-	src.Status.ObservedGeneration = src.Generation
+
 	src.Status.CloudEventAttributes = []duckv1.CloudEventAttributes{{Type: v1alpha1.SlackSourceEventType}}
 
 	dest := src.Spec.Sink.DeepCopy()

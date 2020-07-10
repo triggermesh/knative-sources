@@ -69,7 +69,7 @@ func (s *SlackSourceStatus) PropagateAvailability(ksvc *servingv1.Service) {
 		}
 		return
 
-	case ksvc.Status.IsReady():
+	case ksvc.IsReady():
 		SlackCondSet.Manage(s).MarkTrue(ConditionDeployed)
 
 	default:
@@ -100,4 +100,14 @@ func (s *SlackSourceStatus) MarkNoSink(messageFormat string, messageA ...interfa
 // IsReady returns true if the resource is ready overall.
 func (s *SlackSourceStatus) IsReady() bool {
 	return SlackCondSet.Manage(s).IsHappy()
+}
+
+// GetConditionSet implements duckv1.KRShaped.
+func (s *SlackSource) GetConditionSet() apis.ConditionSet {
+	return SlackCondSet
+}
+
+// GetStatus implements duckv1.KRShaped.
+func (s *SlackSource) GetStatus() *duckv1.Status {
+	return &s.Status.Status
 }

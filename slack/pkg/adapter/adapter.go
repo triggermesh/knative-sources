@@ -47,6 +47,6 @@ type slackAdapter struct {
 }
 
 // Start runs the Slack handler.
-func (a *slackAdapter) Start(stopCh <-chan struct{}) error {
-	return a.handler.Start(stopCh)
+func (a *slackAdapter) Start(ctx context.Context) error {
+	return a.handler.Start(ctx)
 }

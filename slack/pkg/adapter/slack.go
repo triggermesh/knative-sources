@@ -24,6 +24,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"strconv"
+	"sync"
 	"time"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
@@ -31,9 +32,11 @@ import (
 	"go.uber.org/zap"
 )
 
+const serverShutdownGracePeriod = time.Second * 10
+
 // SlackEventAPIHandler listen for Slack API Events
 type SlackEventAPIHandler interface {
-	Start(stopCh <-chan struct{}) error
+	Start(ctx context.Context) error
 }
 
 type slackEventAPIHandler struct {
@@ -63,8 +66,18 @@ func NewSlackEventAPIHandler(ceClient cloudevents.Client, port int, signingSecre
 
 // Start the server for receiving Slack callbacks. Will block
 // until the stop channel closes.
-func (h *slackEventAPIHandler) Start(stopCh <-chan struct{}) error {
+func (h *slackEventAPIHandler) Start(ctx context.Context) error {
 	h.logger.Info("Starting Slack event handler")
+
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
+
+	// handle stop signals
+	go func() {
+		<-ctx.Done()
+		h.logger.Info("Shutdown signal received. Terminating")
+		cancel()
+	}()
 
 	m := http.NewServeMux()
 	m.HandleFunc("/", h.handleAll)
@@ -74,17 +87,42 @@ func (h *slackEventAPIHandler) Start(stopCh <-chan struct{}) error {
 		Handler: m,
 	}
 
-	done := make(chan bool, 1)
-	go h.gracefulShutdown(stopCh, done)
+	serverErrCh := make(chan error)
+	defer close(serverErrCh)
 
-	h.logger.Infof("Server is ready to handle requests at %s", h.srv.Addr)
-	if err := h.srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-		return fmt.Errorf("could not listen on %s: %w", h.srv.Addr, err)
+	var wg sync.WaitGroup
+	wg.Add(1)
+
+	go func() {
+		h.logger.Infof("Server is ready to handle requests at %s", h.srv.Addr)
+		serverErrCh <- h.srv.ListenAndServe()
+		wg.Done()
+	}()
+
+	var err error
+	select {
+	case serverErr := <-serverErrCh:
+		if serverErr != nil {
+			err = fmt.Errorf("Shutting server down %w", serverErr)
+		}
+		cancel()
+
+	case <-ctx.Done():
+
+		shutdownCtx, cancelTimeout := context.WithTimeout(ctx, serverShutdownGracePeriod)
+		defer cancelTimeout()
+
+		if shutdownErr := h.srv.Shutdown(shutdownCtx); shutdownErr != nil {
+			err = fmt.Errorf("error during server shutdown: %w", shutdownErr)
+		}
+
+		// unblock server goroutine
+		<-serverErrCh
 	}
 
-	<-done
+	wg.Wait()
 	h.logger.Infof("Server stopped")
-	return nil
+	return err
 }
 
 // handleAll receives all Slack events at a single resource, it
@@ -141,20 +179,6 @@ func (h *slackEventAPIHandler) handleAll(w http.ResponseWriter, r *http.Request)
 	default:
 		h.logger.Warnf("not supported content %q", event.Type)
 	}
-}
-
-func (h *slackEventAPIHandler) gracefulShutdown(stopCh <-chan struct{}, done chan<- bool) {
-	<-stopCh
-	h.logger.Info("Server is shutting down...")
-
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-
-	h.srv.SetKeepAlivesEnabled(false)
-	if err := h.srv.Shutdown(ctx); err != nil {
-		h.logger.Fatalf("Could not gracefully shutdown the server: %v", err)
-	}
-	close(done)
 }
 
 func (h *slackEventAPIHandler) handleError(err error, code int, w http.ResponseWriter) {

@@ -40,6 +40,14 @@ rules:
   - update
   - patch
 
+  # Read secrets
+- apiGroups:
+  - ''
+  resources:
+  - secrets
+  verbs:
+  - get
+
 - apiGroups:
   - sources.triggermesh.io
   resources:

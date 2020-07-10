@@ -17,8 +17,10 @@ require (
 	github.com/nukosuke/go-zendesk v0.7.5
 	github.com/stretchr/testify v1.6.1
 	go.uber.org/zap v1.15.0
-	k8s.io/api v0.17.6
-	k8s.io/apimachinery v0.17.6
+	golang.org/x/net v0.0.0-20200707034311-ab3426394381 // indirect
+	golang.org/x/text v0.3.3 // indirect
+	k8s.io/api v0.18.5
+	k8s.io/apimachinery v0.18.5
 	k8s.io/client-go v11.0.1-0.20190805182717-6502b5e7b1b5+incompatible
 	knative.dev/eventing v0.15.1
 	knative.dev/pkg v0.0.0-20200619214325-bfb590781363

@@ -87,7 +87,7 @@ func (s *ZendeskSourceStatus) PropagateAvailability(ksvc *servingv1.Service) {
 		}
 		return
 
-	case ksvc.Status.IsReady():
+	case ksvc.IsReady():
 		ZendeskCondSet.Manage(s).MarkTrue(ConditionDeployed)
 
 	default:

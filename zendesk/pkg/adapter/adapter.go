@@ -26,8 +26,6 @@ import (
 	"knative.dev/pkg/logging"
 )
 
-const defaultListenPort = 8080
-
 var _ adapter.Adapter = (*zendeskAdapter)(nil)
 
 type zendeskAdapter struct {
@@ -41,12 +39,15 @@ func New(ctx context.Context, aEnv adapter.EnvConfigAccessor, ceClient cloudeven
 	logger := logging.FromContext(ctx)
 
 	return &zendeskAdapter{
-		handler: NewZendeskAPIHandler(ceClient, defaultListenPort, env.Username, env.Password, logger.Named("handler")),
+		handler: NewZendeskAPIHandler(ceClient, env.Username, env.Password, logger.Named("handler")),
 		logger:  logger,
 	}
 }
 
 // Start runs the Zendesk handler.
-func (a *zendeskAdapter) Start(stopCh <-chan struct{}) error {
-	return a.handler.Start(stopCh)
+func (a *zendeskAdapter) Start(ctx context.Context) error {
+	if err := a.handler.Start(ctx); err != nil {
+		return err
+	}
+	return nil
 }

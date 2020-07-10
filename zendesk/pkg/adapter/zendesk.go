@@ -26,6 +26,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
@@ -35,8 +36,14 @@ import (
 
 // ZendeskAPIHandler listen for Zendesk API Events
 type ZendeskAPIHandler interface {
-	Start(stopCh <-chan struct{}) error
+	Start(ctx context.Context) error
 }
+
+const (
+	serverPort                = "8080"
+	serverShutdownGracePeriod = time.Second * 10
+	subscriptionRecheckPeriod = time.Second * 10
+)
 
 // constats for the CE data
 const (
@@ -46,7 +53,6 @@ const (
 )
 
 type zendeskAPIHandler struct {
-	port     int
 	username string
 	password string
 
@@ -57,9 +63,8 @@ type zendeskAPIHandler struct {
 }
 
 // NewZendeskAPIHandler creates the default implementation of the Zendesk API Events handler
-func NewZendeskAPIHandler(ceClient cloudevents.Client, port int, username, password string, logger *zap.SugaredLogger) ZendeskAPIHandler {
+func NewZendeskAPIHandler(ceClient cloudevents.Client, username, password string, logger *zap.SugaredLogger) ZendeskAPIHandler {
 	return &zendeskAPIHandler{
-		port:     port,
 		username: username,
 		password: password,
 
@@ -69,28 +74,63 @@ func NewZendeskAPIHandler(ceClient cloudevents.Client, port int, username, passw
 }
 
 // Start the server for receiving Zendesk events. Will block until the stop channel closes.
-func (h *zendeskAPIHandler) Start(stopCh <-chan struct{}) error {
+func (h *zendeskAPIHandler) Start(ctx context.Context) error {
 	h.logger.Info("Starting Zendesk event handler...")
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
+
+	// handle stop signals
+	go func() {
+		<-ctx.Done()
+		h.logger.Info("Shutdown signal received. Terminating")
+		cancel()
+	}()
 
 	m := http.NewServeMux()
 	m.HandleFunc("/", h.handleAll)
+	http.HandleFunc("/health", healthCheckHandler)
 
 	h.srv = &http.Server{
-		Addr:    ":" + strconv.Itoa(h.port),
+		Addr:    ":" + serverPort,
 		Handler: m,
 	}
 
-	done := make(chan bool, 1)
-	go h.gracefulShutdown(stopCh, done)
+	serverErrCh := make(chan error)
+	defer close(serverErrCh)
 
-	h.logger.Infof("Zendesk Source is ready to handle requests at %s", h.srv.Addr)
-	if err := h.srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-		return fmt.Errorf("could not listen on %s: %v", h.srv.Addr, err)
+	var wg sync.WaitGroup
+
+	wg.Add(1)
+	go func() {
+		h.logger.Infof("Zendesk Source is ready to handle requests at %s", h.srv.Addr)
+		serverErrCh <- h.srv.ListenAndServe()
+		wg.Done()
+	}()
+
+	var err error
+
+	select {
+	case serverErr := <-serverErrCh:
+		if serverErr != nil {
+			err = fmt.Errorf("failure during runtime of Zendesk event handler: %w", serverErr)
+		}
+		cancel()
+
+	case <-ctx.Done():
+		h.logger.Info("Shutting server down")
+
+		shutdownCtx, cancelTimeout := context.WithTimeout(ctx, serverShutdownGracePeriod)
+		defer cancelTimeout()
+		if shutdownErr := h.srv.Shutdown(shutdownCtx); shutdownErr != nil {
+			err = fmt.Errorf("error during server shutdown: %w", shutdownErr)
+		}
+
+		// unblock server goroutine
+		<-serverErrCh
 	}
 
-	<-done
-	h.logger.Infof("Server stopped")
-	return nil
+	wg.Wait()
+	return err
 }
 
 func (h *zendeskAPIHandler) validateAuthHeader(r *http.Request) error {
@@ -164,20 +204,6 @@ func (h *zendeskAPIHandler) handleAll(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (h *zendeskAPIHandler) gracefulShutdown(stopCh <-chan struct{}, done chan<- bool) {
-	<-stopCh
-	h.logger.Info("Server is shutting down...")
-
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-
-	h.srv.SetKeepAlivesEnabled(false)
-	if err := h.srv.Shutdown(ctx); err != nil {
-		h.logger.Fatalf("Could not gracefully shutdown the server: %v", err)
-	}
-	close(done)
-}
-
 func (h *zendeskAPIHandler) handleError(err error, w http.ResponseWriter) {
 	h.logger.Error("An error ocurred", zap.Error(err))
 	http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -204,4 +230,10 @@ func (h *zendeskAPIHandler) cloudEventFromTicket(ticket *zendesk.Ticket) (*cloud
 	}
 
 	return &event, nil
+}
+
+func healthCheckHandler(w http.ResponseWriter, _ *http.Request) {
+	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
+	w.WriteHeader(http.StatusOK)
+	fmt.Fprintln(w, "OK")
 }

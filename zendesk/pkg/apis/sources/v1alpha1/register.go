@@ -38,6 +38,7 @@ func Resource(resource string) schema.GroupResource {
 }
 
 var (
+	// SchemeBuilder is used to add go types to the GroupVersionKind scheme
 	SchemeBuilder = runtime.NewSchemeBuilder(addKnownTypes)
 	AddToScheme   = SchemeBuilder.AddToScheme
 )

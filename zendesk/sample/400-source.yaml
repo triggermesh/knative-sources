@@ -17,9 +17,9 @@ kind: ZendeskSource
 metadata:
   name: zendesksource
 spec:
-  email: '' # Example: Joe@AutoParts.com 
-  username: '' # Example: Joe 
-  subdomain: '' # Example:  AutoParts
+  email: '#example: joe@autoparts.com'
+  username: '#example: joe'
+  subdomain: '#example:  autoparts'
   token:
     secretKeyRef:
       name: zendesksource

@@ -24,13 +24,11 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"strconv"
 	"strings"
 	"sync"
 	"time"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
-	"github.com/nukosuke/go-zendesk/zendesk"
 	"go.uber.org/zap"
 )
 
@@ -175,14 +173,14 @@ func (h *zendeskAPIHandler) handleAll(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	event := &zendesk.Ticket{}
+	event := &ZendeskEventWrapper{}
 	err = json.Unmarshal(body, event)
 	if err != nil {
 		h.handleError(fmt.Errorf("could not unmarshall JSON request: %s", err.Error()), w)
 		return
 	}
 
-	cEvent, err := h.cloudEventFromTicket(event)
+	cEvent, err := h.cloudEventFromWrapper(event)
 	if err != nil {
 		h.logger.Info("Error Creating CloudEvent")
 		h.handleError(err, w)
@@ -194,13 +192,8 @@ func (h *zendeskAPIHandler) handleAll(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
+	w.WriteHeader(http.StatusNoContent)
 
-	_, err = w.Write([]byte("500 - Something bad happened!"))
-	if err != nil {
-		h.logger.Info("Error Writing HTTP response")
-		h.handleError(err, w)
-	}
 }
 
 func (h *zendeskAPIHandler) handleError(err error, w http.ResponseWriter) {
@@ -208,21 +201,21 @@ func (h *zendeskAPIHandler) handleError(err error, w http.ResponseWriter) {
 	http.Error(w, err.Error(), http.StatusInternalServerError)
 }
 
-func (h *zendeskAPIHandler) cloudEventFromTicket(ticket *zendesk.Ticket) (*cloudevents.Event, error) {
+func (h *zendeskAPIHandler) cloudEventFromWrapper(wrapper *ZendeskEventWrapper) (*cloudevents.Event, error) {
 	h.logger.Info("Proccesing Zendesk event")
-	data, err := json.Marshal(ticket)
+	data, err := json.Marshal(wrapper)
 	if err != nil {
 		return nil, err
 	}
 	event := cloudevents.NewEvent(cloudevents.VersionV1)
 
-	ceID := strconv.Itoa(int(ticket.ID))
+	ceID := wrapper.ID
 
 	event.SetID(ceID)
 	event.SetType(ceType)
 	event.SetSource(ceSource)
 	//event.SetExtension("api_app_id", "wrapper.APIAppID")
-	//event.SetTime(time.Unix(int64(120), 0))
+	event.SetTime(wrapper.CreatedAt)
 	event.SetSubject(ceSubject)
 	if err := event.SetData(cloudevents.ApplicationJSON, data); err != nil {
 		return nil, fmt.Errorf("failed to set event data: %w", err)

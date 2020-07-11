@@ -19,7 +19,6 @@ package reconciler
 import (
 	"context"
 	"fmt"
-	"strconv"
 
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -121,10 +120,7 @@ func (r *reconciler) ReconcileKind(ctx context.Context, src *v1alpha1.ZendeskSou
 		return event
 	}
 
-	//----------______-----__
-	// IS THIS RIGHT?? TO RETURN AN EVENT? HOW DO I KNOW IT WILL COME BACK IF THE URL WAS NOT READY TO RECONCILE?
-	//----------______-----__
-	return event
+	return nil
 }
 
 // newTarget returns a populated zendesk.Target{}
@@ -137,61 +133,45 @@ func (i *integration) newTarget() zendesk.Target {
 		Password:    i.password,
 		Username:    i.username,
 		Title:       i.title,
-		ID:          i.id,
 	}
 }
 
-// ensureIntegration verifies and or creates a Zendesk 'Target'
+// ensureIntegration ensures our Target and Trigger creation
+// More info on Zendesk Target's: https://developer.zendesk.com/rest_api/docs/support/targets
 func (i *integration) ensureIntegration(ctx context.Context) error {
-
-	err := i.checkTargetExists(ctx)
-	if err != nil {
-		return err
-	}
-
 	t := i.newTarget()
 
-	if err := i.createTrigger(ctx, t); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// checkTargetExists Retrieves all Zendesk "Target's" and checks If a Zendesk "Target":
-// (Is labeld as 'Active') && (Has a 'Title' == The one we hold) && (The 'TargetURL' == The URL we hold)
-// More info on Zendesk Target's: https://developer.zendesk.com/rest_api/docs/support/targets
-func (i *integration) checkTargetExists(ctx context.Context) error {
 	Target, _, err := i.client.GetTargets(ctx)
 	if err != nil {
 		return err
 	}
-
 	for _, t := range Target {
-		if (t.Active) && (t.Title == i.title) && (t.TargetURL == i.url.String()) {
-			i.id = t.ID
+		if t.TargetURL == i.url.String() {
+			if err := i.createTrigger(ctx, t.ID); err != nil {
+				return err
+			}
 			return nil
 		}
+	}
+
+	createdTarget, err := i.client.CreateTarget(ctx, t)
+	if err != nil {
+		return err
+	}
+
+	if err := i.createTrigger(ctx, createdTarget.ID); err != nil {
+		return err
 	}
 	return nil
 }
 
 // createTrigger creates a new Zendesk 'Trigger'
 // more info on Zendesk 'Trigger's' -> https://developer.zendesk.com/rest_api/docs/support/triggers
-func (i *integration) createTrigger(ctx context.Context, t zendesk.Target) error {
-	var targetID string
-
-	// if there is a value found in i.id. We know that we found a trigger earlier. So set it to this.
-	if i.id >= 0 {
-		targetID = strconv.Itoa(int(i.id))
-		// else set
-	} else {
-		targetID = strconv.Itoa(int(t.ID))
-	}
+func (i *integration) createTrigger(ctx context.Context, id int64) error {
 
 	ta := zendesk.TriggerAction{
 		Field: "notification_target",
-		Value: targetID + `,"{"id":"{{ticket.id}}","description":"{{ticket.description}}"}"`,
+		Value: id,
 	}
 
 	var newTrigger = zendesk.Trigger{}

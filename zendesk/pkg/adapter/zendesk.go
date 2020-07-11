@@ -44,7 +44,7 @@ const (
 
 // constats for the CE data
 const (
-	ceType    = "com.zendesk.ticket.new"
+	ceType    = "com.zendesk.new"
 	ceSource  = "com.zendesk.source"
 	ceSubject = "New Zendesk Ticket"
 )

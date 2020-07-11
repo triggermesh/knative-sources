@@ -19,6 +19,7 @@ package reconciler
 import (
 	"context"
 	"fmt"
+	"strconv"
 
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -51,7 +52,6 @@ type integration struct {
 	username string
 	title    string
 	url      apis.URL
-	id       int64
 
 	client *zendesk.Client
 }
@@ -171,7 +171,7 @@ func (i *integration) createTrigger(ctx context.Context, id int64) error {
 
 	ta := zendesk.TriggerAction{
 		Field: "notification_target",
-		Value: id,
+		Value: strconv.Itoa(int(id)),
 	}
 
 	var newTrigger = zendesk.Trigger{}

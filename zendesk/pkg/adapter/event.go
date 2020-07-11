@@ -58,18 +58,18 @@ type ZendeskEventWrapper struct {
 	CustomFields    []CustomField `json:"custom_fields,omitempty"`
 
 	Via struct {
-		Channel string `json:"channel"`
+		Channel string `json:"channel,omitempty"`
 		Source  struct {
-			From map[string]interface{} `json:"from"`
-			To   map[string]interface{} `json:"to"`
-			Rel  string                 `json:"rel"`
+			From map[string]interface{} `json:"from,omitempty"`
+			To   map[string]interface{} `json:"to,omitempty"`
+			Rel  string                 `json:"rel,omitempty"`
 		} `json:"source"`
 	} `json:"via"`
 
 	SatisfactionRating struct {
-		ID      string `json:"id"`
-		Score   string `json:"score"`
-		Comment string `json:"comment"`
+		ID      string `json:"id,omitempty"`
+		Score   string `json:"score,omitempty"`
+		Comment string `json:"comment,omitempty"`
 	} `json:"satisfaction_rating,omitempty"`
 }
 

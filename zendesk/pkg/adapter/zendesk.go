@@ -193,7 +193,7 @@ func (h *zendeskAPIHandler) handleAll(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusNoContent)
-
+	w.Write([]byte("OK"))
 }
 
 func (h *zendeskAPIHandler) handleError(err error, w http.ResponseWriter) {

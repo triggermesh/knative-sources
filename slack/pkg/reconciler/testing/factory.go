@@ -22,6 +22,7 @@ import (
 
 	"go.uber.org/zap"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/tools/record"
 
 	fakeeventingclient "knative.dev/eventing/pkg/client/injection/client/fake"
@@ -31,6 +32,7 @@ import (
 	fakedynamicclient "knative.dev/pkg/injection/clients/dynamicclient/fake"
 	"knative.dev/pkg/logging"
 	logtesting "knative.dev/pkg/logging/testing"
+	"knative.dev/pkg/reconciler"
 	rt "knative.dev/pkg/reconciler/testing"
 	fakeservinginjectionclient "knative.dev/serving/pkg/client/injection/client/fake"
 
@@ -80,6 +82,13 @@ func MakeFactory(ctor Ctor, logger *zap.SugaredLogger) rt.Factory {
 
 		// set up Reconciler from fakes
 		r := ctor(ctx, &ls)
+
+		// If the reconcilers is leader aware, then promote it.
+		if la, ok := r.(reconciler.LeaderAware); ok {
+			if err := la.Promote(reconciler.UniversalBucket(), func(reconciler.Bucket, types.NamespacedName) {}); err != nil {
+				t.Fatalf("Failed to promote reconciler to leader: %s", err)
+			}
+		}
 
 		// inject reactors from table row
 		for _, reactor := range tr.WithReactors {

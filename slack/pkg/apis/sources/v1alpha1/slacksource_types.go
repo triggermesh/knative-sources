@@ -21,7 +21,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
-	"knative.dev/pkg/apis/duck"
+	pkgapis "knative.dev/pkg/apis"
 	duckv1 "knative.dev/pkg/apis/duck/v1"
 	"knative.dev/pkg/kmeta"
 )
@@ -46,14 +46,13 @@ func (s *SlackSource) GetGroupVersionKind() schema.GroupVersionKind {
 	return SchemeGroupVersion.WithKind("SlackSource")
 }
 
-// Check that SlackSource is a runtime.Object.
-var _ runtime.Object = (*SlackSource)(nil)
-
-// Check that we can create OwnerReferences to a SlackSource.
-var _ kmeta.OwnerRefable = (*SlackSource)(nil)
-
-// Check that SlackSource implements the Conditions duck type.
-var _ = duck.VerifyType(&SlackSource{}, &duckv1.Conditions{})
+var (
+	_ runtime.Object      = (*SlackSource)(nil)
+	_ kmeta.OwnerRefable  = (*SlackSource)(nil)
+	_ pkgapis.Validatable = (*SlackSource)(nil)
+	_ pkgapis.Defaultable = (*SlackSource)(nil)
+	_ duckv1.KRShaped     = (*SlackSource)(nil)
+)
 
 // SlackSourceSpec holds the desired state of the SlackSource (from the client).
 type SlackSourceSpec struct {

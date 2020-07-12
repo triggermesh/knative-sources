@@ -93,3 +93,26 @@ zendesksource       True             https://zendesksource-triggermesh.odacremol
 
 ## Events
 
+Below you can find an example Cloudevent from a Zendesk Source.
+
+cloudevents.Event
+Validation: valid
+Context Attributes,
+  specversion: 1.0
+  type: com.zendesk.new
+  source: jeffthenaef.zendesksource-zsrc.tmdev2
+  subject: New Zendesk Ticket
+  id: 62
+  time: 2020-07-12T05:15:43.43054774Z
+  datacontenttype: application/json
+Data,
+  {
+    "id": "62",
+    "description": "----------------------------------------------\n\njeff naef, Jul 12, 2020, 2:15 AM\n\nHello World",
+    "created_at": "0001-01-01T00:00:00Z",
+    "due_at": "0001-01-01T00:00:00Z",
+    "via": {
+      "source": {}
+    },
+    "satisfaction_rating": {}
+  }

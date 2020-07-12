@@ -169,9 +169,13 @@ func (i *integration) ensureIntegration(ctx context.Context) error {
 // more info on Zendesk 'Trigger's' -> https://developer.zendesk.com/rest_api/docs/support/triggers
 func (i *integration) createTrigger(ctx context.Context, id int64) error {
 
+	var triggerValue []string
+	triggerValue = append(triggerValue, strconv.FormatInt(id, 10))
+	triggerValue = append(triggerValue, `{"id":"{{ticket.id}}","description":"{{ticket.description}}"}`)
+
 	ta := zendesk.TriggerAction{
 		Field: "notification_target",
-		Value: strconv.Itoa(int(id)),
+		Value: triggerValue,
 	}
 
 	var newTrigger = zendesk.Trigger{}

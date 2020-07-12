@@ -58,10 +58,7 @@ func (s *ZendeskSource) GetGroupVersionKind() schema.GroupVersionKind {
 var (
 	_ runtime.Object     = (*ZendeskSource)(nil)
 	_ kmeta.OwnerRefable = (*ZendeskSource)(nil)
-	//	_ apis.Validatable   = (*AWSEventBridgeTarget)(nil)
-	//	_ apis.Defaultable   = (*AWSEventBridgeTarget)(nil)
-	//	_ apis.HasSpec       = (*AWSEventBridgeTarget)(nil)
-	_ duckv1.KRShaped = (*ZendeskSource)(nil)
+	_ duckv1.KRShaped    = (*ZendeskSource)(nil)
 )
 
 // ZendeskSourceSpec holds the desired state of the ZendeskSource (from the client).

@@ -24,6 +24,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"os"
 	"strings"
 	"sync"
 	"time"
@@ -45,7 +46,6 @@ const (
 // constats for the CE data
 const (
 	ceType    = "com.zendesk.new"
-	ceSource  = "com.zendesk.source"
 	ceSubject = "New Zendesk Ticket"
 )
 
@@ -213,8 +213,7 @@ func (h *zendeskAPIHandler) cloudEventFromWrapper(wrapper *ZendeskEventWrapper) 
 
 	event.SetID(ceID)
 	event.SetType(ceType)
-	event.SetSource(ceSource)
-	//event.SetExtension("api_app_id", "wrapper.APIAppID")
+	event.SetSource(os.Getenv("NAMESPACE") + "." + os.Getenv("SUBDOMAIN") + "." + os.Getenv("NAME"))
 	event.SetTime(wrapper.CreatedAt)
 	event.SetSubject(ceSubject)
 	if err := event.SetData(cloudevents.ApplicationJSON, data); err != nil {

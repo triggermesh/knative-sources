@@ -99,7 +99,7 @@ func (r *reconciler) ReconcileKind(ctx context.Context, src *v1alpha1.ZendeskSou
 
 	if ksvc.Status.GetCondition(apis.ConditionReady).IsTrue() && ksvc.Status.URL != nil {
 
-		i := &integration{url: *ksvc.Status.URL, username: src.Spec.Username, password: secretPassword, title: ksvc.GetName()}
+		i := &integration{url: *ksvc.Status.URL, username: src.Spec.Username, password: secretPassword, title: ksvc.GetName() + "." + src.GetNamespace()}
 		i.client, err = zendesk.NewClient(nil)
 		if err != nil {
 			return err

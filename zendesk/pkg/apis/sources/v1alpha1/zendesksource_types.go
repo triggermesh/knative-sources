@@ -21,7 +21,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
-	"knative.dev/pkg/apis"
+	pkgapis "knative.dev/pkg/apis"
 	duckv1 "knative.dev/pkg/apis/duck/v1"
 	"knative.dev/pkg/kmeta"
 )
@@ -46,19 +46,12 @@ func (s *ZendeskSource) GetGroupVersionKind() schema.GroupVersionKind {
 	return SchemeGroupVersion.WithKind("ZendeskSource")
 }
 
-// Check that ZendeskSource is a runtime.Object.
-// var _ runtime.Object = (*ZendeskSource)(nil)
-
-// // Check that we can create OwnerReferences to a ZendeskSource.
-// var _ kmeta.OwnerRefable = (*ZendeskSource)(nil)
-
-// Check that ZendeskSource implements the Conditions duck type.
-//var _ = duck.VerifyType(&ZendeskSource{}, &duckv1.Conditions{})
-// Check the interfaces the event target should be implementing.
 var (
-	_ runtime.Object     = (*ZendeskSource)(nil)
-	_ kmeta.OwnerRefable = (*ZendeskSource)(nil)
-	_ duckv1.KRShaped    = (*ZendeskSource)(nil)
+	_ runtime.Object      = (*ZendeskSource)(nil)
+	_ kmeta.OwnerRefable  = (*ZendeskSource)(nil)
+	_ pkgapis.Validatable = (*ZendeskSource)(nil)
+	_ pkgapis.Defaultable = (*ZendeskSource)(nil)
+	_ duckv1.KRShaped     = (*ZendeskSource)(nil)
 )
 
 // ZendeskSourceSpec holds the desired state of the ZendeskSource (from the client).
@@ -107,14 +100,4 @@ type ZendeskSourceList struct {
 	metav1.ListMeta `json:"metadata"`
 
 	Items []ZendeskSource `json:"items"`
-}
-
-// GetConditionSet implements duckv1.KRShaped.
-func (s *ZendeskSource) GetConditionSet() apis.ConditionSet {
-	return ZendeskCondSet
-}
-
-// GetStatus implements duckv1.KRShaped.
-func (s *ZendeskSource) GetStatus() *duckv1.Status {
-	return &s.Status.Status
 }

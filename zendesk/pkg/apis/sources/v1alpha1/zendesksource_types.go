@@ -83,6 +83,7 @@ type ZendeskSourceSpec struct {
 // SecretValueFromSource represents the source of a secret value
 type SecretValueFromSource struct {
 	// The Secret key to select from.
+	// +optional
 	SecretKeyRef *corev1.SecretKeySelector `json:"secretKeyRef,omitempty"`
 }
 

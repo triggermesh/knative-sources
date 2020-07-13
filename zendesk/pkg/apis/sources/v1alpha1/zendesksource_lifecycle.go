@@ -25,10 +25,13 @@ import (
 const (
 	// ConditionReady has status True when the ZendeskSource is ready to send events.
 	ConditionReady = pkgapis.ConditionReady
+
 	// ConditionSinkProvided has status True when the ZendeskSource has been configured with a sink target.
 	ConditionSinkProvided pkgapis.ConditionType = "SinkProvided"
+
 	// ConditionDeployed has status True when the ZendeskSource has had it's deployment created.
 	ConditionDeployed pkgapis.ConditionType = "Deployed"
+
 	// ConditionTargetCreated has status True when the Zendesk Source has created a Zendesk Target
 	// More information on Zendesk Target's here -> https://developer.zendesk.com/rest_api/docs/support/targets
 	ConditionTargetCreated pkgapis.ConditionType = "ZendeskTargetCreated"
@@ -63,7 +66,7 @@ const (
 	ZendeskSourceEventType = "com.zendesk.events"
 )
 
-// ZendeskCondSet is the list of all possible conditions toher than Ready
+// ZendeskCondSet is the list of all possible conditions other than 'Ready'
 var ZendeskCondSet = pkgapis.NewLivingConditionSet(
 	ConditionSinkProvided,
 	ConditionDeployed,
@@ -77,7 +80,7 @@ func (s *ZendeskSourceStatus) InitializeConditions() {
 }
 
 // PropagateAvailability uses the availability of the adapter to determine whether
-// the deployed condition should be marked as true or false.
+// the deployed condition should be marked as 'true' or 'false'.
 func (s *ZendeskSourceStatus) PropagateAvailability(ksvc *servingv1.Service) {
 	switch {
 	case ksvc == nil:

@@ -146,12 +146,14 @@ func ensureZendeskTarget(ctx context.Context, client *zendesk.Client, target zen
 	}
 
 	if t == nil {
-		if *t, err = client.CreateTarget(ctx, target); err != nil {
+		existing, err := client.CreateTarget(ctx, target)
+		if err != nil {
 			// It could happen that the target already exists but is
 			// in a different page. We will need to support pagination
 			// in a future release of this source.
 			return err
 		}
+		t = &existing
 	}
 
 	triggers, _, err := client.GetTriggers(ctx, &zendesk.TriggerListOptions{})

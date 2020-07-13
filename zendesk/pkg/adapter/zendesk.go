@@ -134,12 +134,12 @@ func (h *zendeskAPIHandler) validateAuthHeader(r *http.Request) error {
 
 	s := strings.SplitN(r.Header.Get("Authorization"), " ", 2)
 	if len(s) != 2 {
-		return errors.New("No Auth Parameters")
+		return errors.New("no Auth Parameters")
 	}
 
 	b, err := base64.StdEncoding.DecodeString(s[1])
 	if err != nil {
-		return errors.New("Could not decode the auth header")
+		return errors.New("could not decode the auth header")
 	}
 
 	pair := strings.SplitN(string(b), ":", 2)
@@ -176,24 +176,23 @@ func (h *zendeskAPIHandler) handleAll(w http.ResponseWriter, r *http.Request) {
 	event := &ZendeskEventWrapper{}
 	err = json.Unmarshal(body, event)
 	if err != nil {
-		h.handleError(fmt.Errorf("could not unmarshall JSON request: %s", err.Error()), w)
+		h.handleError(fmt.Errorf("could not unmarshall JSON request: %w", err), w)
 		return
 	}
 
 	cEvent, err := h.cloudEventFromWrapper(event)
 	if err != nil {
-		h.logger.Info("Error Creating CloudEvent")
+		h.logger.Info("Error creating CloudEvent")
 		h.handleError(err, w)
 	}
 
 	if result := h.ceClient.Send(context.Background(), *cEvent); !cloudevents.IsACK(result) {
-		h.logger.Info("Error Sending CloudEvent")
+		h.logger.Info("Error sending CloudEvent")
 		h.handleError(result, w)
 	}
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusNoContent)
-	w.Write([]byte("OK"))
 }
 
 func (h *zendeskAPIHandler) handleError(err error, w http.ResponseWriter) {
@@ -226,5 +225,4 @@ func (h *zendeskAPIHandler) cloudEventFromWrapper(wrapper *ZendeskEventWrapper) 
 func healthCheckHandler(w http.ResponseWriter, _ *http.Request) {
 	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintln(w, "OK")
 }

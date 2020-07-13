@@ -85,13 +85,13 @@ func (r *reconciler) ReconcileKind(ctx context.Context, src *v1alpha1.ZendeskSou
 
 	secretToken, err := r.secretFrom(ctx, ksvc.Namespace, src.Spec.Token.SecretKeyRef)
 	if err != nil {
-		src.Status.MarkNoToken("Could not find a Zendesk API token:%s", err.Error())
+		src.Status.MarkNoToken("Could not find the Zendesk API token secret: %w", err)
 		return err
 	}
 
 	secretPassword, err := r.secretFrom(ctx, src.Namespace, src.Spec.Password.SecretKeyRef)
 	if err != nil {
-		src.Status.MarkNoPassword("Could not find a Password:%s", err.Error())
+		src.Status.MarkNoPassword("Could not find the Zendesk password secret: %w", err)
 		return err
 	}
 
@@ -113,7 +113,7 @@ func (r *reconciler) ReconcileKind(ctx context.Context, src *v1alpha1.ZendeskSou
 
 		err = i.ensureIntegration(ctx)
 		if err != nil {
-			src.Status.MarkNoTargetCreated("Could not create a new Zendesk Target: %s", err.Error())
+			src.Status.MarkNoTargetCreated("Could not create a new Zendesk Target: %w", err)
 			return err
 		}
 		src.Status.MarkTargetCreated()
@@ -229,7 +229,7 @@ func (r *reconciler) secretFrom(ctx context.Context, namespace string, secretKey
 
 	secretVal, ok := secret.Data[secretKeySelector.Key]
 	if !ok {
-		return "", fmt.Errorf(`key "%s" not found in secret "%s"`, secretKeySelector.Key, secretKeySelector.Name)
+		return "", fmt.Errorf("key %q not found in secret %q", secretKeySelector.Key, secretKeySelector.Name)
 	}
 	return string(secretVal), nil
 }

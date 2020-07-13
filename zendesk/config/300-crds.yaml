@@ -159,10 +159,11 @@ spec:
               subdomain:
                 description: 'Subdomain is required to automate integration with Zendesk. This will be used to create a Zendesk Client'
                 type: string
+                minLength: 1
             required:
                 - username
                 - email
-                - subdomain    
+                - subdomain
           status:
             description: ZendeskSourceStatus communicates the observed state of the ZendeskSource.
             type: object

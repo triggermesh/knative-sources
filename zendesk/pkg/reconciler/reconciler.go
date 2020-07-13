@@ -78,11 +78,6 @@ func (r *reconciler) ReconcileKind(ctx context.Context, src *v1alpha1.ZendeskSou
 	ksvc, event := r.ksvcr.ReconcileKService(ctx, src, makeAdapter(src, r.adapterCfg))
 	src.Status.PropagateAvailability(ksvc)
 
-	// Prevent the reconciler from trying to create Zendesk integration before spec is avalible
-	if src.Spec.Subdomain == "" {
-		return event
-	}
-
 	secretToken, err := r.secretFrom(ctx, ksvc.Namespace, src.Spec.Token.SecretKeyRef)
 	if err != nil {
 		src.Status.MarkNoToken("Could not find the Zendesk API token secret: %w", err)

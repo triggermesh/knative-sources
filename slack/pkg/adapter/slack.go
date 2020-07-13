@@ -33,7 +33,7 @@ import (
 
 // SlackEventAPIHandler listen for Slack API Events
 type SlackEventAPIHandler interface {
-	Start(stopCh <-chan struct{}) error
+	Start(ctx context.Context) error
 }
 
 type slackEventAPIHandler struct {
@@ -63,7 +63,7 @@ func NewSlackEventAPIHandler(ceClient cloudevents.Client, port int, signingSecre
 
 // Start the server for receiving Slack callbacks. Will block
 // until the stop channel closes.
-func (h *slackEventAPIHandler) Start(stopCh <-chan struct{}) error {
+func (h *slackEventAPIHandler) Start(ctx context.Context) error {
 	h.logger.Info("Starting Slack event handler")
 
 	m := http.NewServeMux()
@@ -75,7 +75,7 @@ func (h *slackEventAPIHandler) Start(stopCh <-chan struct{}) error {
 	}
 
 	done := make(chan bool, 1)
-	go h.gracefulShutdown(stopCh, done)
+	go h.gracefulShutdown(ctx.Done(), done)
 
 	h.logger.Infof("Server is ready to handle requests at %s", h.srv.Addr)
 	if err := h.srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {

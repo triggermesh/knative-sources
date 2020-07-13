@@ -17,18 +17,18 @@ limitations under the License.
 package v1alpha1
 
 import (
-	"knative.dev/pkg/apis"
+	pkgapis "knative.dev/pkg/apis"
 	duckv1 "knative.dev/pkg/apis/duck/v1"
 	servingv1 "knative.dev/serving/pkg/apis/serving/v1"
 )
 
 const (
 	// ConditionReady has status True when the SlackSource is ready to send events.
-	ConditionReady = apis.ConditionReady
+	ConditionReady = pkgapis.ConditionReady
 	// ConditionSinkProvided has status True when the SlackSource has been configured with a sink target.
-	ConditionSinkProvided apis.ConditionType = "SinkProvided"
+	ConditionSinkProvided pkgapis.ConditionType = "SinkProvided"
 	// ConditionDeployed has status True when the SlackSource has had it's deployment created.
-	ConditionDeployed apis.ConditionType = "Deployed"
+	ConditionDeployed pkgapis.ConditionType = "Deployed"
 )
 
 // Reasons for status conditions
@@ -48,10 +48,20 @@ const (
 )
 
 // SlackCondSet is the list of all possible conditions toher than Ready
-var SlackCondSet = apis.NewLivingConditionSet(
+var SlackCondSet = pkgapis.NewLivingConditionSet(
 	ConditionSinkProvided,
 	ConditionDeployed,
 )
+
+// GetConditionSet implements duckv1.KRShaped.
+func (s *SlackSource) GetConditionSet() pkgapis.ConditionSet {
+	return SlackCondSet
+}
+
+// GetStatus implements duckv1.KRShaped.
+func (s *SlackSource) GetStatus() *duckv1.Status {
+	return &s.Status.Status
+}
 
 // InitializeConditions sets relevant unset conditions to Unknown state.
 func (s *SlackSourceStatus) InitializeConditions() {
@@ -69,7 +79,7 @@ func (s *SlackSourceStatus) PropagateAvailability(ksvc *servingv1.Service) {
 		}
 		return
 
-	case ksvc.Status.IsReady():
+	case ksvc.IsReady():
 		SlackCondSet.Manage(s).MarkTrue(ConditionDeployed)
 
 	default:
@@ -83,7 +93,7 @@ func (s *SlackSourceStatus) PropagateAvailability(ksvc *servingv1.Service) {
 }
 
 // MarkSink sets the condition that the source has a sink configured.
-func (s *SlackSourceStatus) MarkSink(uri *apis.URL) {
+func (s *SlackSourceStatus) MarkSink(uri *pkgapis.URL) {
 	s.SinkURI = uri
 	if len(uri.String()) > 0 {
 		SlackCondSet.Manage(s).MarkTrue(ConditionSinkProvided)

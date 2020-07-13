@@ -139,7 +139,7 @@ func ensureZendeskTarget(ctx context.Context, client *zendesk.Client, target zen
 
 	var t *zendesk.Target
 	for i := range targets {
-		if targets[i].TargetURL == target.URL {
+		if targets[i].Title == target.Title {
 			t = &targets[i]
 			break
 		}
@@ -163,7 +163,7 @@ func ensureZendeskTarget(ctx context.Context, client *zendesk.Client, target zen
 
 	var tr *zendesk.Trigger
 	for i := range triggers {
-		if triggers[i].Title == "io.triggermesh.sources" {
+		if triggers[i].Title == target.Title {
 			tr = &triggers[i]
 			break
 		}
@@ -178,7 +178,7 @@ func ensureZendeskTarget(ctx context.Context, client *zendesk.Client, target zen
 
 	// Zendesk trigger. See: https://developer.zendesk.com/rest_api/docs/support/triggers
 	trigger := zendesk.Trigger{
-		Title:  "io.triggermesh.sources",
+		Title:  target.Title,
 		Active: true,
 		Actions: []zendesk.TriggerAction{{
 			Field: "notification_target",

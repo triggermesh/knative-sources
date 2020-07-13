@@ -123,13 +123,13 @@ func (s *ZendeskSourceStatus) IsReady() bool {
 	return ZendeskCondSet.Manage(s).IsHappy()
 }
 
-// MarkNoTargetCreated sets the condition that the source was not able to properly configure a Zendesk Target
-func (s *ZendeskSourceStatus) MarkNoTargetCreated(messageFormat string, messageA ...interface{}) {
+// MarkNoZendeskTargetCreated sets the condition that the source was not able to properly configure a Zendesk Target
+func (s *ZendeskSourceStatus) MarkNoZendeskTargetCreated(messageFormat string, messageA ...interface{}) {
 	ZendeskCondSet.Manage(s).MarkFalse(ConditionTargetCreated, ReasonNoTarget, messageFormat, messageA...)
 }
 
-// MarkTargetCreated sets the condition that the source was able to properly configure a Zendesk Target
-func (s *ZendeskSourceStatus) MarkTargetCreated() {
+// MarkZendeskTargetCreated sets the condition that the source was able to properly configure a Zendesk Target
+func (s *ZendeskSourceStatus) MarkZendeskTargetCreated() {
 	ZendeskCondSet.Manage(s).MarkTrue(ConditionTargetCreated)
 }
 

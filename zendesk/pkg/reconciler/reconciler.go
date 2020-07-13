@@ -25,7 +25,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"k8s.io/client-go/kubernetes"
-	"knative.dev/pkg/apis"
 	duckv1 "knative.dev/pkg/apis/duck/v1"
 	"knative.dev/pkg/controller"
 	pkgreconciler "knative.dev/pkg/reconciler"
@@ -46,16 +45,6 @@ type reconciler struct {
 	adapterCfg *adapterConfig
 }
 
-// integration bundles the required items to automate the webhook integration with Zendesk
-type integration struct {
-	password string
-	username string
-	title    string
-	url      apis.URL
-
-	client *zendesk.Client
-}
-
 // reconciler implements Interface
 var _ reconcilerzendesksource.Interface = (*reconciler)(nil)
 
@@ -63,6 +52,7 @@ var _ reconcilerzendesksource.Interface = (*reconciler)(nil)
 func (r *reconciler) ReconcileKind(ctx context.Context, src *v1alpha1.ZendeskSource) pkgreconciler.Event {
 
 	src.Status.CloudEventAttributes = []duckv1.CloudEventAttributes{{Type: v1alpha1.ZendeskSourceEventType}}
+
 	dest := src.Spec.Sink.DeepCopy()
 	if dest.Ref != nil && dest.Ref.Namespace == "" {
 		dest.Ref.Namespace = src.Namespace
@@ -70,149 +60,148 @@ func (r *reconciler) ReconcileKind(ctx context.Context, src *v1alpha1.ZendeskSou
 
 	uri, err := r.sinkResolver.URIFromDestinationV1(*dest, src)
 	if err != nil {
-		src.Status.MarkNoSink("Could not resolve sink URI: %s", err.Error())
+		src.Status.MarkNoSink("Could not resolve sink URI: %v", err)
 		return controller.NewPermanentError(err)
 	}
-
 	src.Status.MarkSink(uri)
-	ksvc, event := r.ksvcr.ReconcileKService(ctx, src, makeAdapter(src, r.adapterCfg))
-	src.Status.PropagateAvailability(ksvc)
 
-	secretToken, err := r.secretFrom(ctx, ksvc.Namespace, src.Spec.Token.SecretKeyRef)
+	secretToken, err := r.secretFrom(ctx, src.Namespace, src.Spec.Token.SecretKeyRef)
 	if err != nil {
-		src.Status.MarkNoToken("Could not find the Zendesk API token secret: %w", err)
+		src.Status.MarkNoToken("Could not find the Zendesk API token secret: %v", err)
 		return err
 	}
 
 	secretPassword, err := r.secretFrom(ctx, src.Namespace, src.Spec.Password.SecretKeyRef)
 	if err != nil {
-		src.Status.MarkNoPassword("Could not find the Zendesk password secret: %w", err)
+		src.Status.MarkNoPassword("Could not find the Zendesk password secret: %v", err)
 		return err
 	}
 
 	src.Status.MarkSecretsFound()
 
-	if ksvc.Status.GetCondition(apis.ConditionReady).IsTrue() && ksvc.Status.URL != nil {
-
-		i := &integration{url: *ksvc.Status.URL, username: src.Spec.Username, password: secretPassword, title: ksvc.GetName() + "-" + src.GetNamespace()}
-		i.client, err = zendesk.NewClient(nil)
-		if err != nil {
-			return err
-		}
-
-		if err := i.client.SetSubdomain(src.Spec.Subdomain); err != nil {
-			return err
-		}
-
-		i.client.SetCredential(zendesk.NewAPITokenCredential(src.Spec.Email, secretToken))
-
-		err = i.ensureIntegration(ctx)
-		if err != nil {
-			src.Status.MarkNoTargetCreated("Could not create a new Zendesk Target: %w", err)
-			return err
-		}
-		src.Status.MarkTargetCreated()
+	ksvc, event := r.ksvcr.ReconcileKService(ctx, src, makeAdapter(src, r.adapterCfg))
+	src.Status.PropagateAvailability(ksvc)
+	if event != nil {
 		return event
 	}
 
-	return nil
-}
-
-// newTarget returns a populated zendesk.Target{}
-func (i *integration) newTarget() zendesk.Target {
-	return zendesk.Target{
-		TargetURL:   i.url.String(),
-		Type:        "http_target",
-		Method:      "post",
-		ContentType: "application/json",
-		Password:    i.password,
-		Username:    i.username,
-		Title:       i.title,
-	}
-}
-
-// ensureIntegration ensures our Target and Trigger creation
-// More info on Zendesk Target's: https://developer.zendesk.com/rest_api/docs/support/targets
-func (i *integration) ensureIntegration(ctx context.Context) error {
-	t := i.newTarget()
-
-	Target, _, err := i.client.GetTargets(ctx)
-	if err != nil {
-		return err
-	}
-	for _, t := range Target {
-		if t.TargetURL == i.url.String() {
-			if err := i.createTrigger(ctx, t.ID); err != nil {
-				return err
-			}
-			return nil
-		}
-	}
-
-	createdTarget, err := i.client.CreateTarget(ctx, t)
-	if err != nil {
-		return err
-	}
-
-	if err := i.createTrigger(ctx, createdTarget.ID); err != nil {
-		return err
-	}
-	return nil
-}
-
-// createTrigger creates a new Zendesk 'Trigger'
-// more info on Zendesk 'Trigger's' -> https://developer.zendesk.com/rest_api/docs/support/triggers
-func (i *integration) createTrigger(ctx context.Context, id int64) error {
-
-	var triggerValue []string
-	triggerValue = append(triggerValue, strconv.FormatInt(id, 10))
-	triggerValue = append(triggerValue, `{"id":"{{ticket.id}}","description":"{{ticket.description}}"}`)
-
-	ta := zendesk.TriggerAction{
-		Field: "notification_target",
-		Value: triggerValue,
-	}
-
-	var newTrigger = zendesk.Trigger{}
-	newTrigger.Title = i.title
-	newTrigger.Conditions.All = []zendesk.TriggerCondition{{
-		Field:    "update_type",
-		Operator: "is",
-		Value:    "Create",
-	}}
-
-	// more info in Zendesk Trigger Actions -> https://developer.zendesk.com/rest_api/docs/support/triggers#actions
-	newTrigger.Actions = append(newTrigger.Actions, ta)
-	exists, err := i.ensureTrigger(ctx, newTrigger)
-	if err != nil {
-		return err
-	}
-
-	if exists {
+	if ksvc.Status.URL == nil {
+		src.Status.MarkNoZendeskTargetCreated("No URL exposed from service to create the zendesk target integration")
 		return nil
 	}
 
-	if _, err = i.client.CreateTrigger(ctx, newTrigger); err != nil {
+	zc, err := createZendeskClient(src.Spec.Subdomain, src.Spec.Email, secretToken)
+	if err != nil {
+		src.Status.MarkNoZendeskTargetCreated("Cannot create Zendesk client: %v", err)
 		return err
 	}
+
+	zendeskTarget := zendesk.Target{
+		TargetURL:   ksvc.Status.URL.String(),
+		Type:        "http_target",
+		Method:      "post",
+		ContentType: "application/json",
+		// TODO replace both with arbitrary values from users
+		Username: src.Spec.Username,
+		Password: secretPassword,
+		Title:    "io.triggermesh." + src.Namespace + "." + src.Name,
+	}
+
+	err = ensureZendeskTarget(ctx, zc, zendeskTarget)
+	if err != nil {
+		src.Status.MarkNoZendeskTargetCreated("Error ensuring Zendesk Target: %v", err)
+		return err
+	}
+	src.Status.MarkZendeskTargetCreated()
 
 	return nil
 }
 
-// ensureTrigger verifies and or creates the Zendesk webhook integration.
-// more info on Zendesk 'Trigger's' -> https://developer.zendesk.com/rest_api/docs/support/triggers
-func (i *integration) ensureTrigger(ctx context.Context, t zendesk.Trigger) (bool, error) {
-	trigggers, _, err := i.client.GetTriggers(ctx, &zendesk.TriggerListOptions{Active: true})
+func createZendeskClient(subdomain, email, apiToken string) (*zendesk.Client, error) {
+	c, err := zendesk.NewClient(nil)
 	if err != nil {
-		return false, err
+		return nil, err
 	}
 
-	for _, Trigger := range trigggers {
-		if Trigger.Title == i.title || Trigger.Actions[0] == t.Actions[0] {
-			return true, nil
+	if err = c.SetSubdomain(subdomain); err != nil {
+		return nil, err
+	}
+
+	c.SetCredential(zendesk.NewAPITokenCredential(email, apiToken))
+	return c, nil
+}
+
+func ensureZendeskTarget(ctx context.Context, client *zendesk.Client, target zendesk.Target) error {
+	targets, _, err := client.GetTargets(ctx)
+	if err != nil {
+		return err
+	}
+
+	var t *zendesk.Target
+	for i := range targets {
+		if targets[i].TargetURL == target.URL {
+			t = &targets[i]
+			break
 		}
 	}
-	return false, nil
+
+	if t == nil {
+		if *t, err = client.CreateTarget(ctx, target); err != nil {
+			// It could happen that the target already exists but is
+			// in a different page. We will need to support pagination
+			// in a future release of this source.
+			return err
+		}
+	}
+
+	triggers, _, err := client.GetTriggers(ctx, &zendesk.TriggerListOptions{})
+	if err != nil {
+		return err
+	}
+
+	var tr *zendesk.Trigger
+	for i := range triggers {
+		if triggers[i].Title == "io.triggermesh.sources" {
+			tr = &triggers[i]
+			break
+		}
+	}
+
+	if tr != nil {
+		// we only require matching the trigger title, users
+		// can modify the trigger contents after the integration
+		// is setup for the first time.
+		return nil
+	}
+
+	// Zendesk trigger. See: https://developer.zendesk.com/rest_api/docs/support/triggers
+	trigger := zendesk.Trigger{
+		Title:  "io.triggermesh.sources",
+		Active: true,
+		Actions: []zendesk.TriggerAction{{
+			Field: "notification_target",
+			Value: []string{
+				strconv.FormatInt(t.ID, 10),
+				`{"id":"{{ticket.id}}","description":"{{ticket.description}}"}`,
+			},
+		}},
+		Conditions: struct {
+			All []zendesk.TriggerCondition `json:"all"`
+			Any []zendesk.TriggerCondition `json:"any"`
+		}{
+			All: []zendesk.TriggerCondition{{
+				Field:    "update_type",
+				Operator: "is",
+				Value:    "Create",
+			}},
+		},
+	}
+
+	if _, err = client.CreateTrigger(ctx, trigger); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // secretFrom handles the retrieval of secretes from the within the defined namepace

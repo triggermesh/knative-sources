@@ -19,7 +19,7 @@ package zendesk
 import "time"
 
 // Copied from https://github.com/nukosuke/go-zendesk, with a little tweak
-// on Triggers to avoid an isse where the TriggerCondition Value is informed
+// on Triggers to avoid an issue where the TriggerCondition Value is informed
 // as a boolean.
 
 // TriggerCondition zendesk trigger condition

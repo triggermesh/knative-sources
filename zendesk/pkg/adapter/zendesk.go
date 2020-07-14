@@ -80,6 +80,7 @@ func (h *zendeskAPIHandler) Start(ctx context.Context) error {
 	go func() {
 		<-ctx.Done()
 		h.logger.Info("Shutdown signal received. Terminating")
+		h.srv.SetKeepAlivesEnabled(false)
 		cancel()
 	}()
 

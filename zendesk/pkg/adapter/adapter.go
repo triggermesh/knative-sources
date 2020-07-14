@@ -46,8 +46,5 @@ func New(ctx context.Context, aEnv adapter.EnvConfigAccessor, ceClient cloudeven
 
 // Start runs the Zendesk handler.
 func (a *zendeskAdapter) Start(ctx context.Context) error {
-	if err := a.handler.Start(ctx); err != nil {
-		return err
-	}
-	return nil
+	return a.handler.Start(ctx)
 }

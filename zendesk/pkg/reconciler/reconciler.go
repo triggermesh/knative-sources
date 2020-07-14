@@ -19,6 +19,7 @@ package reconciler
 import (
 	"context"
 	"fmt"
+	"net/http"
 	"strconv"
 
 	corev1 "k8s.io/api/core/v1"
@@ -30,10 +31,11 @@ import (
 	pkgreconciler "knative.dev/pkg/reconciler"
 	"knative.dev/pkg/resolver"
 
-	"github.com/nukosuke/go-zendesk/zendesk"
+	// "github.com/nukosuke/go-zendesk/zendesk"
 	srcreconciler "github.com/triggermesh/knative-sources/pkg/reconciler"
 	"github.com/triggermesh/knative-sources/zendesk/pkg/apis/sources/v1alpha1"
 	reconcilerzendesksource "github.com/triggermesh/knative-sources/zendesk/pkg/client/generated/injection/reconciler/sources/v1alpha1/zendesksource"
+	"github.com/triggermesh/knative-sources/zendesk/pkg/zendesk"
 )
 
 // Reconciler reconciles a ZendeskSource object
@@ -50,7 +52,6 @@ var _ reconcilerzendesksource.Interface = (*reconciler)(nil)
 
 // ReconcileKind implements Interface.ReconcileKind.
 func (r *reconciler) ReconcileKind(ctx context.Context, src *v1alpha1.ZendeskSource) pkgreconciler.Event {
-
 	src.Status.CloudEventAttributes = []duckv1.CloudEventAttributes{{Type: v1alpha1.ZendeskSourceEventType}}
 
 	dest := src.Spec.Sink.DeepCopy()
@@ -90,13 +91,9 @@ func (r *reconciler) ReconcileKind(ctx context.Context, src *v1alpha1.ZendeskSou
 		return nil
 	}
 
-	zc, err := createZendeskClient(src.Spec.Subdomain, src.Spec.Email, secretToken)
-	if err != nil {
-		src.Status.MarkNoZendeskTargetCreated("Cannot create Zendesk client: %v", err)
-		return err
-	}
+	zc := zendesk.NewClient(src.Spec.Email, secretToken, src.Spec.Subdomain, &http.Client{})
 
-	zendeskTarget := zendesk.Target{
+	zendeskTarget := &zendesk.Target{
 		TargetURL:   ksvc.Status.URL.String(),
 		Type:        "http_target",
 		Method:      "post",
@@ -117,30 +114,16 @@ func (r *reconciler) ReconcileKind(ctx context.Context, src *v1alpha1.ZendeskSou
 	return nil
 }
 
-func createZendeskClient(subdomain, email, apiToken string) (*zendesk.Client, error) {
-	c, err := zendesk.NewClient(nil)
+func ensureZendeskTarget(ctx context.Context, client zendesk.Client, target *zendesk.Target) error {
+	tarwrap, err := client.ListTargets(ctx)
 	if err != nil {
-		return nil, err
-	}
-
-	if err = c.SetSubdomain(subdomain); err != nil {
-		return nil, err
-	}
-
-	c.SetCredential(zendesk.NewAPITokenCredential(email, apiToken))
-	return c, nil
-}
-
-func ensureZendeskTarget(ctx context.Context, client *zendesk.Client, target zendesk.Target) error {
-	targets, _, err := client.GetTargets(ctx)
-	if err != nil {
-		return err
+		return fmt.Errorf("error retrieving Zendesk targets: %w", err)
 	}
 
 	var t *zendesk.Target
-	for i := range targets {
-		if targets[i].Title == target.Title {
-			t = &targets[i]
+	for i := range tarwrap.Targets {
+		if tarwrap.Targets[i].Title == target.Title {
+			t = &tarwrap.Targets[i]
 			break
 		}
 	}
@@ -151,20 +134,20 @@ func ensureZendeskTarget(ctx context.Context, client *zendesk.Client, target zen
 			// It could happen that the target already exists but is
 			// in a different page. We will need to support pagination
 			// in a future release of this source.
-			return err
+			return fmt.Errorf("error creating Zendesk target: %w", err)
 		}
-		t = &existing
+		t = existing
 	}
 
-	triggers, _, err := client.GetTriggers(ctx, &zendesk.TriggerListOptions{})
+	triwrap, err := client.ListTriggers(ctx)
 	if err != nil {
-		return err
+		return fmt.Errorf("error retrieving Zendesk triggers: %w", err)
 	}
 
 	var tr *zendesk.Trigger
-	for i := range triggers {
-		if triggers[i].Title == target.Title {
-			tr = &triggers[i]
+	for i := range triwrap.Triggers {
+		if triwrap.Triggers[i].Title == target.Title {
+			tr = &triwrap.Triggers[i]
 			break
 		}
 	}
@@ -177,9 +160,8 @@ func ensureZendeskTarget(ctx context.Context, client *zendesk.Client, target zen
 	}
 
 	// Zendesk trigger. See: https://developer.zendesk.com/rest_api/docs/support/triggers
-	trigger := zendesk.Trigger{
-		Title:  target.Title,
-		Active: true,
+	trigger := &zendesk.Trigger{
+		Title: target.Title,
 		Actions: []zendesk.TriggerAction{{
 			Field: "notification_target",
 			Value: []string{
@@ -199,8 +181,14 @@ func ensureZendeskTarget(ctx context.Context, client *zendesk.Client, target zen
 		},
 	}
 
+	trigger.Conditions.All = []zendesk.TriggerCondition{{
+		Field:    "update_type",
+		Operator: "is",
+		Value:    "Create",
+	}}
+
 	if _, err = client.CreateTrigger(ctx, trigger); err != nil {
-		return err
+		return fmt.Errorf("error creating Zendesk target trigger: %w", err)
 	}
 
 	return nil

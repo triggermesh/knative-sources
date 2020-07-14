@@ -101,7 +101,7 @@ func (r *reconciler) ReconcileKind(ctx context.Context, src *v1alpha1.ZendeskSou
 		// TODO replace both with arbitrary values from users
 		Username: src.Spec.Username,
 		Password: secretPassword,
-		Title:    "io.triggermesh." + src.Namespace + "." + src.Name,
+		Title:    "io.triggermesh." + src.Name,
 	}
 
 	err = ensureZendeskTarget(ctx, zc, zendeskTarget)
@@ -166,7 +166,7 @@ func ensureZendeskTarget(ctx context.Context, client zendesk.Client, target *zen
 			Field: "notification_target",
 			Value: []string{
 				strconv.FormatInt(t.ID, 10),
-				`{"id":"{{ticket.id}}","description":"{{ticket.description}}"}`,
+				`{"id":"{{ticket.id}}","description":"{{ticket.description}}","title":"{{ticket.title}}"}`,
 			},
 		}},
 		Conditions: struct {

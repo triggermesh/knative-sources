@@ -55,16 +55,18 @@ type zendeskAPIHandler struct {
 
 	ceClient cloudevents.Client
 	srv      *http.Server
+	source   string
 
 	logger *zap.SugaredLogger
 }
 
 // NewZendeskAPIHandler creates the default implementation of the Zendesk API Events handler
 func NewZendeskAPIHandler(ceClient cloudevents.Client, username, password string, logger *zap.SugaredLogger) ZendeskAPIHandler {
+	s := os.Getenv("NAMESPACE") + "." + os.Getenv("SUBDOMAIN") + "." + os.Getenv("NAME")
 	return &zendeskAPIHandler{
 		username: username,
 		password: password,
-
+		source:   s,
 		ceClient: ceClient,
 		logger:   logger,
 	}
@@ -174,7 +176,7 @@ func (h *zendeskAPIHandler) handleAll(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	event := &ZendeskEventWrapper{}
+	event := &ZendeskEvent{}
 	err = json.Unmarshal(body, event)
 	if err != nil {
 		h.handleError(fmt.Errorf("could not unmarshall JSON request: %w", err), w)
@@ -201,21 +203,19 @@ func (h *zendeskAPIHandler) handleError(err error, w http.ResponseWriter) {
 	http.Error(w, err.Error(), http.StatusInternalServerError)
 }
 
-func (h *zendeskAPIHandler) cloudEventFromWrapper(wrapper *ZendeskEventWrapper) (*cloudevents.Event, error) {
+func (h *zendeskAPIHandler) cloudEventFromWrapper(ze *ZendeskEvent) (*cloudevents.Event, error) {
 	h.logger.Info("Proccesing Zendesk event")
-	data, err := json.Marshal(wrapper)
+	data, err := json.Marshal(ze)
 	if err != nil {
 		return nil, err
 	}
 	event := cloudevents.NewEvent(cloudevents.VersionV1)
 
-	ceID := wrapper.ID
-
-	event.SetID(ceID)
+	event.SetID(ze.ID())
+	event.SetTime(ze.CreatedAt())
 	event.SetType(ceType)
-	event.SetSource(os.Getenv("NAMESPACE") + "." + os.Getenv("SUBDOMAIN") + "." + os.Getenv("NAME"))
-	event.SetTime(wrapper.CreatedAt)
-	event.SetSubject(ceSubject)
+	event.SetSource(h.source)
+	event.SetSubject(ze.Title())
 	if err := event.SetData(cloudevents.ApplicationJSON, data); err != nil {
 		return nil, fmt.Errorf("failed to set event data: %w", err)
 	}

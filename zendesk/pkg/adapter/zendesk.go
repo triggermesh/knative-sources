@@ -55,16 +55,18 @@ type zendeskAPIHandler struct {
 
 	ceClient cloudevents.Client
 	srv      *http.Server
+	source   string
 
 	logger *zap.SugaredLogger
 }
 
 // NewZendeskAPIHandler creates the default implementation of the Zendesk API Events handler
 func NewZendeskAPIHandler(ceClient cloudevents.Client, username, password string, logger *zap.SugaredLogger) ZendeskAPIHandler {
+	s := os.Getenv("NAMESPACE") + "." + os.Getenv("SUBDOMAIN") + "." + os.Getenv("NAME")
 	return &zendeskAPIHandler{
 		username: username,
 		password: password,
-
+		source:   s,
 		ceClient: ceClient,
 		logger:   logger,
 	}
@@ -210,10 +212,10 @@ func (h *zendeskAPIHandler) cloudEventFromWrapper(ze *ZendeskEvent) (*cloudevent
 	event := cloudevents.NewEvent(cloudevents.VersionV1)
 
 	event.SetID(ze.ID())
+	event.SetTime(ze.CreatedAt())
 	event.SetType(ceType)
-	event.SetSource(os.Getenv("NAMESPACE") + "." + os.Getenv("SUBDOMAIN") + "." + os.Getenv("NAME"))
-	// event.SetTime(wrapper.CreatedAt)
-	event.SetSubject(ceSubject)
+	event.SetSource(h.source)
+	event.SetSubject(ze.Title())
 	if err := event.SetData(cloudevents.ApplicationJSON, data); err != nil {
 		return nil, fmt.Errorf("failed to set event data: %w", err)
 	}

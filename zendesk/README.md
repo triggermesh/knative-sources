@@ -1,8 +1,9 @@
 # Zendesk Source for Knative
 
-Zendesk Source enables integration between zendesk messages using the Events API and Knative Eventing.
+The Zendesk Source enables integration of [Zendesk](https://www.zendesk.com/) events into a Knative/Kuberneties environment, allowing end-users the ablility to subscribe other Services/Functions to new `Ticket` events. 
 
 ## Contents
+
 - [Zendesk Source for Knative](#zendesk-source-for-knative)
   - [Contents](#contents)
   - [Building](#building)
@@ -17,20 +18,24 @@ Zendesk Source enables integration between zendesk messages using the Events API
 
 ## Building
 
-###### The entry point (`main` package) for the controller and target adapter are under `cmd/controller/` and `cmd/adapter/,` respectively . Both these programs can be built using the Go toolchain from the `knative-sources/zendesk` directory
+**The entry point (`main` package) for the controller and target adapter are under `cmd/controller/` and `cmd/adapter/`, respectively. Both these programs can be built using the Go toolchain from the `knative-sources/zendesk` directory**
 
 To create binaries for your current OS and architecture inside the root repo `_output` directory:
+
 ```sh
-$ make build
+make build
 ```
 
 To create container images:
+
 ```sh
-$ make image
+make image
 ```
+
 To list the other 'make' functions:
+
 ```sh
-$ make help
+make help
 ```
 
 ## Deploying a Controller
@@ -40,7 +45,7 @@ $ make help
 [ko](https://github.com/google/ko) provides a quick method to build from source and apply the associated Kuberneties configurations.
 
 ```sh
-$ ko apply -f ./config/
+ko apply -f ./config/
 ```
 
 Alternatively you can base on the manifests at the config repo to build a set of kubernetes manifests that use your customized images and namespace.
@@ -49,18 +54,19 @@ Alternatively you can base on the manifests at the config repo to build a set of
 
 An instance of the Zendesk Source is created by applying a manifest that fullfills its CRD schema. Accepted and REQUIRED Spec parameters are:
 
-- `email` : The email associated with a valid Zendesk account. 
+- `email` : The email associated with a valid Zendesk account.
 - `username` : Used for basic authentication between Zendesk and the Source
-- `subdomain` : The Zendesk Subdomain 
+- `subdomain` : The Zendesk Subdomain
 
 A Zendesk Source also REQUIRES that a secret `zendesksource` exists populated with a the following parameters:
 
-- `token` : A Zendesk API token. 
+- `token` : A Zendesk API token.
 - `password` : Used for basic authentication between Zendesk and the Source
 
-*Note that `username` and `password` are _defined_ here and can hold arbitrary values. They are not coming from or are populated by any external service. These two parameters will be used while registering the webhook and then passed to the Source to use in the validation process of the Webhook 'POST' requests.*
+**Note that `username` and `password` are _defined_ here and can hold arbitrary values. They are not coming from or are populated by any external service. These two parameters will be used while registering the webhook and then passed to the Source to use in the validation process of the Webhook 'POST' requests.**
 
 Example Secret Deployment:
+
 ```yaml
 apiVersion: v1
 kind: Secret
@@ -71,7 +77,9 @@ stringData:
   token: 'tHpUJ2ieiXsxEvBotczR99EwpETeQOiUU07KovBJ'
   password: 'Pa$$sw0rd'
 ```
+
 Example Source Deployment:
+
 ```yaml
 apiVersion: sources.triggermesh.io/v1alpha1
 kind: ZendeskSource
@@ -79,7 +87,7 @@ metadata:
   name: zendesksource
 spec:
   email: 'joe@autoparts.com '
-  username: 'joe' 
+  username: 'joe'
   subdomain: 'autoparts'
   token:
             secretKeyRef:
@@ -101,8 +109,6 @@ Both of these files, along with an example source, exist in the `/zendesk/sample
 kubectl -n autoPartsNamespace apply -f sample/
 ```
 
-
-
 Once created wait for the source to be ready and take note of the URL (`status.address.url`):
 
 ``` sh
@@ -110,8 +116,11 @@ kubectl get zendesksource -n autoPartsNamespace zendesk-source
 
 NAME                READY   REASON   URL                                                              SINK                                                  AGE
 zendesksource       True             https://zendesksource-triggermesh.autoPartsNamespace.dev.munu.io      http://event-display.autoPartsNamespace.svc.cluster.local    25h
+
 ```
+
 ### Verify a Zendesk Source Deployment
+
 One can verify a successful deployment of a Zendesk Source by  navigate to the `settings` sidebar of your Zendesk subdomain and selecting `Extensions`
 
 ![i](../img/ex.png)
@@ -139,8 +148,10 @@ By 'double-clicking' the `Trigger` one is brought to the exanded section. Here w
 Currently a Zendesk Source does not 'clean up' after itself and when It is destroyed the Zendesk 'Target' and 'Trigger'  will remain and will require manual cleanup.
 
 ## Events
+
 **Below you can find an example Cloudevent from a Zendesk Source.**
-```
+
+```sh
 cloudevents.Event
 Validation: valid
 Context Attributes,

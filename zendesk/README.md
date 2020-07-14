@@ -132,9 +132,12 @@ A `Trigger` is assigned its title by the same naming convention as a `Target`
 
 By 'double-clicking' the `Trigger` one is brought to the exanded section. Here we can see that the Source has created a Zendesk `Trigger` that will send notifications on the creation of a new Ticket. Below this a pannel please note the text area named:"JSON Body". Here the actual payload defining what information is sent to the Source when a `Ticket` is created.
 
-**It is important to note that although this field does come pre-populated a Zendesk Source has no opionon on the data that it recieves. You are free to modify this and send any kind(s) of `Ticket` data to a Zendesk Source as you may see fit.**  
+**It is important to note that although this field does come pre-populated a Zendesk Source has NO opionon on the data that it recieves. You are free to modify this and send any kind(s) of `Ticket` data to a Zendesk Source as you may see fit.**  
 
 ![i](../img/trigExpanded.png)
+
+Currently a Zendesk Source does not 'clean up' after itself and when It is destroyed the Zendesk 'Target' and 'Trigger'  will remain and will require manual cleanup.
+
 ## Events
 **Below you can find an example Cloudevent from a Zendesk Source.**
 ```

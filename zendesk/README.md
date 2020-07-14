@@ -1,18 +1,16 @@
 # Zendesk Source for Knative
 
-The Zendesk Source enables integration of [Zendesk](https://www.zendesk.com/) events into a Knative/Kuberneties environment, allowing end-users the ablility to subscribe other Services/Functions to new `Ticket` events. 
+The Zendesk Source enables integration of [Zendesk](https://www.zendesk.com/) events into a Knative/Kuberneties environment, allowing end-users the ablility to subscribe other Services/Functions to new `Ticket` events.
 
 ## Contents
 
 - [Zendesk Source for Knative](#zendesk-source-for-knative)
   - [Contents](#contents)
   - [Building](#building)
-  - [Deploy controller](#deploy-controller)
-    - [Deploy Zendesk Source Controller](#deploy-zendesk-source-controller)
-  - [Create Zendesk Integration](#create-zendesk-integration)
-    - [Deploy Zendesk Source](#deploy-zendesk-source)
-    - [Configure Zendesk Events API App](#configure-zendesk-events-api-app)
-    - [Secure the Zendesk Source](#secure-the-zendesk-source)
+  - [Deploy a Controller](#deploy-a-controller)
+    - [Deploy a Zendesk Source Controller From Code](#deploy-a-zendesk-source-controller-from-code)
+  - [Deploy Zendesk Source](#deploy-zendesk-source)
+  - [Verify a Zendesk Source Deployment](#verify-a-zendesk-source-deployment)
   - [Events](#events)
   - [Support](#support)
 
@@ -23,45 +21,45 @@ The Zendesk Source enables integration of [Zendesk](https://www.zendesk.com/) ev
 To create binaries for your current OS and architecture inside the root repo `_output` directory:
 
 ```sh
-make build
+$ make build
 ```
 
 To create container images:
 
 ```sh
-make image
+$ make image
 ```
 
 To list the other 'make' functions:
 
 ```sh
-make help
+$ make help
 ```
 
-## Deploying a Controller
+## Deploy a Controller
 
-### Deploying a Zendesk Source Controller From Code
+### Deploy a Zendesk Source Controller From Code
 
 [ko](https://github.com/google/ko) provides a quick method to build from source and apply the associated Kuberneties configurations.
 
 ```sh
-ko apply -f ./config/
+$ ko apply -f ./config/
 ```
 
 Alternatively you can base on the manifests at the config repo to build a set of kubernetes manifests that use your customized images and namespace.
 
-### Deploy Zendesk Source
+## Deploy a Zendesk Source
 
-An instance of the Zendesk Source is created by applying a manifest that fullfills its CRD schema. Accepted and REQUIRED Spec parameters are:
+**An instance of the Zendesk Source is created by applying a manifest that fullfills its CRD schema. Accepted and REQUIRED Spec parameters are:**
 
-- `email` : The email associated with a valid Zendesk account.
-- `username` : Used for basic authentication between Zendesk and the Source
-- `subdomain` : The Zendesk Subdomain
+- `email` associated with a valid Zendesk account.
+- `username` for basic authentication between Zendesk andthe    Source.
+- `subdomain` for the Zendesk tenant.
 
-A Zendesk Source also REQUIRES that a secret `zendesksource` exists populated with a the following parameters:
+**A Zendesk Source also REQUIRES that a secret `zendesksource` exists populated with a the following parameters:**
 
-- `token` : A Zendesk API token.
-- `password` : Used for basic authentication between Zendesk and the Source
+- `token`  for the Zendesk API.
+- `password` for basic authentication between Zendesk and the Source
 
 **Note that `username` and `password` are _defined_ here and can hold arbitrary values. They are not coming from or are populated by any external service. These two parameters will be used while registering the webhook and then passed to the Source to use in the validation process of the Webhook 'POST' requests.**
 
@@ -103,16 +101,16 @@ spec:
       name: event-display
 ```
 
-Both of these files, along with an example source, exist in the `/zendesk/sample/` directory. After populating the required fields with valid information, and deploying the Controller, a Zendesk Source can now be deployed by execuing the following command in the `knative-sources/zendesk` directory:
+Both of these files, along with an example source, exist in the `/zendesk/sample/` directory. After populating the required fields with valid information, and Deploy the Controller, a Zendesk Source can now be deployed by execuing the following command in the `knative-sources/zendesk` directory:
 
 ```sh
-kubectl -n autoPartsNamespace apply -f sample/
+$ kubectl -n autoPartsNamespace apply -f sample/
 ```
 
 Once created wait for the source to be ready and take note of the URL (`status.address.url`):
 
 ``` sh
-kubectl get zendesksource -n autoPartsNamespace zendesk-source
+$ kubectl get zendesksource -n autoPartsNamespace zendesk-source
 
 NAME                READY   REASON   URL                                                              SINK                                                  AGE
 zendesksource       True             https://zendesksource-triggermesh.autoPartsNamespace.dev.munu.io      http://event-display.autoPartsNamespace.svc.cluster.local    25h
@@ -174,3 +172,10 @@ Data,
     "satisfaction_rating": {}
   }
 ```
+
+## Support
+
+This is heavily **Work In Progress** We would love your feedback on this
+Operator so don't hesitate to let us know what is wrong and how we could improve
+it, just file an [issue](https://github.com/triggermesh/knative-sources/issues/new)
+

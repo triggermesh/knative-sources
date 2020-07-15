@@ -16,31 +16,50 @@ limitations under the License.
 
 package adapter
 
-import (
-	"time"
-)
-
 // ZendeskEvent contains the event payload
 type ZendeskEvent map[string]interface{}
 
-// ID returns the ID of a Zendesk ticket
+// ID returns the ID of the Zendesk ticket
 func (ze *ZendeskEvent) ID() string {
-	id := (*ze)["id"]
-	return id.(string)
+	v, ok := (*ze)["id"]
+	if !ok {
+		return ""
+	}
+
+	id, ok := v.(string)
+	if !ok {
+		return ""
+	}
+
+	return id
 }
 
-// CreatedAt returns the creation time of a Zendesk ticket
-func (ze *ZendeskEvent) CreatedAt() time.Time {
-	timeCreated, exists := (*ze)["created_at"]
-	if !exists {
-		return time.Now()
+// Title returns the title of the Zendesk ticket
+func (ze *ZendeskEvent) Title() string {
+	v, ok := (*ze)["title"]
+	if !ok {
+		return ""
 	}
-	t, _ := time.Parse(time.RFC3339, timeCreated.(string))
+
+	t, ok := v.(string)
+	if !ok {
+		return ""
+	}
+
 	return t
 }
 
-// Title returns the title of a Zendesk ticket
-func (ze *ZendeskEvent) Title() string {
-	s := (*ze)["title"]
-	return s.(string)
+// Type returns the type of the Zendesk ticket
+func (ze *ZendeskEvent) Type() string {
+	v, ok := (*ze)["type"]
+	if !ok {
+		return ""
+	}
+
+	t, ok := v.(string)
+	if !ok {
+		return ""
+	}
+
+	return t
 }

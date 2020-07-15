@@ -37,9 +37,10 @@ type zendeskAdapter struct {
 func New(ctx context.Context, aEnv adapter.EnvConfigAccessor, ceClient cloudevents.Client) adapter.Adapter {
 	env := aEnv.(*envAccessor)
 	logger := logging.FromContext(ctx)
+	eventsource := env.Subdomain + "." + env.Name
 
 	return &zendeskAdapter{
-		handler: NewZendeskAPIHandler(ceClient, env.Username, env.Password, logger.Named("handler")),
+		handler: NewZendeskAPIHandler(ceClient, env.WebhookUsername, env.WebhookPassword, eventsource, logger.Named("handler")),
 		logger:  logger,
 	}
 }

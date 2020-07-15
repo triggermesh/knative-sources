@@ -17,17 +17,17 @@ kind: ZendeskSource
 metadata:
   name: zendesksource
 spec:
-  email: 'joe@autoparts.com '
-  username: 'joe' 
-  subdomain: 'autoparts'
+  email: '<ZENDESK ACCOUNT USER EMAIL>'
+  subdomain: '<ZENDESK TENANT SUBDOMAIN>'
   token:
     secretKeyRef:
       name: zendesksource
       key: token
-  password:
+  webhookUsername: '<SOME ARBITRARY USERNAME>'
+  webhookPassword:
     secretKeyRef:
       name: zendesksource
-      key: password            
+      key: password
   sink:
     ref:
       apiVersion: serving.knative.dev/v1

@@ -112,7 +112,7 @@ func (in *ZendeskSourceSpec) DeepCopyInto(out *ZendeskSourceSpec) {
 	*out = *in
 	in.SourceSpec.DeepCopyInto(&out.SourceSpec)
 	in.Token.DeepCopyInto(&out.Token)
-	in.Password.DeepCopyInto(&out.Password)
+	in.WebhookPassword.DeepCopyInto(&out.WebhookPassword)
 	return
 }
 

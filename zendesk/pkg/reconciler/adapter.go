@@ -94,32 +94,20 @@ func makeAppEnv(spec *v1alpha1.ZendeskSourceSpec) []corev1.EnvVar {
 	env := []corev1.EnvVar{}
 
 	env = append(env, corev1.EnvVar{
-		Name: "ZENDESK_TOKEN",
+		Name:  "ZENDESK_WEBHOOK_USERNAME",
+		Value: spec.WebhookUsername,
+	})
+
+	env = append(env, corev1.EnvVar{
+		Name: "ZENDESK_WEBHOOK_PASSWORD",
 		ValueFrom: &corev1.EnvVarSource{
-			SecretKeyRef: spec.Token.SecretKeyRef,
+			SecretKeyRef: spec.WebhookPassword.SecretKeyRef,
 		},
 	})
 
 	env = append(env, corev1.EnvVar{
-		Name: "PASSWORD",
-		ValueFrom: &corev1.EnvVarSource{
-			SecretKeyRef: spec.Password.SecretKeyRef,
-		},
-	})
-
-	env = append(env, corev1.EnvVar{
-		Name:  "EMAIL",
-		Value: spec.Email,
-	})
-
-	env = append(env, corev1.EnvVar{
-		Name:  "SUBDOMAIN",
+		Name:  "ZENDESK_SUBDOMAIN",
 		Value: spec.Subdomain,
-	})
-
-	env = append(env, corev1.EnvVar{
-		Name:  "USERNAME",
-		Value: spec.Username,
 	})
 
 	return env

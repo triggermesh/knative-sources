@@ -71,7 +71,7 @@ func (r *reconciler) ReconcileKind(ctx context.Context, src *v1alpha1.ZendeskSou
 		return err
 	}
 
-	secretPassword, err := r.secretFrom(ctx, src.Namespace, src.Spec.Password.SecretKeyRef)
+	secretPassword, err := r.secretFrom(ctx, src.Namespace, src.Spec.WebhookPassword.SecretKeyRef)
 	if err != nil {
 		src.Status.MarkNoPassword("Could not find the Zendesk password secret: %v", err)
 		return err
@@ -97,10 +97,9 @@ func (r *reconciler) ReconcileKind(ctx context.Context, src *v1alpha1.ZendeskSou
 		Type:        "http_target",
 		Method:      "post",
 		ContentType: "application/json",
-		// TODO replace both with arbitrary values from users
-		Username: src.Spec.Username,
-		Password: secretPassword,
-		Title:    "io.triggermesh." + src.Name,
+		Username:    src.Spec.WebhookUsername,
+		Password:    secretPassword,
+		Title:       "io.triggermesh." + src.Name,
 	}
 
 	err = ensureZendeskTarget(ctx, zc, zendeskTarget)
@@ -165,7 +164,18 @@ func ensureZendeskTarget(ctx context.Context, client zendesk.Client, target *zen
 			Field: "notification_target",
 			Value: []string{
 				strconv.FormatInt(t.ID, 10),
-				`{"id":"{{ticket.id}}","description":"{{ticket.description}}","title":"{{ticket.title}}"}`,
+				`{
+					"id":"{{ticket.id}}",
+					"title":"{{ticket.title}}",
+					"description":"{{ticket.description}}",
+					"type":"{{ticket.ticket_type}}",
+					"tags":"{{ticket.tags}}",
+					"asignee":"{{ticket.assignee.name}}",
+					"requester":"{{ticket.requester.name}}",
+					"organization":"{{ticket.organization.name}}",
+					"due_date":"{{ticket.due_date}}",
+					"url":"{{ticket.url}}"
+					}`,
 			},
 		}},
 		Conditions: struct {

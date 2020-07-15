@@ -1,6 +1,6 @@
 # Zendesk Source for Knative
 
-The Zendesk Source enables integration of [Zendesk](https://www.zendesk.com/) events into a Knative/Kuberneties environment, allowing end-users the ablility to subscribe other Services/Functions to new `Ticket` events.
+The Zendesk Source enables integration of [Zendesk](https://www.zendesk.com/) events with Knative, allowing end-users the ablility to subscribe new `Ticket` events.
 
 ## Contents
 
@@ -9,22 +9,27 @@ The Zendesk Source enables integration of [Zendesk](https://www.zendesk.com/) ev
   - [Building](#building)
   - [Deploy a Controller](#deploy-a-controller)
     - [Deploy a Zendesk Source Controller From Code](#deploy-a-zendesk-source-controller-from-code)
-  - [Deploy Zendesk Source](#deploy-zendesk-source)
-  - [Verify a Zendesk Source Deployment](#verify-a-zendesk-source-deployment)
+  - [Create Zendesk Integration](#create-zendesk-integration)
+  - [Deploy a Zendesk Source](#deploy-a-zendesk-source)
+    - [Verify a Zendesk Source Deployment](#verify-a-zendesk-source-deployment)
+    - [Customizing the integration](#customizing-the-integration)
   - [Events](#events)
   - [Support](#support)
 
 ## Building
 
-**The entry point (`main` package) for the controller and target adapter are under `cmd/controller/` and `cmd/adapter/`, respectively. Both these programs can be built using the Go toolchain from the `knative-sources/zendesk` directory**
-
-To create binaries for your current OS and architecture inside the root repo `_output` directory:
+The entry point (`main` package) for the controller and target adapter are respectively under
+`cmd/controller/` and `cmd/adapter/`. Both these programs can be built using
+the Go toolchain from the `knative-sources/zendesk` directory:
 
 ```sh
 $ make build
 ```
 
-To create container images:
+Binaries will be generated for your current OS and architecture inside the root repo `_output` thdirectory.
+
+Those binaries can also be packaged as container images in order to run inside a Kubernetes cluster:
+
 
 ```sh
 $ make image
@@ -48,20 +53,21 @@ $ ko apply -f ./config/
 
 Alternatively you can base on the manifests at the config repo to build a set of kubernetes manifests that use your customized images and namespace.
 
+## Create Zendesk Integration
+
 ## Deploy a Zendesk Source
 
-**An instance of the Zendesk Source is created by applying a manifest that fullfills its CRD schema. Accepted and REQUIRED Spec parameters are:**
+An instance of the Zendesk Source is created by applying a manifest that fullfills its CRD schema. Accepted Spec parameters are:
 
-- `email` associated with a valid Zendesk account.
-- `username` for basic authentication between Zendesk andthe    Source.
-- `subdomain` for the Zendesk tenant.
+- `subdomain` for the Zendesk tenant being used.
+- `email` associated with THE Zendesk account.
+- `token` generated from Zendesk admin site for the integration.
+- `webhookUsername` that will be used to verify event callbacks.
+- `webhookPassword` that will be used to verify event callbacks.
 
-**A Zendesk Source also REQUIRES that a secret `zendesksource` exists populated with a the following parameters:**
+All parameters are required.
 
-- `token`  for the Zendesk API.
-- `password` for basic authentication between Zendesk and the Source
-
-**Note that `username` and `password` are _defined_ here and can hold arbitrary values. They are not coming from or are populated by any external service. These two parameters will be used while registering the webhook and then passed to the Source to use in the validation process of the Webhook 'POST' requests.**
+Note that `webhookUsername` and `webhookPassword` are arbitrary values and will be used from zendesk to sign requests, and at the Zendesk source to verify them.
 
 Example Secret Deployment:
 
@@ -84,91 +90,87 @@ kind: ZendeskSource
 metadata:
   name: zendesksource
 spec:
-  email: 'joe@autoparts.com '
-  username: 'joe'
-  subdomain: 'autoparts'
+  email: coyote@acmeanvils.com
+  subdomain: 'acmeanvils'
   token:
-            secretKeyRef:
-              name: zendesksource
-              key: token
-  password:
-            secretKeyRef:
-              name: zendesksource
-              key: password
-  ref:
+    secretKeyRef:
+      name: zendesksource
+      key: token
+  webhookUsername: 'webhookuser'
+  webhookPassword:
+    secretKeyRef:
+      name: zendesksource
+      key: webhookPassword
+  sink:
+    ref:
       apiVersion: serving.knative.dev/v1
       kind: Service
       name: event-display
-```
-
-Both of these files, along with an example source, exist in the `/zendesk/sample/` directory. After populating the required fields with valid information, and Deploy the Controller, a Zendesk Source can now be deployed by execuing the following command in the `knative-sources/zendesk` directory:
-
-```sh
-$ kubectl -n autoPartsNamespace apply -f sample/
-```
-
-Once created wait for the source to be ready and take note of the URL (`status.address.url`):
-
-``` sh
-$ kubectl get zendesksource -n autoPartsNamespace zendesk-source
-
-NAME                READY   REASON   URL                                                              SINK                                                  AGE
-zendesksource       True             https://zendesksource-triggermesh.autoPartsNamespace.dev.munu.io      http://event-display.autoPartsNamespace.svc.cluster.local    25h
 
 ```
+
+The example relies on an `event-display` service and on the `zendesksource` secret that should contains `token` and `webhookPassword` keys.
 
 ### Verify a Zendesk Source Deployment
 
-One can verify a successful deployment of a Zendesk Source by  navigate to the `settings` sidebar of your Zendesk subdomain and selecting `Extensions`
+- To verify a successful deployment of a Zendesk source instance navigate to the `settings` sidebar of your Zendesk subdomain and select `Extensions`:
 
-![i](../img/ex.png)
+![i](../img/ex.png )
 
-A Zendesk Source will create a new `Extension` or `Target` with a Title of : "io.triggermesh." + The namespace it was deployed + The deployment name. 
+- A Zendesk Source creates a new `Extension/Target` prefixed with: `io.triggermesh.`.
 
-For the example deployment below we have a deployment with the name of `zendesksource` undert the namespace of `jeffthenaef`
 ![i](../img/exExample.png)
-After selecting 'edit' it can be seen that the Source has assigned its public `URL` address and the values for `username` and `password` that were passed into the Spec / Secret on creation are populated here.
-![i](../img/exExpanded.png)
 
-A Zendesk Source also creates a Zendesk 'Trigger.' They can be found by  navigate to the `settings` sidebar of your Zendesk subdomain and selecting `Triggers`
+- The target is linked to a `Trigger` which can be found by navigating to the `settings` sidebar of your Zendesk subdomain and selecting `Triggers`.
 
 ![i](../img/trig.png)
 
-A `Trigger` is assigned its title by the same naming convention as a `Target`
+- A `Trigger` is assigned the same name as the associated `Target`:
+
 ![i](../img/trigExample.png)
 
-By 'double-clicking' the `Trigger` one is brought to the exanded section. Here we can see that the Source has created a Zendesk `Trigger` that will send notifications on the creation of a new Ticket to the `Extension` the Source Created.
+- Click on the source created `Trigger` to access the configured conditions and actions.
 
 ![i](../img/trigExpanded.png)
 
-In the lower section of this page the `Actions` section can be found. Here the actual payload is defined as to what information is sent to the Source when a `Ticket` is created.
+### Customizing the integration
 
-Currently a Zendesk Source does not 'clean up' after itself and when It is destroyed the Zendesk 'Target' and 'Trigger'  will remain and will require manual cleanup.
+The integration can be customized by modifying the `Trigger` configuration. The action `Notify target` and the source created target should be selected.
 
-**It is important to note that the `id` and `title` fields should be included as is in all requests but the user is free to modify this section and send any kind(s) of `Ticket` data to a Zendesk Source.**  
+We provide a default JSON body that will be ingested through the Zendesk source, but you can add and remove fields to fit your needs.
 
-![i](../img/trigAction.png)
+It is important to note that the we try to populate the Cloud Events header using incoming fields:
+
+- `id` field at the JSON body will be used to populate the Cloud Event ID.
+- `title` field at the JSON body will be used to populate the Cloud Event Subject.
+- `ticket_type` field at the JSON body will be used to populate a Cloud Event extension called `ticket_type`.
 
 ## Events
 
 **Below you can find an example Cloudevent from a Zendesk Source.**
 
-```sh
+```txt
 Validation: valid
 Context Attributes,
   specversion: 1.0
-  type: com.zendesk.new
-  source: jeffthenaef.tmdev2.zendesksource-zd-event-test
-  subject: AutoTicket
-  id: 114
-  time: 2020-07-14T22:31:42.772666553Z
+  type: com.zendesk.ticket
+  source: triggermesh.zendesksource-tmtickets
+  subject: play that again
+  id: 42
+  time: 2020-07-15T09:05:11.539147977Z
   datacontenttype: application/json
 Data,
   {
-    "created_at": "Jul 14",
-    "description": "----------------------------------------------\n\njeff naef, Jul 14, 2020, 7:31 PM\n\nYour auto parts are ready",
-    "id": "114",
-    "title": "AutoTicket"
+    "asignee": "Pauline Oliveros",
+    "description": "----------------------------------------------\n\nTriggermesh Developer, Jul 15, 2020, 6:05 AM\n\nwe have many requests to play that again",
+    "due_date": "",
+    "id": "42",
+    "organization": "",
+    "requester": "Triggermesh Developer",
+    "tags": "",
+    "title": "play that again",
+    "type": "Ticket",
+    "url": "triggermesh.zendesk.com/agent/tickets/42"
   }
 ```
 

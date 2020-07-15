@@ -25,6 +25,7 @@ func EnvAccesor() adapter.EnvConfigAccessor {
 type envAccessor struct {
 	adapter.EnvConfig
 
-	Username string `envconfig:"ZENDESK_USERNAME"`
-	Password string `envconfig:"ZENDESK_PASSWORD"`
+	WebhookUsername string `envconfig:"ZENDESK_WEBHOOK_USERNAME"`
+	WebhookPassword string `envconfig:"ZENDESK_WEBHOOK_PASSWORD"`
+	Subdomain       string `envconfig:"ZENDESK_SUBDOMAIN"`
 }

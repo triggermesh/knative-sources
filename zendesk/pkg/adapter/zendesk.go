@@ -24,7 +24,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"os"
 	"strings"
 	"sync"
 	"time"
@@ -43,31 +42,30 @@ const (
 	serverShutdownGracePeriod = time.Second * 10
 )
 
-// constats for the CE data
+// constats for the Cloud Events data
 const (
-	ceType = "com.zendesk.new"
+	ceType = "com.zendesk.ticket"
 )
 
 type zendeskAPIHandler struct {
 	username string
 	password string
 
-	ceClient cloudevents.Client
-	srv      *http.Server
-	source   string
+	ceClient    cloudevents.Client
+	srv         *http.Server
+	eventsource string
 
 	logger *zap.SugaredLogger
 }
 
 // NewZendeskAPIHandler creates the default implementation of the Zendesk API Events handler
-func NewZendeskAPIHandler(ceClient cloudevents.Client, username, password string, logger *zap.SugaredLogger) ZendeskAPIHandler {
-	s := os.Getenv("NAMESPACE") + "." + os.Getenv("SUBDOMAIN") + "." + os.Getenv("NAME")
+func NewZendeskAPIHandler(ceClient cloudevents.Client, username, password, eventsource string, logger *zap.SugaredLogger) ZendeskAPIHandler {
 	return &zendeskAPIHandler{
-		username: username,
-		password: password,
-		source:   s,
-		ceClient: ceClient,
-		logger:   logger,
+		username:    username,
+		password:    password,
+		eventsource: eventsource,
+		ceClient:    ceClient,
+		logger:      logger,
 	}
 }
 
@@ -210,11 +208,14 @@ func (h *zendeskAPIHandler) cloudEventFromWrapper(ze *ZendeskEvent) (*cloudevent
 	}
 	event := cloudevents.NewEvent(cloudevents.VersionV1)
 
+	if ticketType := ze.Type(); ticketType != "" {
+		event.SetExtension("ticket_type", ticketType)
+	}
 	event.SetID(ze.ID())
-	event.SetTime(ze.CreatedAt())
 	event.SetType(ceType)
-	event.SetSource(h.source)
+	event.SetSource(h.eventsource)
 	event.SetSubject(ze.Title())
+
 	if err := event.SetData(cloudevents.ApplicationJSON, data); err != nil {
 		return nil, fmt.Errorf("failed to set event data: %w", err)
 	}

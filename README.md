@@ -13,6 +13,7 @@ Instructions on installing and usage can be found at each individual event sourc
 | Source | Support level |
 |-------------|---------------|
 | [Slack](https://github.com/triggermesh/knative-sources/tree/master/slack)  | alpha         |
+| [Zendesk](https://github.com/triggermesh/knative-sources/tree/master/zendesk)  | alpha         |
 
 ## TriggerMesh Cloud Early Access
 

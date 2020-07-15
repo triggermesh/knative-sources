@@ -31,7 +31,6 @@ import (
 	pkgreconciler "knative.dev/pkg/reconciler"
 	"knative.dev/pkg/resolver"
 
-	// "github.com/nukosuke/go-zendesk/zendesk"
 	srcreconciler "github.com/triggermesh/knative-sources/pkg/reconciler"
 	"github.com/triggermesh/knative-sources/zendesk/pkg/apis/sources/v1alpha1"
 	reconcilerzendesksource "github.com/triggermesh/knative-sources/zendesk/pkg/client/generated/injection/reconciler/sources/v1alpha1/zendesksource"

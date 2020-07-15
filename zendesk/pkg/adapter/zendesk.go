@@ -45,8 +45,7 @@ const (
 
 // constats for the CE data
 const (
-	ceType    = "com.zendesk.new"
-	ceSubject = "New Zendesk Ticket"
+	ceType = "com.zendesk.new"
 )
 
 type zendeskAPIHandler struct {

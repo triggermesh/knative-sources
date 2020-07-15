@@ -137,39 +137,38 @@ A Zendesk Source also creates a Zendesk 'Trigger.' They can be found by  navigat
 A `Trigger` is assigned its title by the same naming convention as a `Target`
 ![i](../img/trigExample.png)
 
-By 'double-clicking' the `Trigger` one is brought to the exanded section. Here we can see that the Source has created a Zendesk `Trigger` that will send notifications on the creation of a new Ticket. Below this a pannel please note the text area named:"JSON Body". Here the actual payload defining what information is sent to the Source when a `Ticket` is created.
-
-**It is important to note that although this field does come pre-populated a Zendesk Source has NO opionon on the data that it recieves. You are free to modify this and send any kind(s) of `Ticket` data to a Zendesk Source as you may see fit.**  
+By 'double-clicking' the `Trigger` one is brought to the exanded section. Here we can see that the Source has created a Zendesk `Trigger` that will send notifications on the creation of a new Ticket to the `Extension` the Source Created.
 
 ![i](../img/trigExpanded.png)
 
+In the lower section of this page the `Actions` section can be found. Here the actual payload is defined as to what information is sent to the Source when a `Ticket` is created.
+
 Currently a Zendesk Source does not 'clean up' after itself and when It is destroyed the Zendesk 'Target' and 'Trigger'  will remain and will require manual cleanup.
+
+**It is important to note that the `id` and `title` fields should be included as is in all requests but the user is free to modify this section and send any kind(s) of `Ticket` data to a Zendesk Source.**  
+
+![i](../img/trigAction.png)
 
 ## Events
 
 **Below you can find an example Cloudevent from a Zendesk Source.**
 
 ```sh
-cloudevents.Event
 Validation: valid
 Context Attributes,
   specversion: 1.0
   type: com.zendesk.new
-  source: autoPartsNamespace.zendesksource-zsrc.tmdev2
-  subject: New Zendesk Ticket
-  id: 62
-  time: 2020-07-12T05:15:43.43054774Z
+  source: jeffthenaef.tmdev2.zendesksource-zd-event-test
+  subject: AutoTicket
+  id: 114
+  time: 2020-07-14T22:31:42.772666553Z
   datacontenttype: application/json
 Data,
   {
-    "id": "62",
-    "description": "----------------------------------------------\n\Parts are ready! , Jul 12, 2020, 2:15 AM\n\nFor added convenience, you can choose to pick up various items from your order at different stores. Example: you can pick up part of your order at a store near your work, and get the remaining items at a store closer to your home. Simply select the items you would like to pick up at each store, in either your shopping cart or at checkout.",
-    "created_at": "0001-01-01T00:00:00Z",
-    "due_at": "0001-01-01T00:00:00Z",
-    "via": {
-      "source": {}
-    },
-    "satisfaction_rating": {}
+    "created_at": "Jul 14",
+    "description": "----------------------------------------------\n\njeff naef, Jul 14, 2020, 7:31 PM\n\nYour auto parts are ready",
+    "id": "114",
+    "title": "AutoTicket"
   }
 ```
 

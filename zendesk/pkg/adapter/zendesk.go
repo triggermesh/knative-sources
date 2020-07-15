@@ -42,9 +42,12 @@ const (
 	serverShutdownGracePeriod = time.Second * 10
 )
 
-// constats for the Cloud Events data
 const (
 	ceType = "com.zendesk.ticket"
+	// auth header prefix, it is important that the blank
+	// space is present at the end for string manipulation
+	// at auth parsing function.
+	authPrefix = "Basic "
 )
 
 type zendeskAPIHandler struct {
@@ -131,25 +134,25 @@ func (h *zendeskAPIHandler) Start(ctx context.Context) error {
 }
 
 func (h *zendeskAPIHandler) validateAuthHeader(r *http.Request) error {
-
-	s := strings.SplitN(r.Header.Get("Authorization"), " ", 2)
-	if len(s) != 2 {
-		return errors.New("no Auth Parameters")
+	auth := r.Header.Get("Authorization")
+	if !strings.HasPrefix(auth, authPrefix) {
+		return errors.New("incorrect auth header")
 	}
 
-	b, err := base64.StdEncoding.DecodeString(s[1])
+	content, err := base64.StdEncoding.DecodeString(auth[len(authPrefix):])
 	if err != nil {
 		return errors.New("could not decode the auth header")
 	}
 
-	pair := strings.SplitN(string(b), ":", 2)
+	pair := strings.SplitN(string(content), ":", 2)
 	if len(pair) != 2 {
 		return errors.New("misformated credentials at auth header")
 	}
 
-	if pair[0] == h.username && pair[1] == h.password {
-		return nil
+	if pair[0] != h.username || pair[1] != h.password {
+		return fmt.Errorf("credentials received for user %q are not valid", pair[0])
 	}
+
 	return nil
 }
 
@@ -182,13 +185,11 @@ func (h *zendeskAPIHandler) handleAll(w http.ResponseWriter, r *http.Request) {
 
 	cEvent, err := h.cloudEventFromWrapper(event)
 	if err != nil {
-		h.logger.Info("Error creating CloudEvent")
-		h.handleError(err, w)
+		h.handleError(fmt.Errorf("could not create Cloud Event: %w", err), w)
 	}
 
 	if result := h.ceClient.Send(context.Background(), *cEvent); !cloudevents.IsACK(result) {
-		h.logger.Info("Error sending CloudEvent")
-		h.handleError(result, w)
+		h.handleError(fmt.Errorf("could not send Cloud Event: %w", result), w)
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -201,7 +202,6 @@ func (h *zendeskAPIHandler) handleError(err error, w http.ResponseWriter) {
 }
 
 func (h *zendeskAPIHandler) cloudEventFromWrapper(ze *ZendeskEvent) (*cloudevents.Event, error) {
-	h.logger.Info("Proccesing Zendesk event")
 	data, err := json.Marshal(ze)
 	if err != nil {
 		return nil, err

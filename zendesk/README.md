@@ -133,44 +133,80 @@ The example relies on an `event-display` service and on the `zendesksource` secr
 
 ![i](../img/trigExpanded.png)
 
-### Customizing the integration
+- At the bottom of the same page, the JSON payload that will be sent to the source can be found.
 
-The integration can be customized by modifying the `Trigger` configuration. The action `Notify target` and the source created target should be selected.
-
-We provide a default JSON body that will be ingested through the Zendesk source, but you can add and remove fields to fit your needs.
-
-It is important to note that the we try to populate the Cloud Events header using incoming fields:
-
-- `id` field at the JSON body will be used to populate the Cloud Event ID.
-- `title` field at the JSON body will be used to populate the Cloud Event Subject.
-- `ticket_type` field at the JSON body will be used to populate a Cloud Event extension called `ticket_type`.
+![i](../img/trigAction.png)
 
 ## Events
 
-**Below you can find an example Cloudevent from a Zendesk Source.**
+Here we can see the an example ticket being created on Zendesk:
+
+![i](../img/ticketEx.png)
+
+The event that will was created by a `Zendesk Event Source` is as follows:
 
 ```txt
+☁️  cloudevents.Event
 Validation: valid
 Context Attributes,
   specversion: 1.0
   type: com.zendesk.ticket
-  source: triggermesh.zendesksource-tmtickets
-  subject: play that again
-  id: 42
-  time: 2020-07-15T09:05:11.539147977Z
+  source: tmdev2.zendesksource-zd-event-test
+  subject: Hello world
+  id: 132
+  time: 2020-07-16T19:29:01.887525916Z
   datacontenttype: application/json
 Data,
   {
-    "asignee": "Pauline Oliveros",
-    "description": "----------------------------------------------\n\nTriggermesh Developer, Jul 15, 2020, 6:05 AM\n\nwe have many requests to play that again",
+    "account": "tm",
+    "assignee_email": "jeffthenaef@gmail.com",
+    "assignee_first_name": "jeff",
+    "assignee_last_name": "naef",
+    "assignee_name": "jeff naef",
+    "brand_name": "tm",
+    "cc_names": "",
+    "ccs": "[]",
+    "current_holiday_name": "Liquid error: internal",
+    "current_user_details": "",
+    "current_user_email": "jeffthenaef@gmail.com",
+    "current_user_external_id": "",
+    "current_user_first_name": "jeff",
+    "current_user_language": "English",
+    "current_user_name": "jeff naef",
+    "current_user_notes": "",
+    "current_user_organization_details": "",
+    "current_user_organization_name": "tm",
+    "current_user_organization_notes": "",
+    "current_user_phone": "",
+    "description": "----------------------------------------------\n\njeff naef, Jul 16, 2020, 4:28 PM\n\nThis is an example if a Zendesk ticket event!!",
     "due_date": "",
-    "id": "42",
-    "organization": "",
-    "requester": "Triggermesh Developer",
+    "external_id": "",
+    "group_name": "Support",
+    "id": "132",
+    "organization_details": "",
+    "organization_external_id": "",
+    "organization_name": "tm",
+    "organization_notes": "",
+    "priority": "",
+    "requester_details": "",
+    "requester_email": "jeffthenaef@gmail.com",
+    "requester_external_id": "",
+    "requester_field": "",
+    "requester_first_name": "jeff",
+    "requester_language": "English",
+    "requester_last_name": "naef",
+    "requester_name": "jeff naef",
+    "requester_phone": "",
+    "satisfaction_current_comment": "",
+    "satisfaction_current_rating": "",
+    "status": "Open",
     "tags": "",
-    "title": "play that again",
-    "type": "Ticket",
-    "url": "triggermesh.zendesk.com/agent/tickets/42"
+    "ticket_field_id": "",
+    "ticket_field_option_title_id": "",
+    "ticket_type": "Ticket",
+    "title": "Hello world",
+    "url": "tmdev2.zendesk.com/agent/tickets/132",
+    "via": "Web Form"
   }
 ```
 

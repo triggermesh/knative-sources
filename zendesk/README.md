@@ -53,8 +53,6 @@ $ ko apply -f ./config/
 
 Alternatively you can base on the manifests at the config repo to build a set of kubernetes manifests that use your customized images and namespace.
 
-## Create Zendesk Integration
-
 ## Deploy a Zendesk Source
 
 An instance of the Zendesk Source is created by applying a manifest that fullfills its CRD schema. Accepted Spec parameters are:
@@ -110,69 +108,6 @@ spec:
 ```
 
 The example relies on an `event-display` service and on the `zendesksource` secret that should contains `token` and `webhookPassword` keys.
-
-### Verify a Zendesk Source Deployment
-
-- To verify a successful deployment of a Zendesk source instance navigate to the `settings` sidebar of your Zendesk subdomain and select `Extensions`:
-
-![i](../img/ex.png )
-
-- A Zendesk Source creates a new `Extension/Target` prefixed with: `io.triggermesh.`.
-
-![i](../img/exExample.png)
-
-- The target is linked to a `Trigger` which can be found by navigating to the `settings` sidebar of your Zendesk subdomain and selecting `Triggers`.
-
-![i](../img/trig.png)
-
-- A `Trigger` is assigned the same name as the associated `Target`:
-
-![i](../img/trigExample.png)
-
-- Click on the source created `Trigger` to access the configured conditions and actions.
-
-![i](../img/trigExpanded.png)
-
-### Customizing the integration
-
-The integration can be customized by modifying the `Trigger` configuration. The action `Notify target` and the source created target should be selected.
-
-We provide a default JSON body that will be ingested through the Zendesk source, but you can add and remove fields to fit your needs.
-
-It is important to note that the we try to populate the Cloud Events header using incoming fields:
-
-- `id` field at the JSON body will be used to populate the Cloud Event ID.
-- `title` field at the JSON body will be used to populate the Cloud Event Subject.
-- `ticket_type` field at the JSON body will be used to populate a Cloud Event extension called `ticket_type`.
-
-## Events
-
-**Below you can find an example Cloudevent from a Zendesk Source.**
-
-```txt
-Validation: valid
-Context Attributes,
-  specversion: 1.0
-  type: com.zendesk.ticket
-  source: triggermesh.zendesksource-tmtickets
-  subject: play that again
-  id: 42
-  time: 2020-07-15T09:05:11.539147977Z
-  datacontenttype: application/json
-Data,
-  {
-    "asignee": "Pauline Oliveros",
-    "description": "----------------------------------------------\n\nTriggermesh Developer, Jul 15, 2020, 6:05 AM\n\nwe have many requests to play that again",
-    "due_date": "",
-    "id": "42",
-    "organization": "",
-    "requester": "Triggermesh Developer",
-    "tags": "",
-    "title": "play that again",
-    "type": "Ticket",
-    "url": "triggermesh.zendesk.com/agent/tickets/42"
-  }
-```
 
 ## Support
 

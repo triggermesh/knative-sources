@@ -164,18 +164,7 @@ func ensureZendeskTarget(ctx context.Context, client zendesk.Client, target *zen
 			Field: "notification_target",
 			Value: []string{
 				strconv.FormatInt(t.ID, 10),
-				`{
-					"id":"{{ticket.id}}",
-					"title":"{{ticket.title}}",
-					"description":"{{ticket.description}}",
-					"type":"{{ticket.ticket_type}}",
-					"tags":"{{ticket.tags}}",
-					"asignee":"{{ticket.assignee.name}}",
-					"requester":"{{ticket.requester.name}}",
-					"organization":"{{ticket.organization.name}}",
-					"due_date":"{{ticket.due_date}}",
-					"url":"{{ticket.url}}"
-					}`,
+				triggerPayloadJSON,
 			},
 		}},
 		Conditions: struct {
@@ -216,3 +205,69 @@ func (r *reconciler) secretFrom(ctx context.Context, namespace string, secretKey
 	}
 	return string(secretVal), nil
 }
+
+const triggerPayloadJSON = `{
+  "ticket": {
+    "id": "{{ticket.id}}",
+    "external_id": "{{ticket.external_id}}",
+    "title": "{{ticket.title}}",
+    "url": "{{ticket.url}}",
+    "description": "{{ticket.description}}",
+    "via": "{{ticket.via}}",
+    "status": "{{ticket.status}}",
+    "priority": "{{ticket.priority}}",
+    "ticket_type": "{{ticket.ticket_type}}",
+    "group_name": "{{ticket.group.name}}",
+    "brand_name": "{{ticket.brand.name}}",
+    "due_date": "{{ticket.due_date}}",
+    "account": "{{ticket.account}}",
+    "assignee": {
+      "email": "{{ticket.assignee.email}}",
+      "name": "{{ticket.assignee.name}}",
+      "first_name": "{{ticket.assignee.first_name}}",
+      "last_name": "{{ticket.assignee.last_name}}"
+    },
+    "requester": {
+      "name": "{{ticket.requester.name}}",
+      "first_name": "{{ticket.requester.first_name}}",
+      "last_name": "{{ticket.requester.last_name}}",
+      "email": "{{ticket.requester.email}}",
+      "language": "{{ticket.requester.language}}",
+      "phone": "{{ticket.requester.phone}}",
+      "external_id": "{{ticket.requester.external_id}}",
+      "field": "{{ticket.requester_field}}",
+      "details": "{{ticket.requester.details}}"
+    },
+    "organization": {
+      "name": "{{ticket.organization.name}}",
+      "external_id": "{{ticket.organization.external_id}}",
+      "details": "{{ticket.organization.details}}",
+      "notes": "{{ticket.organization.notes}}"
+    },
+    "ccs": "{{ticket.ccs}}",
+    "cc_names": "{{ticket.cc_names}}",
+    "tags": "{{ticket.tags}}",
+    "current_holiday_name": "{{ticket.current_holiday_name}}",
+    "ticket_field_id": "{{ticket.ticket_field_ID}}",
+    "ticket_field_option_title_id": "{{ticket.ticket_field_option_title_ID}}"
+  },
+  "current_user": {
+    "name": "{{current_user.name}}",
+    "first_name": "{{current_user.first_name}}",
+    "email": "{{current_user.email}}",
+    "organization": {
+      "name": "{{current_user.organization.name}}",
+      "notes": "{{current_user.organization.notes}}",
+      "details": "{{current_user.organization.details}}"
+    },
+    "external_id": "{{current_user.external_id}}",
+    "phone": "{{current_user.phone}}",
+    "details": "{{current_user.details}}",
+    "notes": "{{current_user.notes}}",
+    "language": "{{current_user.language}}"
+  },
+  "satisfaction": {
+    "current_rating": "{{satisfaction.current_rating}}",
+    "current_comment": "{{satisfaction.current_comment}}"
+  }
+}`

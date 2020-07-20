@@ -43,7 +43,7 @@ const (
 )
 
 const (
-	ceType = "com.zendesk.ticket"
+	ceType = "com.zendesk.ticket.created"
 	// auth header prefix, it is important that the blank
 	// space is present at the end for string manipulation
 	// at auth parsing function.

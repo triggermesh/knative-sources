@@ -99,7 +99,7 @@ func (r *reconciler) ReconcileKind(ctx context.Context, src *v1alpha1.ZendeskSou
 		ContentType: "application/json",
 		Username:    src.Spec.WebhookUsername,
 		Password:    secretPassword,
-		Title:       "io.triggermesh." + src.Name,
+		Title:       "io.triggermesh.zendesksource." + src.Namespace + "." + src.Name,
 	}
 
 	err = ensureZendeskTarget(ctx, zc, zendeskTarget)

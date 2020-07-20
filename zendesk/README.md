@@ -13,7 +13,6 @@ The Zendesk Source enables integration of [Zendesk](https://www.zendesk.com/) ev
   - [Deploy a Zendesk Source](#deploy-a-zendesk-source)
     - [Verify a Zendesk Source Deployment](#verify-a-zendesk-source-deployment)
     - [Customizing the integration](#customizing-the-integration)
-  - [Events](#events)
   - [Support](#support)
 
 ## Building
@@ -109,87 +108,6 @@ spec:
 
 The example relies on an `event-display` service and on the `zendesksource` secret that should contains `token` and `webhookPassword` keys.
 
-## Events
-
-An example Cloudevent from a Zendesk Source:
-
-```yaml
-☁️  cloudevents.Event
-Validation: valid
-Context Attributes,
-  specversion: 1.0
-  type: com.zendesk.ticket.created
-  source: triggermesh.zendesksource-zd-pr-test
-  id: 0bb02a50-e4ee-4b69-b612-0a03d6e78267
-  time: 2020-07-20T13:02:30.332708062Z
-  datacontenttype: application/json
-Data,
-  {
-    "current_user": {
-      "details": "",
-      "email": "dev@triggermesh.com",
-      "external_id": "",
-      "first_name": "Triggermesh",
-      "language": "English",
-      "name": "Triggermesh Developer",
-      "notes": "",
-      "organization": {
-        "details": "",
-        "name": "",
-        "notes": ""
-      },
-      "phone": ""
-    },
-    "satisfaction": {
-      "current_comment": "",
-      "current_rating": ""
-    },
-    "ticket": {
-      "account": "TriggerMesh",
-      "assignee": {
-        "email": "dev@triggermesh.com",
-        "first_name": "Triggermesh",
-        "last_name": "Developer",
-        "name": "Triggermesh Developer"
-      },
-      "brand_name": "TriggerMesh",
-      "cc_names": "",
-      "ccs": "[]",
-      "current_holiday_name": "Liquid error: internal",
-      "description": "----------------------------------------------\n\nTriggermesh Developer, Jul 20, 2020, 10:02 AM\n\ne s t",
-      "due_date": "",
-      "external_id": "",
-      "group_name": "Support",
-      "id": "86",
-      "organization": {
-        "details": "",
-        "external_id": "",
-        "name": "",
-        "notes": ""
-      },
-      "priority": "",
-      "requester": {
-        "details": "",
-        "email": "dev@triggermesh.com",
-        "external_id": "",
-        "field": "",
-        "first_name": "Triggermesh",
-        "language": "English",
-        "last_name": "Developer",
-        "name": "Triggermesh Developer",
-        "phone": ""
-      },
-      "status": "Open",
-      "tags": "",
-      "ticket_field_id": "",
-      "ticket_field_option_title_id": "",
-      "ticket_type": "Ticket",
-      "title": "t",
-      "url": "triggermesh.zendesk.com/agent/tickets/86",
-      "via": "Web Form"
-    }
-  }
-```
 ## Support
 
 This is heavily **Work In Progress** We would love your feedback on this

@@ -15,10 +15,10 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: &app zendesk-source-controller
+  name: &app http-source-controller
   namespace: triggermesh
   labels:
-    control-plane: zendesk-source-controller-manager
+    control-plane: http-source-controller-manager
 spec:
   replicas: 1
   selector:
@@ -36,7 +36,7 @@ spec:
       containers:
       - name: controller
         terminationMessagePolicy: FallbackToLogsOnError
-        image: ko://github.com/triggermesh/knative-sources/zendesk/cmd/controller
+        image: ko://github.com/triggermesh/knative-sources/http/cmd/controller
         resources:
           requests:
             cpu: 20m
@@ -55,8 +55,8 @@ spec:
           - name: METRICS_DOMAIN
             value: triggermesh.io/sources
           # Adapters
-          - name: ZENDESKSOURCE_ADAPTER_IMAGE
-            value: ko://github.com/triggermesh/knative-sources/zendesk/cmd/adapter
+          - name: HTTPSOURCE_ADAPTER_IMAGE
+            value: ko://github.com/triggermesh/knative-sources/http/cmd/adapter
 
         securityContext:
           allowPrivilegeEscalation: false

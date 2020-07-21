@@ -19,7 +19,6 @@ package adapter
 import (
 	"context"
 	"encoding/base64"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -27,6 +26,8 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"k8s.io/apimachinery/pkg/util/uuid"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"go.uber.org/zap"
@@ -38,7 +39,6 @@ const (
 )
 
 const (
-	ceType = "com.zendesk.ticket"
 	// auth header prefix, it is important that the blank
 	// space is present at the end for string manipulation
 	// at auth parsing function.
@@ -59,7 +59,7 @@ type httpHandler struct {
 }
 
 // Start the server for receiving Http events. Will block until the stop channel closes.
-func (h *zendeskAPIHandler) Start(ctx context.Context) error {
+func (h *httpHandler) Start(ctx context.Context) error {
 	h.logger.Info("Starting Http event handler...")
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
@@ -119,7 +119,7 @@ func (h *zendeskAPIHandler) Start(ctx context.Context) error {
 	return err
 }
 
-func (h *zendeskAPIHandler) validateAuthHeader(r *http.Request) error {
+func (h *httpHandler) validateAuthHeader(r *http.Request) error {
 	auth := r.Header.Get("Authorization")
 	if !strings.HasPrefix(auth, authPrefix) {
 		return errors.New("incorrect auth header")
@@ -144,15 +144,22 @@ func (h *zendeskAPIHandler) validateAuthHeader(r *http.Request) error {
 
 // handleAll receives all Http events at a single resource, it
 // is up to this function to parse event wrapper and dispatch.
-func (h *zendeskAPIHandler) handleAll(w http.ResponseWriter, r *http.Request) {
+func (h *httpHandler) handleAll(w http.ResponseWriter, r *http.Request) {
 	if r.Body == nil {
 		h.handleError(errors.New("request without body not supported"), w)
 		return
 	}
 
-	if err := h.validateAuthHeader(r); err != nil {
-		h.handleError(err, w)
-		return
+	if h.username != "" && h.password != "" {
+		us, ps, ok := r.BasicAuth()
+		if !ok {
+			h.handleError(errors.New("Authentication header not received"), w)
+			return
+		}
+		if us != h.username || ps != h.password {
+			h.handleError(errors.New("Credentials are not valid"), w)
+			return
+		}
 	}
 
 	defer r.Body.Close()
@@ -162,51 +169,27 @@ func (h *zendeskAPIHandler) handleAll(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	event := &HttpEvent{}
-	err = json.Unmarshal(body, event)
-	if err != nil {
-		h.handleError(fmt.Errorf("could not unmarshall JSON request: %w", err), w)
+	event := cloudevents.NewEvent(cloudevents.VersionV1)
+	event.SetType(h.eventtype)
+	event.SetSource(h.eventsource)
+	event.SetID(string(uuid.NewUUID()))
+
+	if err := event.SetData(cloudevents.ApplicationJSON, body); err != nil {
+		h.handleError(fmt.Errorf("failed to set event data: %w", err), w)
 		return
 	}
 
-	cEvent, err := h.cloudEventFromWrapper(event)
-	if err != nil {
-		h.handleError(fmt.Errorf("could not create Cloud Event: %w", err), w)
-	}
-
-	if result := h.ceClient.Send(context.Background(), *cEvent); !cloudevents.IsACK(result) {
+	if result := h.ceClient.Send(context.Background(), event); !cloudevents.IsACK(result) {
 		h.handleError(fmt.Errorf("could not send Cloud Event: %w", result), w)
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusNoContent)
+	w.WriteHeader(http.StatusOK)
 }
 
-func (h *zendeskAPIHandler) handleError(err error, w http.ResponseWriter) {
+func (h *httpHandler) handleError(err error, w http.ResponseWriter) {
 	h.logger.Error("An error ocurred", zap.Error(err))
 	http.Error(w, err.Error(), http.StatusInternalServerError)
-}
-
-func (h *zendeskAPIHandler) cloudEventFromWrapper(ze *HttpEvent) (*cloudevents.Event, error) {
-	data, err := json.Marshal(ze)
-	if err != nil {
-		return nil, err
-	}
-	event := cloudevents.NewEvent(cloudevents.VersionV1)
-
-	if ticketType := ze.Type(); ticketType != "" {
-		event.SetExtension("ticket_type", ticketType)
-	}
-	event.SetID(ze.ID())
-	event.SetType(ceType)
-	event.SetSource(h.eventsource)
-	event.SetSubject(ze.Title())
-
-	if err := event.SetData(cloudevents.ApplicationJSON, data); err != nil {
-		return nil, fmt.Errorf("failed to set event data: %w", err)
-	}
-
-	return &event, nil
 }
 
 func healthCheckHandler(w http.ResponseWriter, _ *http.Request) {

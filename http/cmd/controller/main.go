@@ -18,12 +18,12 @@ package main
 
 import (
 	// The set of controllers this controller process runs.
-	"github.com/triggermesh/knative-sources/zendesk/pkg/reconciler"
+	"github.com/triggermesh/knative-sources/http/pkg/reconciler"
 
 	// This defines the shared main for injected controllers.
 	"knative.dev/pkg/injection/sharedmain"
 )
 
 func main() {
-	sharedmain.Main("zendesk-source-controller", reconciler.NewController)
+	sharedmain.Main("http-source-controller", reconciler.NewController)
 }

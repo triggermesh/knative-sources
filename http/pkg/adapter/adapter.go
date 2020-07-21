@@ -30,7 +30,6 @@ import (
 func New(ctx context.Context, aEnv adapter.EnvConfigAccessor, ceClient cloudevents.Client) adapter.Adapter {
 	env := aEnv.(*envAccessor)
 	logger := logging.FromContext(ctx)
-	eventtype := env.EventType
 
 	h := &httpHandler{
 		eventtype:   env.EventType,
@@ -55,7 +54,7 @@ func New(ctx context.Context, aEnv adapter.EnvConfigAccessor, ceClient cloudeven
 var _ adapter.Adapter = (*httpAdapter)(nil)
 
 type httpAdapter struct {
-	handler httpHandler
+	handler *httpHandler
 	logger  *zap.SugaredLogger
 }
 

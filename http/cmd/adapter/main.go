@@ -19,9 +19,9 @@ package main
 import (
 	"knative.dev/eventing/pkg/adapter/v2"
 
-	zendeskadapter "github.com/triggermesh/knative-sources/zendesk/pkg/adapter"
+	httpadapter "github.com/triggermesh/knative-sources/http/pkg/adapter"
 )
 
 func main() {
-	adapter.Main("zendesk", zendeskadapter.EnvAccesor, zendeskadapter.New)
+	adapter.Main("http", httpadapter.EnvAccesor, httpadapter.New)
 }

@@ -15,18 +15,14 @@
 apiVersion: sources.triggermesh.io/v1alpha1
 kind: HttpSource
 metadata:
-  name: zendesksource
+  name: httpsource-test
 spec:
-  email: '<ZENDESK ACCOUNT USER EMAIL>'
-  subdomain: '<ZENDESK TENANT SUBDOMAIN>'
-  token:
+  eventType: 'argo.event'
+  eventSource: 'minikube-argo'
+  basicAuthUsername: argouser
+  basicAuthPassword:
     secretKeyRef:
-      name: zendesksource
-      key: token
-  webhookUsername: '<SOME ARBITRARY USERNAME>'
-  webhookPassword:
-    secretKeyRef:
-      name: zendesksource
+      name: httpsource
       key: password
   sink:
     ref:

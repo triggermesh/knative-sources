@@ -17,7 +17,7 @@ limitations under the License.
 package v1alpha1
 
 import (
-	"github.com/triggermesh/knative-sources/zendesk/pkg/apis/sources"
+	"github.com/triggermesh/knative-sources/http/pkg/apis/sources"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"

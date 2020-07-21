@@ -30,7 +30,7 @@ RUN go mod download
 # NOTE: try not to modify the instructions above to keep cached layers
 
 COPY ./ .
-RUN BIN_OUTPUT_DIR=/bin make -C zendesk controller && \
+RUN BIN_OUTPUT_DIR=/bin make -C http controller && \
     rm -rf ${GOPATH} && \
     rm -rf ${HOME}/.cache
 
@@ -45,6 +45,6 @@ LABEL description "This is the Triggermesh Knative Event Source Controller for H
 
 COPY licenses/ /licenses/
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
-COPY --from=builder /bin/zendesk-controller /zendesk-controller
+COPY --from=builder /bin/http-controller /http-controller
 
-ENTRYPOINT ["/zendesk-controller"]
+ENTRYPOINT ["/http-controller"]

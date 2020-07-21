@@ -27,7 +27,6 @@ GOLINT            ?= golangci-lint run
 GOTOOL            ?= go tool
 GOTEST            ?= gotestsum --junitfile $(TEST_OUTPUT_DIR)/$(KSOURCE)-unit-tests.xml --format pkgname-and-test-fails --
 
-GOPKGS             = ./...
 LDFLAGS            =
 
 HAS_GOTESTSUM     := $(shell command -v gotestsum;)

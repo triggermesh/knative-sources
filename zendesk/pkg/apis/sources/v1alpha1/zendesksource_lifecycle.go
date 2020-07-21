@@ -63,7 +63,7 @@ const (
 
 const (
 	// ZendeskSourceEventType is the ZendeskSource CloudEvent type.
-	ZendeskSourceEventType = "com.zendesk.events"
+	ZendeskSourceEventType = "com.zendesk.ticket.created"
 )
 
 // ZendeskCondSet is the list of all possible conditions other than 'Ready'

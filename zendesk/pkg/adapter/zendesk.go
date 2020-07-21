@@ -29,6 +29,7 @@ import (
 	"time"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
+	"github.com/triggermesh/knative-sources/zendesk/pkg/apis/sources/v1alpha1"
 	"go.uber.org/zap"
 )
 
@@ -43,7 +44,6 @@ const (
 )
 
 const (
-	ceType = "com.zendesk.ticket"
 	// auth header prefix, it is important that the blank
 	// space is present at the end for string manipulation
 	// at auth parsing function.
@@ -212,7 +212,7 @@ func (h *zendeskAPIHandler) cloudEventFromWrapper(ze *ZendeskEvent) (*cloudevent
 		event.SetExtension("ticket_type", ticketType)
 	}
 	event.SetID(ze.ID())
-	event.SetType(ceType)
+	event.SetType(v1alpha1.ZendeskSourceEventType)
 	event.SetSource(h.eventsource)
 	event.SetSubject(ze.Title())
 

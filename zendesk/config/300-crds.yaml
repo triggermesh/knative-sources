@@ -23,7 +23,7 @@ metadata:
   annotations:
     registry.knative.dev/eventTypes: |
       [
-        { "type": "com.zendesk.ticket" },
+        { "type": "com.zendesk.ticket.created" },
       ]
 spec:
   group: sources.triggermesh.io

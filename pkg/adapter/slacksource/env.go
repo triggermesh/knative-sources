@@ -14,14 +14,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package adapter
+package slacksource
 
 import (
 	"knative.dev/eventing/pkg/adapter/v2"
 )
 
-// EnvAccesor for configuration parameters
-func EnvAccesor() adapter.EnvConfigAccessor {
+// EnvAccessor for configuration parameters
+func EnvAccessor() adapter.EnvConfigAccessor {
 	return &envAccessor{}
 }
 

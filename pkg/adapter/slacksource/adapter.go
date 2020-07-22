@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package adapter
+package slacksource
 
 import (
 	"context"
@@ -28,8 +28,8 @@ import (
 
 const defaultListenPort = 8080
 
-// New adapter implementation
-func New(ctx context.Context, aEnv adapter.EnvConfigAccessor, ceClient cloudevents.Client) adapter.Adapter {
+// NewAdapter adapter implementation
+func NewAdapter(ctx context.Context, aEnv adapter.EnvConfigAccessor, ceClient cloudevents.Client) adapter.Adapter {
 	env := aEnv.(*envAccessor)
 	logger := logging.FromContext(ctx)
 

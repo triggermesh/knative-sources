@@ -19,9 +19,9 @@ package main
 import (
 	"knative.dev/eventing/pkg/adapter/v2"
 
-	slackadapter "github.com/triggermesh/knative-sources/slack/pkg/adapter"
+	"github.com/triggermesh/knative-sources/pkg/adapter/slacksource"
 )
 
 func main() {
-	adapter.Main("slack", slackadapter.EnvAccesor, slackadapter.New)
+	adapter.Main("slack", slacksource.EnvAccessor, slacksource.NewAdapter)
 }

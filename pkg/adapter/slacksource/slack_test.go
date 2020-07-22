@@ -18,7 +18,7 @@ limitations under the License.
 // 	cloudevents "github.com/cloudevents/sdk-go/v2"
 // )
 
-package adapter
+package slacksource
 
 import (
 	"io"

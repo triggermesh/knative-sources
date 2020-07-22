@@ -54,6 +54,9 @@ spec:
           value: config-observability
         - name: METRICS_DOMAIN
           value: triggermesh.io/sources
+        # Source adapters
+        - name: SLACKSOURCEADAPTER_IMAGE
+          value: ko://github.com/triggermesh/knative-sources/cmd/slacksource-adapter
 
         securityContext:
           allowPrivilegeEscalation: false

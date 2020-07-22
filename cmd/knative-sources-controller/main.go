@@ -16,8 +16,14 @@ limitations under the License.
 
 package main
 
-import "knative.dev/pkg/injection/sharedmain"
+import (
+	"knative.dev/pkg/injection/sharedmain"
+
+	"github.com/triggermesh/knative-sources/pkg/reconciler/slacksource"
+)
 
 func main() {
-	sharedmain.Main("knative-sources-controller")
+	sharedmain.Main("knative-sources-controller",
+		slacksource.NewController,
+	)
 }

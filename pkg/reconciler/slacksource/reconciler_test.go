@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package reconciler
+package slacksource
 
 import (
 	"context"
@@ -45,7 +45,7 @@ import (
 	reconcilerv1alpha1 "github.com/triggermesh/knative-sources/pkg/client/generated/injection/reconciler/sources/v1alpha1/slacksource"
 	srcreconciler "github.com/triggermesh/knative-sources/pkg/reconciler"
 	"github.com/triggermesh/knative-sources/pkg/reconciler/resources"
-	st "github.com/triggermesh/knative-sources/slack/pkg/reconciler/testing"
+	st "github.com/triggermesh/knative-sources/pkg/reconciler/slacksource/testing"
 )
 
 const (

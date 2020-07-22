@@ -12,6 +12,38 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# Sample SlackSource object.
+
+apiVersion: sources.triggermesh.io/v1alpha1
+kind: SlackSource
+metadata:
+  name: triggermesh-knbot
+spec:
+  # optional, making sure we are receiving events on behalf of Slack
+  signingSecret:
+    secretKeyRef:
+      name: slack
+      key: signingSecret
+  # optional, making sure the events are being sent for this integration
+  appID: AXXXXXXXXX
+  sink:
+    ref:
+      apiVersion: serving.knative.dev/v1
+      kind: Service
+      name: event-display
+
+---
+
+apiVersion: v1
+kind: Secret
+metadata:
+  name: slack
+type: Opaque
+stringData:
+  signingSecret: XXXXXXXXXXXXXXXXXX
+
+---
+
 apiVersion: serving.knative.dev/v1
 kind: Service
 metadata:
@@ -21,4 +53,3 @@ spec:
     spec:
       containers:
         - image: gcr.io/knative-releases/knative.dev/eventing-contrib/cmd/event_display
-

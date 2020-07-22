@@ -119,7 +119,7 @@ clean: ## Clean build artifacts
 # Code generation
 include $(BASE_DIR)/hack/inc.Codegen.mk
 
-SUBDIRS  ?= slack zendesk
+SUBDIRS  ?= zendesk
 SOURCES  := $(shell awk 'BEGIN {FS = ":.*?";} /^[a-zA-Z0-9._-]+:.*?\#\# / {printf "%s ", $$1}' $(BASE_DIR)/scripts/inc.Target $(BASE_DIR)/scripts/inc.Codegen)
 
 include $(BASE_DIR)/scripts/inc.Makefile

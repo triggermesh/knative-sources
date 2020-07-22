@@ -19,9 +19,9 @@ package main
 import (
 	"knative.dev/eventing/pkg/adapter/v2"
 
-	zendeskadapter "github.com/triggermesh/knative-sources/zendesk/pkg/adapter"
+	"github.com/triggermesh/knative-sources/pkg/adapter/zendesksource"
 )
 
 func main() {
-	adapter.Main("zendesk", zendeskadapter.EnvAccesor, zendeskadapter.New)
+	adapter.Main("zendesk", zendesksource.EnvAccessor, zendesksource.NewAdapter)
 }

@@ -4,6 +4,6 @@ BASE_DIR    := $(CURDIR)/..
 
 include $(BASE_DIR)/scripts/inc.Makefile
 
-GOPKGS = ./cmd/... ./pkg/adapter/... ./pkg/apis/... ./pkg/reconciler/...
+GOPKGS = ./cmd/... ./pkg/reconciler/...
 
 include $(BASE_DIR)/scripts/inc.Target

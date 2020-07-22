@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package adapter
+package zendesksource
 
 // ZendeskEvent contains the event payload
 type ZendeskEvent map[string]interface{}

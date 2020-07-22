@@ -99,6 +99,11 @@ func (l *Listers) GetSlackSourceLister() listersv1alpha1.SlackSourceLister {
 	return listersv1alpha1.NewSlackSourceLister(l.IndexerFor(&v1alpha1.SlackSource{}))
 }
 
+// GetZendeskSourceLister returns a Lister for Foo objects.
+func (l *Listers) GetZendeskSourceLister() listersv1alpha1.ZendeskSourceLister {
+	return listersv1alpha1.NewZendeskSourceLister(l.IndexerFor(&v1alpha1.ZendeskSource{}))
+}
+
 // GetDeploymentLister returns a lister for Deployment objects.
 func (l *Listers) GetDeploymentLister() k8slistersv1.DeploymentLister {
 	return k8slistersv1.NewDeploymentLister(l.IndexerFor(&appsv1.Deployment{}))

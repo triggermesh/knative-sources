@@ -25,8 +25,8 @@ import (
 	"knative.dev/pkg/kmeta"
 	servingv1 "knative.dev/serving/pkg/apis/serving/v1"
 
+	"github.com/triggermesh/knative-sources/pkg/apis/sources/v1alpha1"
 	"github.com/triggermesh/knative-sources/pkg/reconciler/resources"
-	"github.com/triggermesh/knative-sources/zendesk/pkg/apis/sources/v1alpha1"
 )
 
 const (

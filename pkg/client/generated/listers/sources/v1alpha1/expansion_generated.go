@@ -25,3 +25,11 @@ type SlackSourceListerExpansion interface{}
 // SlackSourceNamespaceListerExpansion allows custom methods to be added to
 // SlackSourceNamespaceLister.
 type SlackSourceNamespaceListerExpansion interface{}
+
+// ZendeskSourceListerExpansion allows custom methods to be added to
+// ZendeskSourceLister.
+type ZendeskSourceListerExpansion interface{}
+
+// ZendeskSourceNamespaceListerExpansion allows custom methods to be added to
+// ZendeskSourceNamespaceLister.
+type ZendeskSourceNamespaceListerExpansion interface{}

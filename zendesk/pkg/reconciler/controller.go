@@ -22,10 +22,10 @@ import (
 	"github.com/kelseyhightower/envconfig"
 	"k8s.io/client-go/tools/cache"
 
+	"github.com/triggermesh/knative-sources/pkg/apis/sources/v1alpha1"
+	zendesksourceinformer "github.com/triggermesh/knative-sources/pkg/client/generated/injection/informers/sources/v1alpha1/zendesksource"
+	"github.com/triggermesh/knative-sources/pkg/client/generated/injection/reconciler/sources/v1alpha1/zendesksource"
 	srcreconciler "github.com/triggermesh/knative-sources/pkg/reconciler"
-	"github.com/triggermesh/knative-sources/zendesk/pkg/apis/sources/v1alpha1"
-	zendesksourceinformer "github.com/triggermesh/knative-sources/zendesk/pkg/client/generated/injection/informers/sources/v1alpha1/zendesksource"
-	"github.com/triggermesh/knative-sources/zendesk/pkg/client/generated/injection/reconciler/sources/v1alpha1/zendesksource"
 	"knative.dev/eventing/pkg/reconciler/source"
 	kubeclient "knative.dev/pkg/client/injection/kube/client"
 	"knative.dev/pkg/configmap"

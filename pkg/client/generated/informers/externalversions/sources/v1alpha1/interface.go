@@ -26,6 +26,8 @@ import (
 type Interface interface {
 	// SlackSources returns a SlackSourceInformer.
 	SlackSources() SlackSourceInformer
+	// ZendeskSources returns a ZendeskSourceInformer.
+	ZendeskSources() ZendeskSourceInformer
 }
 
 type version struct {
@@ -42,4 +44,9 @@ func New(f internalinterfaces.SharedInformerFactory, namespace string, tweakList
 // SlackSources returns a SlackSourceInformer.
 func (v *version) SlackSources() SlackSourceInformer {
 	return &slackSourceInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
+}
+
+// ZendeskSources returns a ZendeskSourceInformer.
+func (v *version) ZendeskSources() ZendeskSourceInformer {
+	return &zendeskSourceInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
 }

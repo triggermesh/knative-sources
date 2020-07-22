@@ -27,4 +27,10 @@ var (
 		Group:    GroupName,
 		Resource: "slacksources",
 	}
+
+	// ZendeskSourceResource represents an event source for Zendesk.
+	ZendeskSourceResource = schema.GroupResource{
+		Group:    GroupName,
+		Resource: "zendesksources",
+	}
 )

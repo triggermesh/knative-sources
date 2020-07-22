@@ -31,9 +31,9 @@ import (
 	pkgreconciler "knative.dev/pkg/reconciler"
 	"knative.dev/pkg/resolver"
 
+	"github.com/triggermesh/knative-sources/pkg/apis/sources/v1alpha1"
+	reconcilerzendesksource "github.com/triggermesh/knative-sources/pkg/client/generated/injection/reconciler/sources/v1alpha1/zendesksource"
 	srcreconciler "github.com/triggermesh/knative-sources/pkg/reconciler"
-	"github.com/triggermesh/knative-sources/zendesk/pkg/apis/sources/v1alpha1"
-	reconcilerzendesksource "github.com/triggermesh/knative-sources/zendesk/pkg/client/generated/injection/reconciler/sources/v1alpha1/zendesksource"
 	"github.com/triggermesh/knative-sources/zendesk/pkg/zendesk"
 )
 

@@ -24,9 +24,9 @@ import (
 	pkgreconciler "knative.dev/pkg/reconciler"
 	"knative.dev/pkg/resolver"
 
+	"github.com/triggermesh/knative-sources/pkg/apis/sources/v1alpha1"
+	reconcilerslacksource "github.com/triggermesh/knative-sources/pkg/client/generated/injection/reconciler/sources/v1alpha1/slacksource"
 	srcreconciler "github.com/triggermesh/knative-sources/pkg/reconciler"
-	"github.com/triggermesh/knative-sources/slack/pkg/apis/sources/v1alpha1"
-	reconcilerslacksource "github.com/triggermesh/knative-sources/slack/pkg/client/generated/injection/reconciler/sources/v1alpha1/slacksource"
 )
 
 // Reconciler reconciles a SlackSource object

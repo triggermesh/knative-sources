@@ -44,7 +44,7 @@ func TestEvents(t *testing.T) {
 	er := record.NewFakeRecorder(eventRecorderBufferSize)
 
 	ctx := controller.WithEventRecorder(context.TODO(), er)
-	ctx = v1alpha1.WithSource(ctx, &v1alpha1.FooSource{})
+	ctx = v1alpha1.WithSource(ctx, &v1alpha1.SlackSource{})
 
 	Normal(ctx, reason, messageFmt, normalMsg)
 	Warn(ctx, reason, messageFmt, warningMsg)

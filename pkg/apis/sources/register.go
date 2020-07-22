@@ -16,5 +16,15 @@ limitations under the License.
 
 package sources
 
+import "k8s.io/apimachinery/pkg/runtime/schema"
+
 // GroupName is the name of the API group this package's resources belong to.
 const GroupName = "sources.triggermesh.io"
+
+var (
+	// SlackSourceResource represents an event source for Slack.
+	SlackSourceResource = schema.GroupResource{
+		Group:    GroupName,
+		Resource: "slacksources",
+	}
+)

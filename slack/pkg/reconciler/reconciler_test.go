@@ -40,11 +40,11 @@ import (
 	servingv1 "knative.dev/serving/pkg/apis/serving/v1"
 	fakeservinginjectionclient "knative.dev/serving/pkg/client/injection/client/fake"
 
+	"github.com/triggermesh/knative-sources/pkg/apis/sources/v1alpha1"
+	fakeinjectionclient "github.com/triggermesh/knative-sources/pkg/client/generated/injection/client/fake"
+	reconcilerv1alpha1 "github.com/triggermesh/knative-sources/pkg/client/generated/injection/reconciler/sources/v1alpha1/slacksource"
 	srcreconciler "github.com/triggermesh/knative-sources/pkg/reconciler"
 	"github.com/triggermesh/knative-sources/pkg/reconciler/resources"
-	"github.com/triggermesh/knative-sources/slack/pkg/apis/sources/v1alpha1"
-	fakeinjectionclient "github.com/triggermesh/knative-sources/slack/pkg/client/generated/injection/client/fake"
-	reconcilerv1alpha1 "github.com/triggermesh/knative-sources/slack/pkg/client/generated/injection/reconciler/sources/v1alpha1/slacksource"
 	st "github.com/triggermesh/knative-sources/slack/pkg/reconciler/testing"
 )
 

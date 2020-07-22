@@ -39,3 +39,9 @@ type ValueFromField struct {
 	// +optional
 	ValueFromSecret *corev1.SecretKeySelector `json:"valueFromSecret,omitempty"`
 }
+
+// SecretValueFromSource represents the source of a secret value
+type SecretValueFromSource struct {
+	// The Secret key to select from.
+	SecretKeyRef *corev1.SecretKeySelector `json:"secretKeyRef,omitempty"`
+}

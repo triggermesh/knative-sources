@@ -28,10 +28,10 @@ import (
 	rt "knative.dev/pkg/reconciler/testing"
 
 	"github.com/stretchr/testify/assert"
-	st "github.com/triggermesh/knative-sources/slack/pkg/reconciler/testing"
+	st "github.com/triggermesh/knative-sources/pkg/reconciler/testing"
 
 	// Link fake informers accessed by our controller
-	_ "github.com/triggermesh/knative-sources/slack/pkg/client/generated/injection/informers/sources/v1alpha1/slacksource/fake"
+	_ "github.com/triggermesh/knative-sources/pkg/client/generated/injection/informers/sources/v1alpha1/slacksource/fake"
 	_ "knative.dev/pkg/client/injection/ducks/duck/v1/addressable/fake"
 	_ "knative.dev/pkg/injection/clients/dynamicclient/fake"
 	_ "knative.dev/serving/pkg/client/injection/informers/serving/v1/service/fake"

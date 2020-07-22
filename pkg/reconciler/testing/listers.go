@@ -94,9 +94,9 @@ func (l *Listers) GetServingObjects() []runtime.Object {
 	return l.sorter.ObjectsForSchemeFunc(fakeservingclient.AddToScheme)
 }
 
-// GetFooSourceLister returns a Lister for Foo objects.
-func (l *Listers) GetFooSourceLister() listersv1alpha1.FooSourceLister {
-	return listersv1alpha1.NewFooSourceLister(l.IndexerFor(&v1alpha1.FooSource{}))
+// GetSlackSourceLister returns a Lister for SlackSource objects.
+func (l *Listers) GetSlackSourceLister() listersv1alpha1.SlackSourceLister {
+	return listersv1alpha1.NewSlackSourceLister(l.IndexerFor(&v1alpha1.SlackSource{}))
 }
 
 // GetDeploymentLister returns a lister for Deployment objects.

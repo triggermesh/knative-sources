@@ -24,8 +24,8 @@ import (
 
 // Interface provides access to all the informers in this group version.
 type Interface interface {
-	// FooSources returns a FooSourceInformer.
-	FooSources() FooSourceInformer
+	// SlackSources returns a SlackSourceInformer.
+	SlackSources() SlackSourceInformer
 }
 
 type version struct {
@@ -39,7 +39,7 @@ func New(f internalinterfaces.SharedInformerFactory, namespace string, tweakList
 	return &version{factory: f, namespace: namespace, tweakListOptions: tweakListOptions}
 }
 
-// FooSources returns a FooSourceInformer.
-func (v *version) FooSources() FooSourceInformer {
-	return &fooSourceInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
+// SlackSources returns a SlackSourceInformer.
+func (v *version) SlackSources() SlackSourceInformer {
+	return &slackSourceInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
 }

@@ -18,10 +18,10 @@ limitations under the License.
 
 package v1alpha1
 
-// FooSourceListerExpansion allows custom methods to be added to
-// FooSourceLister.
-type FooSourceListerExpansion interface{}
+// SlackSourceListerExpansion allows custom methods to be added to
+// SlackSourceLister.
+type SlackSourceListerExpansion interface{}
 
-// FooSourceNamespaceListerExpansion allows custom methods to be added to
-// FooSourceNamespaceLister.
-type FooSourceNamespaceListerExpansion interface{}
+// SlackSourceNamespaceListerExpansion allows custom methods to be added to
+// SlackSourceNamespaceLister.
+type SlackSourceNamespaceListerExpansion interface{}

@@ -36,7 +36,7 @@ import (
 	rt "knative.dev/pkg/reconciler/testing"
 	fakeservinginjectionclient "knative.dev/serving/pkg/client/injection/client/fake"
 
-	fakeinjectionclient "github.com/triggermesh/knative-sources/slack/pkg/client/generated/injection/client/fake"
+	fakeinjectionclient "github.com/triggermesh/knative-sources/pkg/client/generated/injection/client/fake"
 )
 
 const (

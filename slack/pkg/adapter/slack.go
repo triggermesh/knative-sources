@@ -27,7 +27,7 @@ import (
 	"time"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
-	"github.com/triggermesh/knative-sources/slack/pkg/apis/sources/v1alpha1"
+	"github.com/triggermesh/knative-sources/pkg/apis/sources/v1alpha1"
 	"go.uber.org/zap"
 )
 

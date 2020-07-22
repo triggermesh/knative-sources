@@ -31,9 +31,9 @@ import (
 	fakeservingclient "knative.dev/serving/pkg/client/clientset/versioned/fake"
 	servinglistersv1 "knative.dev/serving/pkg/client/listers/serving/v1"
 
-	"github.com/triggermesh/knative-sources/slack/pkg/apis/sources/v1alpha1"
-	fakeclient "github.com/triggermesh/knative-sources/slack/pkg/client/generated/clientset/internalclientset/fake"
-	listersv1alpha1 "github.com/triggermesh/knative-sources/slack/pkg/client/generated/listers/sources/v1alpha1"
+	"github.com/triggermesh/knative-sources/pkg/apis/sources/v1alpha1"
+	fakeclient "github.com/triggermesh/knative-sources/pkg/client/generated/clientset/internalclientset/fake"
+	listersv1alpha1 "github.com/triggermesh/knative-sources/pkg/client/generated/listers/sources/v1alpha1"
 )
 
 var clientSetSchemes = []func(*runtime.Scheme) error{

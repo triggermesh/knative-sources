@@ -26,7 +26,7 @@ import (
 
 type SourcesV1alpha1Interface interface {
 	RESTClient() rest.Interface
-	FooSourcesGetter
+	SlackSourcesGetter
 }
 
 // SourcesV1alpha1Client is used to interact with features provided by the sources.triggermesh.io group.
@@ -34,8 +34,8 @@ type SourcesV1alpha1Client struct {
 	restClient rest.Interface
 }
 
-func (c *SourcesV1alpha1Client) FooSources(namespace string) FooSourceInterface {
-	return newFooSources(c, namespace)
+func (c *SourcesV1alpha1Client) SlackSources(namespace string) SlackSourceInterface {
+	return newSlackSources(c, namespace)
 }
 
 // NewForConfig creates a new SourcesV1alpha1Client for the given config.

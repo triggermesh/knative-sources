@@ -30,10 +30,10 @@ import (
 	kserviceclient "knative.dev/serving/pkg/client/injection/client"
 	kserviceinformer "knative.dev/serving/pkg/client/injection/informers/serving/v1/service"
 
+	"github.com/triggermesh/knative-sources/pkg/apis/sources/v1alpha1"
+	slacksourceinformer "github.com/triggermesh/knative-sources/pkg/client/generated/injection/informers/sources/v1alpha1/slacksource"
+	"github.com/triggermesh/knative-sources/pkg/client/generated/injection/reconciler/sources/v1alpha1/slacksource"
 	srcreconciler "github.com/triggermesh/knative-sources/pkg/reconciler"
-	"github.com/triggermesh/knative-sources/slack/pkg/apis/sources/v1alpha1"
-	slacksourceinformer "github.com/triggermesh/knative-sources/slack/pkg/client/generated/injection/informers/sources/v1alpha1/slacksource"
-	"github.com/triggermesh/knative-sources/slack/pkg/client/generated/injection/reconciler/sources/v1alpha1/slacksource"
 )
 
 // NewController initializes the controller and is called by the generated code

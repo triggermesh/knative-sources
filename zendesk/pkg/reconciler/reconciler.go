@@ -208,7 +208,7 @@ func (r *reconciler) secretFrom(ctx context.Context, namespace string, secretKey
 
 const triggerPayloadJSON = `{
   "ticket": {
-    "id": "{{ticket.id}}",
+    "id": {{ticket.id}},
     "external_id": "{{ticket.external_id}}",
     "title": "{{ticket.title}}",
     "url": "{{ticket.url}}",

@@ -20,10 +20,12 @@ import (
 	"knative.dev/pkg/injection/sharedmain"
 
 	"github.com/triggermesh/knative-sources/pkg/reconciler/slacksource"
+	"github.com/triggermesh/knative-sources/pkg/reconciler/zendesksource"
 )
 
 func main() {
 	sharedmain.Main("knative-sources-controller",
 		slacksource.NewController,
+		zendesksource.NewController,
 	)
 }

@@ -52,6 +52,7 @@ rules:
   - sources.triggermesh.io
   resources:
   - slacksources
+  - zendesksources
   verbs:
   - list
   - watch
@@ -61,6 +62,7 @@ rules:
   - sources.triggermesh.io
   resources:
   - slacksources/status
+  - zendesksources/status
   verbs:
   - update
 
@@ -120,6 +122,7 @@ rules:
   - sources.triggermesh.io
   resources:
   - slacksources
+  - zendesksources
   verbs:
   - get
   - list

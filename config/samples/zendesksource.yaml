@@ -12,6 +12,43 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# Sample ZendeskSource object.
+
+apiVersion: sources.triggermesh.io/v1alpha1
+kind: ZendeskSource
+metadata:
+  name: zendesksource
+spec:
+  email: '<ZENDESK ACCOUNT USER EMAIL>'
+  subdomain: '<ZENDESK TENANT SUBDOMAIN>'
+  token:
+    secretKeyRef:
+      name: zendesksource
+      key: token
+  webhookUsername: '<SOME ARBITRARY USERNAME>'
+  webhookPassword:
+    secretKeyRef:
+      name: zendesksource
+      key: password
+  sink:
+    ref:
+      apiVersion: serving.knative.dev/v1
+      kind: Service
+      name: event-display
+
+---
+
+apiVersion: v1
+kind: Secret
+metadata:
+  name: zendesksource
+type: Opaque
+stringData:
+  token: '<API TOKEN FROM ZENDESK>'
+  password: '<ARBITRARY PASSWORD FOR WEBHOOK>'
+
+---
+
 apiVersion: serving.knative.dev/v1
 kind: Service
 metadata:
@@ -20,8 +57,7 @@ spec:
   template:
     metadata:
       annotations:
-        autoscaling.knative.dev/minScale: "1"   
+        autoscaling.knative.dev/minScale: "1"
     spec:
       containers:
         - image: gcr.io/knative-releases/knative.dev/eventing-contrib/cmd/event_display
-  

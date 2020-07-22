@@ -1,6 +1,6 @@
 KREPO              = knative-sources
 KREPO_DESC         = Triggermesh event sources for Knative
-COMMANDS           = knative-sources-controller
+COMMANDS           = knative-sources-controller slacksource-adapter zendesksource-adapter
 
 TARGETS           ?= linux/amd64
 
@@ -118,15 +118,3 @@ clean: ## Clean build artifacts
 
 # Code generation
 include $(BASE_DIR)/hack/inc.Codegen.mk
-
-SUBDIRS  ?= zendesk
-SOURCES  := $(shell awk 'BEGIN {FS = ":.*?";} /^[a-zA-Z0-9._-]+:.*?\#\# / {printf "%s ", $$1}' $(BASE_DIR)/scripts/inc.Target $(BASE_DIR)/scripts/inc.Codegen)
-
-include $(BASE_DIR)/scripts/inc.Makefile
-
-.PHONY: $(SUBDIRS) $(SOURCES)
-
-$(SOURCES): $(SUBDIRS)
-
-$(SUBDIRS):
-	@$(MAKE) -C $@ $(MAKECMDGOALS)

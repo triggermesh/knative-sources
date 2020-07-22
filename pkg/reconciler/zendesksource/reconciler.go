@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package reconciler
+package zendesksource
 
 import (
 	"context"
@@ -34,7 +34,7 @@ import (
 	"github.com/triggermesh/knative-sources/pkg/apis/sources/v1alpha1"
 	reconcilerzendesksource "github.com/triggermesh/knative-sources/pkg/client/generated/injection/reconciler/sources/v1alpha1/zendesksource"
 	srcreconciler "github.com/triggermesh/knative-sources/pkg/reconciler"
-	"github.com/triggermesh/knative-sources/zendesk/pkg/zendesk"
+	"github.com/triggermesh/knative-sources/pkg/reconciler/zendesksource/zendesk"
 )
 
 // Reconciler reconciles a ZendeskSource object

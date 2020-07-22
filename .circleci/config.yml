@@ -32,7 +32,7 @@ jobs:
       - gcp-cli/initialize
       - run:
           name: Building docker image
-          command: make -j8 cloudbuild-test
+          command: make -j4 cloudbuild-test
 
   test:
     executor:
@@ -61,7 +61,7 @@ jobs:
       - store_artifacts:
           path: /tmp/cover-results/
 
-  publish:
+  publish-image:
     executor:
       name: gcp-cli/google
     steps:
@@ -70,10 +70,10 @@ jobs:
       - gcp-cli/initialize
       - run:
           name: Publishing docker image
-          command: IMAGE_SHA=${CIRCLE_SHA1} IMAGE_TAG=${CIRCLE_TAG:-latest} make -j8 cloudbuild
+          command: IMAGE_SHA=${CIRCLE_SHA1} IMAGE_TAG=${CIRCLE_TAG:-latest} make -j4 cloudbuild
 
   deploy:
-    description: "Patches target cluster configuration"
+    description: Patches target cluster configuration
     executor:
       name: go/default
       tag: '1.14'
@@ -82,10 +82,10 @@ jobs:
         type: string
       committer_name:
         type: string
-        default: "TriggerMesh Bot"
+        default: TriggerMesh Bot
       committer_email:
         type: string
-        default: "bot@triggermesh.com"
+        default: bot@triggermesh.com
     steps:
       - attach_workspace:
           at: ~/
@@ -94,8 +94,8 @@ jobs:
       - run:
           name: Configuring git
           command: |
-            git config --global user.name "<< parameters.committer_name >>"
-            git config --global user.email "<< parameters.committer_email >>"
+            git config --global user.name '<< parameters.committer_name >>'
+            git config --global user.email '<< parameters.committer_email >>'
       - run:
           name: Cloning config repository
           command: git clone --single-branch git@github.com:triggermesh/config.git tmconfig
@@ -103,10 +103,9 @@ jobs:
           name: Updating overlays/<< parameters.cluster >>/sources manifests
           working_directory: tmconfig/
           command: |
-            for source in $(sed -n -e "s/^\(SUBDIRS[[:space:]]*?=[[:space:]]*\)\(.*\)$/\2/p" ~/project/Makefile); do
+            for cmd in $(sed -n -e 's/^COMMANDS[[:space:]]*=[[:space:]]*\(.*\)$/\1/p' ~/project/Makefile); do
               sed -i overlays/<< parameters.cluster >>/sources/deployments.yaml \
-                -e "s|gcr.io/triggermesh/"${source}"-source-controller:.*|gcr.io/triggermesh/"${source}"-source-controller:"${CIRCLE_TAG:-${CIRCLE_SHA1}}"|g" \
-                -e "s|gcr.io/triggermesh/"${source}"-source-adapter:.*|gcr.io/triggermesh/"${source}"-source-adapter:"${CIRCLE_TAG:-${CIRCLE_SHA1}}"|g"
+                -e "s|\(gcr.io/triggermesh/${cmd}:\).*|\1${CIRCLE_TAG:-${CIRCLE_SHA1}}|g"
             done
             git --no-pager diff
       - run:
@@ -114,7 +113,7 @@ jobs:
           working_directory: tmconfig/
           command: |
             git add overlays
-            git commit -m "Update overlays/<< parameters.cluster >>/sources deployment to '${CIRCLE_TAG:-${CIRCLE_SHA1}}'"
+            git commit -m "Update overlays/<< parameters.cluster >>/sources deployments to '${CIRCLE_TAG:-${CIRCLE_SHA1}}'"
             git push origin master
 
   release:
@@ -137,7 +136,7 @@ jobs:
           command: |
             PRE_RELEASE=${CIRCLE_TAG/${CIRCLE_TAG%-rc[0-9]*}/}
             github-release delete -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -t ${CIRCLE_TAG} 2>/dev/null ||:
-            ./scripts/release-notes.sh ${CIRCLE_TAG} | github-release release ${PRE_RELEASE:+-p} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -t ${CIRCLE_TAG} -d -
+            ./hack/release-notes.sh ${CIRCLE_TAG} | github-release release ${PRE_RELEASE:+-p} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -t ${CIRCLE_TAG} -d -
             for f in $(find /tmp/dist -type f); do github-release upload -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -t ${CIRCLE_TAG} -n $(basename ${f}) -f ${f} ; done
 
 workflows:
@@ -160,7 +159,7 @@ workflows:
           filters:
             tags:
               only: /^v([0-9]+)\.([0-9]+)\.([0-9]+)(?:-([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?(?:\+[0-9A-Za-z-]+)?$/
-      - publish:
+      - publish-image:
           context: production
           requires:
             - build
@@ -174,7 +173,7 @@ workflows:
           name: update-staging-config
           cluster: staging
           requires:
-            - publish
+            - publish-image
           filters:
             branches:
               only: master
@@ -184,7 +183,7 @@ workflows:
           name: update-production-config
           cluster: prod
           requires:
-            - publish
+            - publish-image
           filters:
             tags:
               only: /^v([0-9]+)\.([0-9]+)\.([0-9]+)(?:-([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?(?:\+[0-9A-Za-z-]+)?$/
@@ -193,7 +192,7 @@ workflows:
       - release:
           context: production
           requires:
-            - publish
+            - publish-image
           filters:
             tags:
               only: /^v([0-9]+)\.([0-9]+)\.([0-9]+)(?:-([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?(?:\+[0-9A-Za-z-]+)?$/

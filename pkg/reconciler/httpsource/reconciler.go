@@ -19,48 +19,26 @@ package httpsource
 import (
 	"context"
 
-	"k8s.io/client-go/kubernetes"
-	duckv1 "knative.dev/pkg/apis/duck/v1"
-	"knative.dev/pkg/controller"
-	pkgreconciler "knative.dev/pkg/reconciler"
-	"knative.dev/pkg/resolver"
+	"knative.dev/pkg/reconciler"
 
-	"github.com/triggermesh/knative-sources/http/pkg/apis/sources/v1alpha1"
-	reconcilerhttpsource "github.com/triggermesh/knative-sources/http/pkg/client/generated/injection/reconciler/sources/v1alpha1/httpsource"
-	srcreconciler "github.com/triggermesh/knative-sources/pkg/reconciler"
+	"github.com/triggermesh/knative-sources/pkg/apis/sources/v1alpha1"
+	reconcilerv1alpha1 "github.com/triggermesh/knative-sources/pkg/client/generated/injection/reconciler/sources/v1alpha1/httpsource"
+	"github.com/triggermesh/knative-sources/pkg/reconciler/common"
 )
 
-// Reconciler reconciles a HttpSource object
-type reconciler struct {
-	ksvcr         srcreconciler.KServiceReconciler
-	sinkResolver  *resolver.URIResolver
-	kubeClientSet kubernetes.Interface
-
+// Reconciler implements controller.Reconciler for the event source type.
+type Reconciler struct {
+	base       common.GenericServiceReconciler
 	adapterCfg *adapterConfig
 }
 
-// reconciler implements Interface
-var _ reconcilerhttpsource.Interface = (*reconciler)(nil)
+// Check that our Reconciler implements Interface
+var _ reconcilerv1alpha1.Interface = (*Reconciler)(nil)
 
 // ReconcileKind implements Interface.ReconcileKind.
-func (r *reconciler) ReconcileKind(ctx context.Context, src *v1alpha1.HttpSource) pkgreconciler.Event {
-	// TODO add source using the adapter's name
-	src.Status.CloudEventAttributes = []duckv1.CloudEventAttributes{{Type: src.Spec.EventType}}
+func (r *Reconciler) ReconcileKind(ctx context.Context, src *v1alpha1.HTTPSource) reconciler.Event {
+	// inject source into context for usage in reconciliation logic
+	ctx = v1alpha1.WithSource(ctx, src)
 
-	dest := src.Spec.Sink.DeepCopy()
-	if dest.Ref != nil && dest.Ref.Namespace == "" {
-		dest.Ref.Namespace = src.Namespace
-	}
-
-	uri, err := r.sinkResolver.URIFromDestinationV1(*dest, src)
-	if err != nil {
-		src.Status.MarkNoSink("Could not resolve sink URI: %v", err)
-		return controller.NewPermanentError(err)
-	}
-	src.Status.MarkSink(uri)
-
-	ksvc, event := r.ksvcr.ReconcileKService(ctx, src, makeAdapter(src, r.adapterCfg))
-	src.Status.PropagateAvailability(ksvc)
-
-	return event
+	return r.base.ReconcileSource(ctx, adapterServiceBuilder(src, r.adapterCfg))
 }

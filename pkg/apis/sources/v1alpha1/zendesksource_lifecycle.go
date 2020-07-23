@@ -17,125 +17,62 @@ limitations under the License.
 package v1alpha1
 
 import (
+	"k8s.io/apimachinery/pkg/runtime/schema"
+
 	pkgapis "knative.dev/pkg/apis"
 	duckv1 "knative.dev/pkg/apis/duck/v1"
-	servingv1 "knative.dev/serving/pkg/apis/serving/v1"
 )
 
-const (
-	// ConditionTargetCreated has status True when the Zendesk Source has created a Zendesk Target
-	// More information on Zendesk Target's here -> https://developer.zendesk.com/rest_api/docs/support/targets
-	ConditionTargetCreated pkgapis.ConditionType = "ZendeskTargetCreated"
-
-	// ConditionSecretsProvided has status
-	ConditionSecretsProvided pkgapis.ConditionType = "ZendeskSecretsProvided"
-)
-
-// Reasons for status conditions
-const (
-	// ReasonNoTarget is set on TargetCreated condtion when a Zendesk Target creation failed
-	ReasonNoTarget = "NoZendeskTargetNotCreated"
-
-	// ReasonNoToken is set when a secret containing a Zendesk API token  is unavalible
-	ReasonNoToken = "SecretTokenAvalible"
-
-	// ReasonNoPassword is set when a secret containing a password is unavalible
-	ReasonNoPassword = "SecretPasswordAvalible"
-)
-
-const (
-	// ZendeskSourceEventType is the ZendeskSource CloudEvent type.
-	ZendeskSourceEventType = "com.zendesk.ticket.created"
-)
-
-// ZendeskCondSet is the list of all possible conditions other than 'Ready'
-var ZendeskCondSet = pkgapis.NewLivingConditionSet(
-	ConditionSinkProvided,
-	ConditionDeployed,
-	ConditionTargetCreated,
-	ConditionSecretsProvided,
-)
-
-// InitializeConditions sets relevant unset conditions to Unknown state.
-func (s *ZendeskSourceStatus) InitializeConditions() {
-	ZendeskCondSet.Manage(s).InitializeConditions()
+// GetGroupVersionKind implements kmeta.OwnerRefable.
+func (*ZendeskSource) GetGroupVersionKind() schema.GroupVersionKind {
+	return SchemeGroupVersion.WithKind("ZendeskSource")
 }
 
-// PropagateAvailability uses the availability of the adapter to determine whether
-// the deployed condition should be marked as 'true' or 'false'.
-func (s *ZendeskSourceStatus) PropagateAvailability(ksvc *servingv1.Service) {
-	switch {
-	case ksvc == nil:
-		ZendeskCondSet.Manage(s).MarkUnknown(ConditionDeployed, ReasonUnavailable, "The status Knative Service can not be determined")
-		if s.Address != nil {
-			s.Address = nil
-		}
-		return
-
-	case ksvc.IsReady():
-		ZendeskCondSet.Manage(s).MarkTrue(ConditionDeployed)
-
-	default:
-		ZendeskCondSet.Manage(s).MarkFalse(ConditionDeployed, ReasonUnavailable, "The Knative service %q is unavailable.", ksvc.Name)
-	}
-
-	if s.Address == nil {
-		s.Address = &duckv1.Addressable{}
-	}
-	s.Address.URL = ksvc.Status.URL
-}
-
-// MarkSink sets the condition that the source has a sink configured.
-func (s *ZendeskSourceStatus) MarkSink(uri *pkgapis.URL) {
-	s.SinkURI = uri
-	if len(uri.String()) > 0 {
-		ZendeskCondSet.Manage(s).MarkTrue(ConditionSinkProvided)
-	} else {
-		ZendeskCondSet.Manage(s).MarkUnknown(ConditionSinkProvided, ReasonSinkEmpty, "Sink has resolved to empty.")
-	}
-}
-
-// MarkNoSink sets the condition that the source does not have a sink configured.
-func (s *ZendeskSourceStatus) MarkNoSink(messageFormat string, messageA ...interface{}) {
-	ZendeskCondSet.Manage(s).MarkFalse(ConditionSinkProvided, ReasonSinkNotFound, messageFormat, messageA...)
-}
-
-// IsReady returns true if the resource is ready overall.
-func (s *ZendeskSourceStatus) IsReady() bool {
-	return ZendeskCondSet.Manage(s).IsHappy()
-}
-
-// MarkNoZendeskTargetCreated sets the condition that the source was not able to properly configure a Zendesk Target
-func (s *ZendeskSourceStatus) MarkNoZendeskTargetCreated(messageFormat string, messageA ...interface{}) {
-	ZendeskCondSet.Manage(s).MarkFalse(ConditionTargetCreated, ReasonNoTarget, messageFormat, messageA...)
-}
-
-// MarkZendeskTargetCreated sets the condition that the source was able to properly configure a Zendesk Target
-func (s *ZendeskSourceStatus) MarkZendeskTargetCreated() {
-	ZendeskCondSet.Manage(s).MarkTrue(ConditionTargetCreated)
-}
-
-// MarkNoToken sets ReasonNoToken to true when a Zendesk API
-func (s *ZendeskSourceStatus) MarkNoToken(messageFormat string, messageA ...interface{}) {
-	ZendeskCondSet.Manage(s).MarkFalse(ConditionSecretsProvided, ReasonNoToken, messageFormat, messageA...)
-}
-
-// MarkNoPassword sets ReasonNoToken to true when a Zendesk API
-func (s *ZendeskSourceStatus) MarkNoPassword(messageFormat string, messageA ...interface{}) {
-	ZendeskCondSet.Manage(s).MarkFalse(ConditionSecretsProvided, ReasonNoPassword, messageFormat, messageA...)
-}
-
-// MarkSecretsFound sets ReasonNoToken to true when a Zendesk API
-func (s *ZendeskSourceStatus) MarkSecretsFound() {
-	ZendeskCondSet.Manage(s).MarkTrue(ConditionSecretsProvided)
+// GetUntypedSpec implements apis.HasSpec.
+func (s *ZendeskSource) GetUntypedSpec() interface{} {
+	return s.Spec
 }
 
 // GetConditionSet implements duckv1.KRShaped.
-func (s *ZendeskSource) GetConditionSet() pkgapis.ConditionSet {
-	return ZendeskCondSet
+func (*ZendeskSource) GetConditionSet() pkgapis.ConditionSet {
+	return eventSourceConditionSet
 }
 
 // GetStatus implements duckv1.KRShaped.
 func (s *ZendeskSource) GetStatus() *duckv1.Status {
 	return &s.Status.Status
+}
+
+// GetSink implements EventSource.
+func (s *ZendeskSource) GetSink() *duckv1.Destination {
+	return &s.Spec.Sink
+}
+
+// GetSourceStatus implements EventSource.
+func (s *ZendeskSource) GetSourceStatus() *EventSourceStatus {
+	return &s.Status
+}
+
+// AsEventSource implements EventSource.
+func (s *ZendeskSource) AsEventSource() string {
+	return ZendeskSourceName(s.Spec.Subdomain, s.Name)
+}
+
+// ZendeskSourceName returns a unique reference to the source suitable for use
+// as as a CloudEvent source.
+func ZendeskSourceName(subdomain, name string) string {
+	return subdomain + ".zendesk.com/" + name
+}
+
+// Supported event types
+const (
+	// ZendeskTicketCreatedEventType is generated upon creation of a Ticket.
+	ZendeskTicketCreatedEventType = "com.zendesk.ticket.created"
+)
+
+// GetEventTypes implements EventSource.
+func (*ZendeskSource) GetEventTypes() []string {
+	return []string{
+		ZendeskTicketCreatedEventType,
+	}
 }

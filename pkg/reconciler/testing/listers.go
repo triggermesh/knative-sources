@@ -99,7 +99,7 @@ func (l *Listers) GetSlackSourceLister() listersv1alpha1.SlackSourceLister {
 	return listersv1alpha1.NewSlackSourceLister(l.IndexerFor(&v1alpha1.SlackSource{}))
 }
 
-// GetZendeskSourceLister returns a Lister for Foo objects.
+// GetZendeskSourceLister returns a Lister for ZendeskSource objects.
 func (l *Listers) GetZendeskSourceLister() listersv1alpha1.ZendeskSourceLister {
 	return listersv1alpha1.NewZendeskSourceLister(l.IndexerFor(&v1alpha1.ZendeskSource{}))
 }

@@ -17,8 +17,8 @@ limitations under the License.
 package zendesksource
 
 import (
-	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/labels"
+	"fmt"
+	"strconv"
 
 	"knative.dev/eventing/pkg/reconciler/source"
 	"knative.dev/pkg/apis"
@@ -26,115 +26,68 @@ import (
 	servingv1 "knative.dev/serving/pkg/apis/serving/v1"
 
 	"github.com/triggermesh/knative-sources/pkg/apis/sources/v1alpha1"
-	"github.com/triggermesh/knative-sources/pkg/reconciler/resources"
+	"github.com/triggermesh/knative-sources/pkg/reconciler/common"
+	"github.com/triggermesh/knative-sources/pkg/reconciler/common/resource"
 )
+
+const adapterName = "zendesksource"
 
 const (
-	adapterName = "zendesksource"
-	partOf      = "zendesksource"
-	managedBy   = "zendesksource-controller"
+	envZdSubdomain   = "ZENDESK_SUBDOMAIN"
+	envZdWebhookUser = "ZENDESK_WEBHOOK_USERNAME"
+	envZdWebhookPwd  = "ZENDESK_WEBHOOK_PASSWORD"
 )
 
-// adapterConfig contains properties used to configure the adapter.
-// Public fields are automatically populated by envconfig.
+const metricsPrometheusPort uint16 = 9092
+
+// adapterConfig contains properties used to configure the source's adapter.
+// These are automatically populated by envconfig.
 type adapterConfig struct {
-	// Configuration accessor for observability logging/metrics/tracing
-	obsConfig source.ConfigAccessor
-
 	// Container image
-	Image string `envconfig:"ZENDESKSOURCE_ADAPTER_IMAGE" required:"true"`
+	Image string `default:"gcr.io/triggermesh/zendesksource-adapter"`
+
+	// Configuration accessor for logging/metrics/tracing
+	configs source.ConfigAccessor
 }
 
-// MakeAdapter generates the Receive Adapter KService for Zendesk sources.
-func makeAdapter(source *v1alpha1.ZendeskSource, cfg *adapterConfig) *servingv1.Service {
-	name := kmeta.ChildName(adapterName+"-", source.Name)
-	labels := makeAdapterLabels(source.Name)
-	envSvc := makeServiceEnv(name, source.Namespace)
-	envApp := makeAppEnv(&source.Spec)
-	envSink := makeSinkEnv(source.Status.SinkURI)
-	envObs := makeObsEnv(cfg.obsConfig)
-	envs := append(envSvc, envApp...)
-	envs = append(envs, envSink...)
-	envs = append(envs, envObs...)
+// adapterServiceBuilder returns an AdapterServiceBuilderFunc for the
+// given source object and adapter config.
+func adapterServiceBuilder(src *v1alpha1.ZendeskSource, cfg *adapterConfig) common.AdapterServiceBuilderFunc {
+	return func(sinkURI *apis.URL) *servingv1.Service {
+		name := kmeta.ChildName(fmt.Sprintf("%s-", adapterName), src.Name)
 
-	return resources.MakeKService(source.Namespace, name, cfg.Image,
-		resources.KsvcLabels(labels),
-		resources.KsvcOwner(source),
-		resources.KsvcPodLabels(labels),
-		resources.KsvcPodEnvVars(envs),
-	)
-}
-
-func makeServiceEnv(name, namespace string) []corev1.EnvVar {
-	return []corev1.EnvVar{
-		{
-			Name:  "NAMESPACE",
-			Value: namespace,
-		}, {
-			Name:  "NAME",
-			Value: name,
-		},
-	}
-}
-
-func makeSinkEnv(url *apis.URL) []corev1.EnvVar {
-	env := []corev1.EnvVar{}
-
-	if url != nil {
-		env = append(env, corev1.EnvVar{
-			Name:  "K_SINK",
-			Value: url.String(),
-		})
-	}
-
-	return env
-}
-
-func makeAppEnv(spec *v1alpha1.ZendeskSourceSpec) []corev1.EnvVar {
-	env := []corev1.EnvVar{}
-
-	env = append(env, corev1.EnvVar{
-		Name:  "ZENDESK_WEBHOOK_USERNAME",
-		Value: spec.WebhookUsername,
-	})
-
-	env = append(env, corev1.EnvVar{
-		Name: "ZENDESK_WEBHOOK_PASSWORD",
-		ValueFrom: &corev1.EnvVarSource{
-			SecretKeyRef: spec.WebhookPassword.SecretKeyRef,
-		},
-	})
-
-	env = append(env, corev1.EnvVar{
-		Name:  "ZENDESK_SUBDOMAIN",
-		Value: spec.Subdomain,
-	})
-
-	return env
-}
-
-func makeObsEnv(cfg source.ConfigAccessor) []corev1.EnvVar {
-	env := cfg.ToEnvVars()
-
-	// port already used by queue proxy
-	for i := range env {
-		if env[i].Name == source.EnvMetricsCfg {
-			env[i].Value = ""
-			break
+		var sinkURIStr string
+		if sinkURI != nil {
+			sinkURIStr = sinkURI.String()
 		}
+
+		return resource.NewKnService(src.Namespace, name,
+			resource.Controller(src),
+
+			resource.Label(common.AppNameLabel, adapterName),
+			resource.Label(common.AppInstanceLabel, src.Name),
+			resource.Label(common.AppComponentLabel, common.AdapterComponent),
+			resource.Label(common.AppPartOfLabel, common.PartOf),
+			resource.Label(common.AppManagedByLabel, common.ManagedBy),
+
+			resource.PodLabel(common.AppNameLabel, adapterName),
+			resource.PodLabel(common.AppInstanceLabel, src.Name),
+			resource.PodLabel(common.AppComponentLabel, common.AdapterComponent),
+			resource.PodLabel(common.AppPartOfLabel, common.PartOf),
+			resource.PodLabel(common.AppManagedByLabel, common.ManagedBy),
+
+			resource.Image(cfg.Image),
+
+			resource.EnvVar(common.EnvName, src.Name),
+			resource.EnvVar(common.EnvNamespace, src.Namespace),
+			resource.EnvVar(common.EnvSink, sinkURIStr),
+			resource.EnvVar(envZdSubdomain, src.Spec.Subdomain),
+			resource.EnvVar(envZdWebhookUser, src.Spec.WebhookUsername),
+			resource.EnvVarFromSecret(envZdWebhookPwd,
+				src.Spec.WebhookPassword.SecretKeyRef.Name,
+				src.Spec.WebhookPassword.SecretKeyRef.Key),
+			resource.EnvVar(common.EnvMetricsPrometheusPort, strconv.Itoa(int(metricsPrometheusPort))),
+			resource.EnvVars(cfg.configs.ToEnvVars()...),
+		)
 	}
-
-	return env
-}
-
-func makeAdapterLabels(name string) labels.Set {
-	lbls := labels.Set{
-		resources.AppNameLabel:      adapterName,
-		resources.AppInstanceLabel:  name,
-		resources.AppComponentLabel: resources.AdapterComponent,
-		resources.AppPartOfLabel:    partOf,
-		resources.AppManagedByLabel: managedBy,
-	}
-
-	return lbls
 }

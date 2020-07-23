@@ -29,7 +29,7 @@ spec:
   webhookPassword:
     secretKeyRef:
       name: zendesksource
-      key: password
+      key: webhookPassword
   sink:
     ref:
       apiVersion: serving.knative.dev/v1
@@ -45,7 +45,7 @@ metadata:
 type: Opaque
 stringData:
   token: '<API TOKEN FROM ZENDESK>'
-  password: '<ARBITRARY PASSWORD FOR WEBHOOK>'
+  webhookPassword: '<ARBITRARY PASSWORD FOR WEBHOOK>'
 
 ---
 

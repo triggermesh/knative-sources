@@ -24,6 +24,8 @@ import (
 
 	"knative.dev/eventing/pkg/adapter/v2"
 	"knative.dev/pkg/logging"
+
+	"github.com/triggermesh/knative-sources/pkg/apis/sources/v1alpha1"
 )
 
 var _ adapter.Adapter = (*zendeskAdapter)(nil)
@@ -37,7 +39,7 @@ type zendeskAdapter struct {
 func NewAdapter(ctx context.Context, aEnv adapter.EnvConfigAccessor, ceClient cloudevents.Client) adapter.Adapter {
 	env := aEnv.(*envAccessor)
 	logger := logging.FromContext(ctx)
-	eventsource := env.Subdomain + "." + env.Name
+	eventsource := v1alpha1.ZendeskSourceName(env.Subdomain, env.Name)
 
 	return &zendeskAdapter{
 		handler: NewZendeskAPIHandler(ceClient, env.WebhookUsername, env.WebhookPassword, eventsource, logger.Named("handler")),

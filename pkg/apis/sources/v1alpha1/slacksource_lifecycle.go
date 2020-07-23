@@ -25,7 +25,7 @@ import (
 
 // GetGroupVersionKind implements kmeta.OwnerRefable.
 func (*SlackSource) GetGroupVersionKind() schema.GroupVersionKind {
-	return SchemeGroupVersion.WithKind("AWSSNSSource")
+	return SchemeGroupVersion.WithKind("SlackSource")
 }
 
 // GetUntypedSpec implements apis.HasSpec.

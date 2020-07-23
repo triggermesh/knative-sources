@@ -23,4 +23,4 @@ import (
 )
 
 // Validate implements apis.Validatable.
-func (*SlackSource) Validate(_ context.Context) *apis.FieldError { return nil }
+func (*SlackSource) Validate(context.Context) *apis.FieldError { return nil }

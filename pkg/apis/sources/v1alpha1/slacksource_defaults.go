@@ -19,4 +19,4 @@ package v1alpha1
 import "context"
 
 // SetDefaults implements apis.Defaultable.
-func (s *SlackSource) SetDefaults(context.Context) {}
+func (*SlackSource) SetDefaults(context.Context) {}

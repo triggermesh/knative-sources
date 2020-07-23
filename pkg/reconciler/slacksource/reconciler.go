@@ -19,45 +19,26 @@ package slacksource
 import (
 	"context"
 
-	duckv1 "knative.dev/pkg/apis/duck/v1"
-	"knative.dev/pkg/controller"
-	pkgreconciler "knative.dev/pkg/reconciler"
-	"knative.dev/pkg/resolver"
+	"knative.dev/pkg/reconciler"
 
 	"github.com/triggermesh/knative-sources/pkg/apis/sources/v1alpha1"
-	reconcilerslacksource "github.com/triggermesh/knative-sources/pkg/client/generated/injection/reconciler/sources/v1alpha1/slacksource"
-	srcreconciler "github.com/triggermesh/knative-sources/pkg/reconciler"
+	reconcilerv1alpha1 "github.com/triggermesh/knative-sources/pkg/client/generated/injection/reconciler/sources/v1alpha1/slacksource"
+	"github.com/triggermesh/knative-sources/pkg/reconciler/common"
 )
 
-// Reconciler reconciles a SlackSource object
-type reconciler struct {
-	ksvcr        srcreconciler.KServiceReconciler
-	sinkResolver *resolver.URIResolver
-
+// Reconciler implements controller.Reconciler for the event source type.
+type Reconciler struct {
+	base       common.GenericServiceReconciler
 	adapterCfg *adapterConfig
 }
 
-// reconciler implements Interface
-var _ reconcilerslacksource.Interface = (*reconciler)(nil)
+// Check that our Reconciler implements Interface
+var _ reconcilerv1alpha1.Interface = (*Reconciler)(nil)
 
 // ReconcileKind implements Interface.ReconcileKind.
-func (r *reconciler) ReconcileKind(ctx context.Context, src *v1alpha1.SlackSource) pkgreconciler.Event {
-	src.Status.CloudEventAttributes = []duckv1.CloudEventAttributes{{Type: v1alpha1.SlackSourceEventType}}
+func (r *Reconciler) ReconcileKind(ctx context.Context, src *v1alpha1.SlackSource) reconciler.Event {
+	// inject source into context for usage in reconciliation logic
+	ctx = v1alpha1.WithSource(ctx, src)
 
-	dest := src.Spec.Sink.DeepCopy()
-	if dest.Ref != nil && dest.Ref.Namespace == "" {
-		dest.Ref.Namespace = src.Namespace
-	}
-
-	uri, err := r.sinkResolver.URIFromDestinationV1(*dest, src)
-	if err != nil {
-		src.Status.MarkNoSink("Could not resolve sink URI: %s", err.Error())
-		return controller.NewPermanentError(err)
-	}
-	src.Status.MarkSink(uri)
-
-	adapter, event := r.ksvcr.ReconcileKService(ctx, src, makeAdapter(src, r.adapterCfg))
-	src.Status.PropagateAvailability(adapter)
-
-	return event
+	return r.base.ReconcileSource(ctx, adapterServiceBuilder(src, r.adapterCfg))
 }

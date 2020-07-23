@@ -205,7 +205,7 @@ func cloudEventFromEventWrapper(wrapper *SlackEventWrapper) (*cloudevents.Event,
 	event := cloudevents.NewEvent(cloudevents.VersionV1)
 
 	event.SetID(wrapper.EventID)
-	event.SetType(v1alpha1.SlackSourceEventType)
+	event.SetType(v1alpha1.SlackGenericEventType)
 	event.SetSource(wrapper.TeamID)
 	event.SetExtension("api_app_id", wrapper.APIAppID)
 	event.SetTime(time.Unix(int64(wrapper.EventTime), 0))

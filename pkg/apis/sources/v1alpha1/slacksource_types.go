@@ -19,7 +19,7 @@ package v1alpha1
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/runtime/schema"
+
 	pkgapis "knative.dev/pkg/apis"
 	duckv1 "knative.dev/pkg/apis/duck/v1"
 	"knative.dev/pkg/kmeta"
@@ -29,32 +29,27 @@ import (
 // +genreconciler
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
-// SlackSource is the schema for the Slack source
+// SlackSource is the Schema for the event source.
 type SlackSource struct {
-	metav1.TypeMeta `json:",inline"`
-	// +optional
+	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec SlackSourceSpec `json:"spec"`
-	// +optional
-	Status SlackSourceStatus `json:"status,omitempty"`
+	Spec   SlackSourceSpec   `json:"spec,omitempty"`
+	Status EventSourceStatus `json:"status,omitempty"`
 }
 
-// GetGroupVersionKind returns the GroupVersionKind.
-func (s *SlackSource) GetGroupVersionKind() schema.GroupVersionKind {
-	return SchemeGroupVersion.WithKind("SlackSource")
-}
-
+// Check the interfaces the event source should be implementing.
 var (
 	_ runtime.Object      = (*SlackSource)(nil)
 	_ kmeta.OwnerRefable  = (*SlackSource)(nil)
 	_ pkgapis.Validatable = (*SlackSource)(nil)
 	_ pkgapis.Defaultable = (*SlackSource)(nil)
+	_ pkgapis.HasSpec     = (*SlackSource)(nil)
 	_ duckv1.KRShaped     = (*SlackSource)(nil)
 	_ EventSource         = (*SlackSource)(nil)
 )
 
-// SlackSourceSpec holds the desired state of the SlackSource (from the client).
+// SlackSourceSpec defines the desired state of the event source.
 type SlackSourceSpec struct {
 	// inherits duck/v1 SourceSpec, which currently provides:
 	// * Sink - a reference to an object that will resolve to a domain name or
@@ -76,18 +71,11 @@ type SlackSourceSpec struct {
 	AppID *string `json:"appID,omitempty"`
 }
 
-// SlackSourceStatus communicates the observed state of the SlackSource (from the controller).
-type SlackSourceStatus struct {
-	duckv1.SourceStatus  `json:",inline"`
-	duckv1.AddressStatus `json:",inline"`
-}
-
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
-// SlackSourceList is a list of SlackSource resources
+// SlackSourceList contains a list of event sources.
 type SlackSourceList struct {
 	metav1.TypeMeta `json:",inline"`
-	metav1.ListMeta `json:"metadata"`
-
-	Items []SlackSource `json:"items"`
+	metav1.ListMeta `json:"metadata,omitempty"`
+	Items           []SlackSource `json:"items"`
 }

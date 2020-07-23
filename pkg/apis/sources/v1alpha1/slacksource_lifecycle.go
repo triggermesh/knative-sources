@@ -17,25 +17,25 @@ limitations under the License.
 package v1alpha1
 
 import (
+	"k8s.io/apimachinery/pkg/runtime/schema"
+
 	pkgapis "knative.dev/pkg/apis"
 	duckv1 "knative.dev/pkg/apis/duck/v1"
-	servingv1 "knative.dev/serving/pkg/apis/serving/v1"
 )
 
-const (
-	// SlackSourceEventType is the SlackSource CloudEvent type.
-	SlackSourceEventType = "com.slack.events"
-)
+// GetGroupVersionKind implements kmeta.OwnerRefable.
+func (*SlackSource) GetGroupVersionKind() schema.GroupVersionKind {
+	return SchemeGroupVersion.WithKind("SlackSource")
+}
 
-// SlackCondSet is the list of all possible conditions toher than Ready
-var SlackCondSet = pkgapis.NewLivingConditionSet(
-	ConditionSinkProvided,
-	ConditionDeployed,
-)
+// GetUntypedSpec implements apis.HasSpec.
+func (s *SlackSource) GetUntypedSpec() interface{} {
+	return s.Spec
+}
 
 // GetConditionSet implements duckv1.KRShaped.
-func (s *SlackSource) GetConditionSet() pkgapis.ConditionSet {
-	return SlackCondSet
+func (*SlackSource) GetConditionSet() pkgapis.ConditionSet {
+	return eventSourceConditionSet
 }
 
 // GetStatus implements duckv1.KRShaped.
@@ -44,62 +44,26 @@ func (s *SlackSource) GetStatus() *duckv1.Status {
 }
 
 // GetSink implements EventSource.
-func (*SlackSource) GetSink() *duckv1.Destination { return nil }
+func (s *SlackSource) GetSink() *duckv1.Destination {
+	return &s.Spec.Sink
+}
 
 // GetSourceStatus implements EventSource.
-func (*SlackSource) GetSourceStatus() *EventSourceStatus { return nil }
-
-// GetEventTypes implements EventSource.
-func (*SlackSource) GetEventTypes() []string { return nil }
+func (s *SlackSource) GetSourceStatus() *EventSourceStatus {
+	return &s.Status
+}
 
 // AsEventSource implements EventSource.
 func (*SlackSource) AsEventSource() string { return "" }
 
-// InitializeConditions sets relevant unset conditions to Unknown state.
-func (s *SlackSourceStatus) InitializeConditions() {
-	SlackCondSet.Manage(s).InitializeConditions()
-}
+// Supported event types
+const (
+	SlackGenericEventType = "com.slack.events"
+)
 
-// PropagateAvailability uses the availability of the adapter to determine whether
-// the deployed condition should be marked as true or false.
-func (s *SlackSourceStatus) PropagateAvailability(ksvc *servingv1.Service) {
-	switch {
-	case ksvc == nil:
-		SlackCondSet.Manage(s).MarkUnknown(ConditionDeployed, ReasonUnavailable, "The status Knative Service can not be determined")
-		if s.Address != nil {
-			s.Address = nil
-		}
-		return
-
-	case ksvc.IsReady():
-		SlackCondSet.Manage(s).MarkTrue(ConditionDeployed)
-
-	default:
-		SlackCondSet.Manage(s).MarkFalse(ConditionDeployed, ReasonUnavailable, "The Knative service %q is unavailable.", ksvc.Name)
+// GetEventTypes implements EventSource.
+func (*SlackSource) GetEventTypes() []string {
+	return []string{
+		SlackGenericEventType,
 	}
-
-	if s.Address == nil {
-		s.Address = &duckv1.Addressable{}
-	}
-	s.Address.URL = ksvc.Status.URL
-}
-
-// MarkSink sets the condition that the source has a sink configured.
-func (s *SlackSourceStatus) MarkSink(uri *pkgapis.URL) {
-	s.SinkURI = uri
-	if len(uri.String()) > 0 {
-		SlackCondSet.Manage(s).MarkTrue(ConditionSinkProvided)
-	} else {
-		SlackCondSet.Manage(s).MarkUnknown(ConditionSinkProvided, ReasonSinkEmpty, "Sink has resolved to empty.")
-	}
-}
-
-// MarkNoSink sets the condition that the source does not have a sink configured.
-func (s *SlackSourceStatus) MarkNoSink(messageFormat string, messageA ...interface{}) {
-	SlackCondSet.Manage(s).MarkFalse(ConditionSinkProvided, ReasonSinkNotFound, messageFormat, messageA...)
-}
-
-// IsReady returns true if the resource is ready overall.
-func (s *SlackSourceStatus) IsReady() bool {
-	return SlackCondSet.Manage(s).IsHappy()
 }

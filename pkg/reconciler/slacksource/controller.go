@@ -20,57 +20,43 @@ import (
 	"context"
 
 	"github.com/kelseyhightower/envconfig"
-	"k8s.io/client-go/tools/cache"
 
 	"knative.dev/eventing/pkg/reconciler/source"
 	"knative.dev/pkg/configmap"
 	"knative.dev/pkg/controller"
-	"knative.dev/pkg/logging"
-	"knative.dev/pkg/resolver"
-	kserviceclient "knative.dev/serving/pkg/client/injection/client"
-	kserviceinformer "knative.dev/serving/pkg/client/injection/informers/serving/v1/service"
 
 	"github.com/triggermesh/knative-sources/pkg/apis/sources/v1alpha1"
-	slacksourceinformer "github.com/triggermesh/knative-sources/pkg/client/generated/injection/informers/sources/v1alpha1/slacksource"
-	"github.com/triggermesh/knative-sources/pkg/client/generated/injection/reconciler/sources/v1alpha1/slacksource"
-	srcreconciler "github.com/triggermesh/knative-sources/pkg/reconciler"
+	informerv1alpha1 "github.com/triggermesh/knative-sources/pkg/client/generated/injection/informers/sources/v1alpha1/slacksource"
+	reconcilerv1alpha1 "github.com/triggermesh/knative-sources/pkg/client/generated/injection/reconciler/sources/v1alpha1/slacksource"
+	"github.com/triggermesh/knative-sources/pkg/reconciler/common"
 )
 
-// NewController initializes the controller and is called by the generated code
-// Registers event handlers to enqueue events
+// NewController creates a Reconciler for the event source and returns the result of NewImpl.
 func NewController(
 	ctx context.Context,
 	cmw configmap.Watcher,
 ) *controller.Impl {
 
+	// Calling envconfig.Process() with a prefix appends that prefix
+	// (uppercased) to the Go field name, e.g. MYSOURCE_IMAGE.
 	adapterCfg := &adapterConfig{
-		obsConfig: source.WatchConfigurations(ctx, adapterName, cmw, source.WithLogging, source.WithMetrics),
+		configs: source.WatchConfigurations(ctx, adapterName, cmw, source.WithLogging, source.WithMetrics),
 	}
+	envconfig.MustProcess(adapterName, adapterCfg)
 
-	if err := envconfig.Process("", adapterCfg); err != nil {
-		logging.FromContext(ctx).Panic(err)
-	}
-
-	ksvcInformer := kserviceinformer.Get(ctx)
-	slackSourceInformer := slacksourceinformer.Get(ctx)
-
-	r := &reconciler{
-		ksvcr:      srcreconciler.NewKServiceReconciler(kserviceclient.Get(ctx), ksvcInformer.Lister()),
+	r := &Reconciler{
 		adapterCfg: adapterCfg,
 	}
+	impl := reconcilerv1alpha1.NewImpl(ctx, r)
 
-	impl := slacksource.NewImpl(ctx, r)
+	r.base = common.NewGenericServiceReconciler(
+		ctx,
+		(&v1alpha1.SlackSource{}).GetGroupVersionKind(),
+		impl.EnqueueKey,
+		impl.EnqueueControllerOf,
+	)
 
-	r.sinkResolver = resolver.NewURIResolver(ctx, impl.EnqueueKey)
-
-	logging.FromContext(ctx).Info("Setting up event handlers")
-
-	slackSourceInformer.Informer().AddEventHandler(controller.HandleAll(impl.Enqueue))
-
-	ksvcInformer.Informer().AddEventHandler(cache.FilteringResourceEventHandler{
-		FilterFunc: controller.FilterControllerGK(v1alpha1.Kind("SlackSource")),
-		Handler:    controller.HandleAll(impl.EnqueueControllerOf),
-	})
+	informerv1alpha1.Get(ctx).Informer().AddEventHandler(controller.HandleAll(impl.Enqueue))
 
 	return impl
 }

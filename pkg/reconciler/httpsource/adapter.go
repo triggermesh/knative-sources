@@ -14,131 +14,106 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package reconciler
+package httpsource
 
 import (
+	"fmt"
+	"strconv"
+
 	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/labels"
 
 	"knative.dev/eventing/pkg/reconciler/source"
 	"knative.dev/pkg/apis"
 	"knative.dev/pkg/kmeta"
 	servingv1 "knative.dev/serving/pkg/apis/serving/v1"
 
-	"github.com/triggermesh/knative-sources/http/pkg/apis/sources/v1alpha1"
-	"github.com/triggermesh/knative-sources/pkg/reconciler/resources"
+	"github.com/triggermesh/knative-sources/pkg/apis/sources/v1alpha1"
+	"github.com/triggermesh/knative-sources/pkg/reconciler/common"
+	"github.com/triggermesh/knative-sources/pkg/reconciler/common/resource"
 )
+
+const adapterName = "httpsource"
 
 const (
-	adapterName = "httpsource"
-	partOf      = "httpsource"
-	managedBy   = "httpsource-controller"
+	envHTTPEventType         = "HTTP_EVENT_TYPE"
+	envHTTPEventSource       = "HTTP_EVENT_SOURCE"
+	envHTTPBasicAuthUsername = "HTTP_BASICAUTH_USERNAME"
+	envHTTPBasicAuthPassword = "HTTP_BASICAUTH_PASSWORD"
 )
 
+const metricsPrometheusPort uint16 = 9092
+
 // adapterConfig contains properties used to configure the adapter.
-// Public fields are automatically populated by envconfig.
+// These are automatically populated by envconfig.
 type adapterConfig struct {
-	// Configuration accessor for observability logging/metrics/tracing
-	obsConfig source.ConfigAccessor
-
 	// Container image
-	Image string `envconfig:"HTTPSOURCE_ADAPTER_IMAGE" required:"true"`
+	Image string `default:"gcr.io/triggermesh/httpsource-adapter"`
+
+	// Configuration accessor for logging/metrics/tracing
+	configs source.ConfigAccessor
 }
 
-// MakeAdapter generates the Receive Adapter KService for Http sources.
-func makeAdapter(source *v1alpha1.HttpSource, cfg *adapterConfig) *servingv1.Service {
-	name := kmeta.ChildName(adapterName+"-", source.Name)
-	labels := makeAdapterLabels(source.Name)
-	envSvc := makeServiceEnv(name, source.Namespace)
-	envApp := makeAppEnv(&source.Spec)
-	envSink := makeSinkEnv(source.Status.SinkURI)
-	envObs := makeObsEnv(cfg.obsConfig)
-	envs := append(envSvc, envApp...)
-	envs = append(envs, envSink...)
-	envs = append(envs, envObs...)
+// adapterServiceBuilder returns an AdapterServiceBuilderFunc for the
+// given source object and adapter config.
+func adapterServiceBuilder(src *v1alpha1.HTTPSource, cfg *adapterConfig) common.AdapterServiceBuilderFunc {
+	return func(sinkURI *apis.URL) *servingv1.Service {
+		name := kmeta.ChildName(fmt.Sprintf("%s-", adapterName), src.Name)
 
-	return resources.MakeKService(source.Namespace, name, cfg.Image,
-		resources.KsvcLabels(labels),
-		resources.KsvcOwner(source),
-		resources.KsvcPodLabels(labels),
-		resources.KsvcPodEnvVars(envs),
-	)
-}
+		var sinkURIStr string
+		if sinkURI != nil {
+			sinkURIStr = sinkURI.String()
+		}
 
-func makeServiceEnv(name, namespace string) []corev1.EnvVar {
-	return []corev1.EnvVar{
-		{
-			Name:  "NAMESPACE",
-			Value: namespace,
-		}, {
-			Name:  "NAME",
-			Value: name,
-		},
+		return resource.NewKnService(src.Namespace, name,
+			resource.Controller(src),
+
+			resource.Label(common.AppNameLabel, adapterName),
+			resource.Label(common.AppInstanceLabel, src.Name),
+			resource.Label(common.AppComponentLabel, common.AdapterComponent),
+			resource.Label(common.AppPartOfLabel, common.PartOf),
+			resource.Label(common.AppManagedByLabel, common.ManagedBy),
+
+			resource.PodLabel(common.AppNameLabel, adapterName),
+			resource.PodLabel(common.AppInstanceLabel, src.Name),
+			resource.PodLabel(common.AppComponentLabel, common.AdapterComponent),
+			resource.PodLabel(common.AppPartOfLabel, common.PartOf),
+			resource.PodLabel(common.AppManagedByLabel, common.ManagedBy),
+
+			resource.Image(cfg.Image),
+
+			resource.EnvVar(common.EnvName, src.Name),
+			resource.EnvVar(common.EnvNamespace, src.Namespace),
+			resource.EnvVar(common.EnvSink, sinkURIStr),
+			resource.EnvVars(makeHTTPEnvs(src)...),
+			resource.EnvVar(common.EnvMetricsPrometheusPort, strconv.Itoa(int(metricsPrometheusPort))),
+			resource.EnvVars(cfg.configs.ToEnvVars()...),
+		)
 	}
 }
 
-func makeSinkEnv(url *apis.URL) []corev1.EnvVar {
-	env := []corev1.EnvVar{}
-
-	if url != nil {
-		env = append(env, corev1.EnvVar{
-			Name:  "K_SINK",
-			Value: url.String(),
-		})
-	}
-
-	return env
-}
-
-func makeAppEnv(spec *v1alpha1.HttpSourceSpec) []corev1.EnvVar {
-	env := []corev1.EnvVar{{
-		Name:  "HTTP_EVENT_TYPE",
-		Value: spec.EventType,
+func makeHTTPEnvs(src *v1alpha1.HTTPSource) []corev1.EnvVar {
+	envs := []corev1.EnvVar{{
+		Name:  envHTTPEventType,
+		Value: src.Spec.EventType,
 	}}
 
-	if spec.EventSource != nil {
-		env = append(env, corev1.EnvVar{
-			Name:  "HTTP_EVENT_SOURCE",
-			Value: *spec.EventSource,
+	if eventsource := src.Spec.EventSource; eventsource != nil {
+		envs = append(envs, corev1.EnvVar{
+			Name:  envHTTPEventSource,
+			Value: *eventsource,
 		})
 	}
 
-	if spec.BasicAuthUsername != nil && spec.BasicAuthPassword.SecretKeyRef != nil {
-		env = append(env, corev1.EnvVar{
-			Name:  "HTTP_BASICAUTH_USERNAME",
-			Value: *spec.BasicAuthUsername,
+	if user, passref := src.Spec.BasicAuthUsername, src.Spec.BasicAuthPassword.SecretKeyRef; user != nil && passref != nil {
+		envs = append(envs, corev1.EnvVar{
+			Name:  envHTTPBasicAuthUsername,
+			Value: *user,
 		}, corev1.EnvVar{
-			Name: "HTTP_BASICAUTH_PASSWORD",
+			Name: envHTTPBasicAuthPassword,
 			ValueFrom: &corev1.EnvVarSource{
-				SecretKeyRef: spec.BasicAuthPassword.SecretKeyRef,
+				SecretKeyRef: passref,
 			}})
 	}
 
-	return env
-}
-
-func makeObsEnv(cfg source.ConfigAccessor) []corev1.EnvVar {
-	env := cfg.ToEnvVars()
-
-	// port already used by queue proxy
-	for i := range env {
-		if env[i].Name == source.EnvMetricsCfg {
-			env[i].Value = ""
-			break
-		}
-	}
-
-	return env
-}
-
-func makeAdapterLabels(name string) labels.Set {
-	lbls := labels.Set{
-		resources.AppNameLabel:      adapterName,
-		resources.AppInstanceLabel:  name,
-		resources.AppComponentLabel: resources.AdapterComponent,
-		resources.AppPartOfLabel:    partOf,
-		resources.AppManagedByLabel: managedBy,
-	}
-
-	return lbls
+	return envs
 }

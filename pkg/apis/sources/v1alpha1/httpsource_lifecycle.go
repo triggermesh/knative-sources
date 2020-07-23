@@ -17,9 +17,16 @@ limitations under the License.
 package v1alpha1
 
 import (
+	"k8s.io/apimachinery/pkg/runtime/schema"
+
 	pkgapis "knative.dev/pkg/apis"
 	duckv1 "knative.dev/pkg/apis/duck/v1"
 )
+
+// GetGroupVersionKind implements kmeta.OwnerRefable.
+func (*HTTPSource) GetGroupVersionKind() schema.GroupVersionKind {
+	return SchemeGroupVersion.WithKind("HttpSource")
+}
 
 // GetUntypedSpec implements apis.HasSpec.
 func (s *HTTPSource) GetUntypedSpec() interface{} {
@@ -37,13 +44,27 @@ func (s *HTTPSource) GetStatus() *duckv1.Status {
 }
 
 // GetSink implements EventSource.
-func (s *HTTPSource) GetSink() *duckv1.Destination { return &s.Spec.Sink }
+func (s *HTTPSource) GetSink() *duckv1.Destination {
+	return &s.Spec.Sink
+}
 
 // GetSourceStatus implements EventSource.
-func (s *HTTPSource) GetSourceStatus() *EventSourceStatus { return &s.Status }
-
-// GetEventTypes implements EventSource.
-func (*HTTPSource) GetEventTypes() []string { return nil }
+func (s *HTTPSource) GetSourceStatus() *EventSourceStatus {
+	return &s.Status
+}
 
 // AsEventSource implements EventSource.
-func (*HTTPSource) AsEventSource() string { return "" }
+func (s *HTTPSource) AsEventSource() string {
+	if *&s.Spec.EventSource != nil {
+		return *s.Spec.EventSource
+	}
+
+	return ""
+}
+
+// GetEventTypes implements EventSource.
+func (s *HTTPSource) GetEventTypes() []string {
+	return []string{
+		s.Spec.EventType,
+	}
+}

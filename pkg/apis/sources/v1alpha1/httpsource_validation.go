@@ -16,8 +16,8 @@ package v1alpha1
 import (
 	"context"
 
-	pkgapis "knative.dev/pkg/apis"
+	"knative.dev/pkg/apis"
 )
 
 // Validate implements apis.Validatable.
-func (*HTTPSource) Validate(_ context.Context) *pkgapis.FieldError { return nil }
+func (*HTTPSource) Validate(context.Context) *apis.FieldError { return nil }

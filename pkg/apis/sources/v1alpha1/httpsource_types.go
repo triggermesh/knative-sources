@@ -19,7 +19,6 @@ package v1alpha1
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/runtime/schema"
 	pkgapis "knative.dev/pkg/apis"
 	duckv1 "knative.dev/pkg/apis/duck/v1"
 	"knative.dev/pkg/kmeta"
@@ -31,20 +30,14 @@ import (
 
 // HTTPSource is the schema for the Http source
 type HTTPSource struct {
-	metav1.TypeMeta `json:",inline"`
-	// +optional
+	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec HTTPSourceSpec `json:"spec"`
-	// +optional
+	Spec   HTTPSourceSpec    `json:"spec"`
 	Status EventSourceStatus `json:"status,omitempty"`
 }
 
-// GetGroupVersionKind returns the GroupVersionKind.
-func (s *HTTPSource) GetGroupVersionKind() schema.GroupVersionKind {
-	return SchemeGroupVersion.WithKind("HttpSource")
-}
-
+// Check the interfaces the event source should be implementing.
 var (
 	_ runtime.Object      = (*HTTPSource)(nil)
 	_ kmeta.OwnerRefable  = (*HTTPSource)(nil)
@@ -65,7 +58,7 @@ type HTTPSourceSpec struct {
 	duckv1.SourceSpec `json:",inline"`
 
 	// EventType for the event that will be ingested.
-	EventType string `json:"eventType,omitempty"`
+	EventType string `json:"eventType"`
 
 	// EventSource for the event that will be ingested.
 	EventSource *string `json:"eventSource,omitempty"`
@@ -85,6 +78,5 @@ type HTTPSourceSpec struct {
 type HTTPSourceList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata"`
-
-	Items []HTTPSource `json:"items"`
+	Items           []HTTPSource `json:"items"`
 }

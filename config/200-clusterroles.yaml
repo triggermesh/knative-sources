@@ -66,6 +66,14 @@ rules:
   verbs:
   - update
 
+# Read credentials
+- apiGroups:
+  - ''
+  resources:
+  - secrets
+  verbs:
+  - get
+
 # Read controller configurations
 - apiGroups:
   - ''

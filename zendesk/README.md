@@ -13,7 +13,6 @@ The Zendesk Source enables integration of [Zendesk](https://www.zendesk.com/) ev
   - [Deploy a Zendesk Source](#deploy-a-zendesk-source)
     - [Verify a Zendesk Source Deployment](#verify-a-zendesk-source-deployment)
     - [Customizing the integration](#customizing-the-integration)
-  - [Events](#events)
   - [Support](#support)
 
 ## Building

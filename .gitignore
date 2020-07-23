@@ -2,6 +2,9 @@
 /.env/
 /.local/
 
+# OS artifacts
+.DS_Store
+
 # Continuous integration
 
 # Editors and IDEs
@@ -16,5 +19,3 @@
 
 # Build artifacts
 **/_output
-zendesk/.DS_Store
-

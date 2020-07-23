@@ -1,18 +1,22 @@
 # Top level files and directories
 /.circleci/
 /.git/
+/test/
+/hack/
+!/hack/inc.Codegen.mk
 /.dockerignore
-/scripts/release-notes.sh
+/.gcloudignore
+/cloudbuild.yaml
+
+# Files copied to KO_DATA_PATH directory
+!/.git/HEAD
+!/.git/refs/
 
 # Patterns
 **/config/
-**/kodata/
-**/samples/
-**/*.yaml
 **/*.md
 **/*_test.go
 **/.gitignore
-**/cloudbuild.yaml
 **/Dockerfile
 
 # Binaries

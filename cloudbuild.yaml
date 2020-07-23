@@ -11,7 +11,7 @@ steps:
   - ${_KANIKO_EXTRA_ARGS}
   waitFor: ['-']
 
-timeout: 600s
+timeout: 1200s
 
 substitutions:
   _CMD:

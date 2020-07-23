@@ -93,9 +93,7 @@ $(IMAGES): %.image:
 CLOUDBUILD_TEST = $(foreach cmd,$(COMMANDS),$(cmd).cloudbuild-test)
 cloudbuild-test: $(CLOUDBUILD_TEST) ## Test container image build with Google Cloud Build
 $(CLOUDBUILD_TEST): %.cloudbuild-test:
-# NOTE (antoineco): Cloud Build started failing recently with authentication errors when --no-push is specified.
-# Pushing images with the "_" tag is our hack to avoid those errors and ensure the build cache is always updated.
-	gcloud builds submit $(BASE_DIR) --config cloudbuild.yaml --substitutions _CMD=$*,COMMIT_SHA=${IMAGE_SHA},_KANIKO_IMAGE_TAG=_
+	gcloud builds submit $(BASE_DIR) --config cloudbuild.yaml --substitutions _CMD=$*,COMMIT_SHA=${IMAGE_SHA},_KANIKO_NO_PUSH=true
 
 CLOUDBUILD = $(foreach cmd,$(COMMANDS),$(cmd).cloudbuild)
 cloudbuild: $(CLOUDBUILD) ## Build and publish image to GCR

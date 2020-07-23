@@ -18,12 +18,10 @@ package adapter
 
 import (
 	"context"
-	"encoding/base64"
 	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"strings"
 	"sync"
 	"time"
 
@@ -36,13 +34,6 @@ import (
 const (
 	serverPort                = "8080"
 	serverShutdownGracePeriod = time.Second * 10
-)
-
-const (
-	// auth header prefix, it is important that the blank
-	// space is present at the end for string manipulation
-	// at auth parsing function.
-	authPrefix = "Basic "
 )
 
 type httpHandler struct {
@@ -117,29 +108,6 @@ func (h *httpHandler) Start(ctx context.Context) error {
 
 	wg.Wait()
 	return err
-}
-
-func (h *httpHandler) validateAuthHeader(r *http.Request) error {
-	auth := r.Header.Get("Authorization")
-	if !strings.HasPrefix(auth, authPrefix) {
-		return errors.New("incorrect auth header")
-	}
-
-	content, err := base64.StdEncoding.DecodeString(auth[len(authPrefix):])
-	if err != nil {
-		return errors.New("could not decode the auth header")
-	}
-
-	pair := strings.SplitN(string(content), ":", 2)
-	if len(pair) != 2 {
-		return errors.New("misformated credentials at auth header")
-	}
-
-	if pair[0] != h.username || pair[1] != h.password {
-		return fmt.Errorf("credentials received for user %q are not valid", pair[0])
-	}
-
-	return nil
 }
 
 // handleAll receives all Http events at a single resource, it

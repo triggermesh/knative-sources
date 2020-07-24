@@ -74,6 +74,9 @@ type client struct {
 	client  *http.Client
 }
 
+// client implements Client.
+var _ Client = (*client)(nil)
+
 func (c *client) ListTriggers(ctx context.Context) (*ListTriggersResponse, error) {
 	req, err := http.NewRequestWithContext(ctx, "GET", c.baseURL+"triggers.json", nil)
 	if err != nil {

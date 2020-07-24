@@ -28,10 +28,15 @@ import (
 	pkgapis "knative.dev/pkg/apis"
 
 	"github.com/triggermesh/knative-sources/pkg/apis/sources/v1alpha1"
+	"github.com/triggermesh/knative-sources/pkg/reconciler/common/skip"
 	"github.com/triggermesh/knative-sources/pkg/reconciler/zendesksource/zendesk"
 )
 
 func (r *Reconciler) ensureZendeskTargetAndTrigger(ctx context.Context) error {
+	if skip.Skip(ctx) {
+		return nil
+	}
+
 	src := v1alpha1.SourceFromContext(ctx)
 	status := &src.(*v1alpha1.ZendeskSource).Status
 

@@ -22,6 +22,7 @@ import (
 
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
+	fakek8sinjectionclient "knative.dev/pkg/client/injection/kube/client/fake"
 
 	"knative.dev/eventing/pkg/reconciler/source"
 	"knative.dev/pkg/controller"
@@ -62,6 +63,7 @@ func reconcilerCtor(cfg *adapterConfig) Ctor {
 
 		r := &Reconciler{
 			base:       base,
+			kubeClient: fakek8sinjectionclient.Get(ctx),
 			adapterCfg: cfg,
 		}
 

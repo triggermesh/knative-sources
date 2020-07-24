@@ -33,11 +33,14 @@ import (
 
 func (r *Reconciler) ensureZendeskTargetAndTrigger(ctx context.Context) error {
 	src := v1alpha1.SourceFromContext(ctx)
+	status := &src.(*v1alpha1.ZendeskSource).Status
 
 	addr := src.GetSourceStatus().Address
 
 	// skip this cycle if the adapter URL wasn't yet determined
 	if addr == nil || addr.URL == nil {
+		status.MarkTargetNotSynced(v1alpha1.ZendeskReasonNoURL,
+			"The receive adapter did not report its public URL yet")
 		return nil
 	}
 
@@ -47,11 +50,13 @@ func (r *Reconciler) ensureZendeskTargetAndTrigger(ctx context.Context) error {
 
 	apiToken, err := r.secretFrom(ctx, ns, spec.Token.SecretKeyRef)
 	if err != nil {
+		status.MarkTargetNotSynced(v1alpha1.ZendeskReasonNoSecret, "Cannot obtain Zendesk API token")
 		return err
 	}
 
 	webhookPassword, err := r.secretFrom(ctx, ns, spec.WebhookPassword.SecretKeyRef)
 	if err != nil {
+		status.MarkTargetNotSynced(v1alpha1.ZendeskReasonNoSecret, "Cannot obtain webhook password")
 		return err
 	}
 
@@ -69,6 +74,7 @@ func (r *Reconciler) ensureZendeskTargetAndTrigger(ctx context.Context) error {
 
 	tarwrap, err := client.ListTargets(ctx)
 	if err != nil {
+		status.MarkTargetNotSynced(v1alpha1.ZendeskReasonFailedSync, "Unable to list Targets")
 		return fmt.Errorf("error retrieving Zendesk targets: %w", err)
 	}
 
@@ -86,6 +92,7 @@ func (r *Reconciler) ensureZendeskTargetAndTrigger(ctx context.Context) error {
 			// It could happen that the target already exists but is
 			// in a different page. We will need to support pagination
 			// in a future release of this source.
+			status.MarkTargetNotSynced(v1alpha1.ZendeskReasonFailedSync, "Unable to create Target")
 			return fmt.Errorf("error creating Zendesk target: %w", err)
 		}
 		t = existing
@@ -93,6 +100,7 @@ func (r *Reconciler) ensureZendeskTargetAndTrigger(ctx context.Context) error {
 
 	triwrap, err := client.ListTriggers(ctx)
 	if err != nil {
+		status.MarkTargetNotSynced(v1alpha1.ZendeskReasonFailedSync, "Unable to list Triggers")
 		return fmt.Errorf("error retrieving Zendesk triggers: %w", err)
 	}
 
@@ -140,8 +148,11 @@ func (r *Reconciler) ensureZendeskTargetAndTrigger(ctx context.Context) error {
 	}}
 
 	if _, err = client.CreateTrigger(ctx, trigger); err != nil {
+		status.MarkTargetNotSynced(v1alpha1.ZendeskReasonFailedSync, "Unable to create Trigger")
 		return fmt.Errorf("error creating Zendesk target trigger: %w", err)
 	}
+
+	status.MarkTargetSynced()
 
 	return nil
 }

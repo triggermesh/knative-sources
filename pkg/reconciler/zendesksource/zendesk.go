@@ -19,12 +19,14 @@ package zendesksource
 import (
 	"context"
 	"fmt"
+	"net/http"
 	"strconv"
 
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	pkgapis "knative.dev/pkg/apis"
+	"knative.dev/pkg/controller"
 
 	"github.com/nukosuke/go-zendesk/zendesk"
 
@@ -76,7 +78,11 @@ func (r *Reconciler) ensureZendeskTargetAndTrigger(ctx context.Context) error {
 	title := "io.triggermesh.zendesksource." + src.GetNamespace() + "." + src.GetName()
 
 	targets, _, err := client.GetTargets(ctx)
-	if err != nil {
+	switch {
+	case isDenied(err):
+		return controller.NewPermanentError(err)
+
+	case err != nil:
 		status.MarkTargetNotSynced(v1alpha1.ZendeskReasonFailedSync, "Unable to list Targets")
 		return fmt.Errorf("error retrieving Zendesk Targets: %w", err)
 	}
@@ -169,6 +175,16 @@ func (r *Reconciler) secretFrom(ctx context.Context, namespace string, secretKey
 		return "", fmt.Errorf("key %q not found in secret %q", secretKeySelector.Key, secretKeySelector.Name)
 	}
 	return string(secretVal), nil
+}
+
+// isDenied returns whether the given error indicates that a request was denied
+// due to authentication issues.
+func isDenied(err error) bool {
+	if err, ok := err.(zendesk.Error); ok {
+		s := err.Status()
+		return s == http.StatusUnauthorized || s == http.StatusForbidden
+	}
+	return false
 }
 
 const triggerPayloadJSON = `{

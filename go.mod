@@ -5,6 +5,7 @@ go 1.14
 // Top-level module control over the exact version used for important direct dependencies.
 // https://github.com/golang/go/wiki/Modules#when-should-i-use-the-replace-directive
 replace (
+	github.com/nukosuke/go-zendesk => github.com/triggermesh/go-zendesk v0.7.7-hotfix.1
 	k8s.io/apimachinery => k8s.io/apimachinery v0.17.6
 	k8s.io/client-go => k8s.io/client-go v0.17.6
 	k8s.io/code-generator => k8s.io/code-generator v0.17.6

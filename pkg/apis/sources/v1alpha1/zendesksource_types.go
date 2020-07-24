@@ -78,6 +78,11 @@ type ZendeskSourceSpec struct {
 	Subdomain string `json:"subdomain,omitempty"`
 }
 
+// ZendeskSourceStatus defines the observed state of the event source.
+type ZendeskSourceStatus struct {
+	EventSourceStatus `json:",inline"`
+}
+
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
 // ZendeskSourceList contains a list of event sources.

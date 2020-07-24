@@ -19,7 +19,7 @@ package v1alpha1
 import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
-	pkgapis "knative.dev/pkg/apis"
+	"knative.dev/pkg/apis"
 	duckv1 "knative.dev/pkg/apis/duck/v1"
 )
 
@@ -34,7 +34,7 @@ func (s *ZendeskSource) GetUntypedSpec() interface{} {
 }
 
 // GetConditionSet implements duckv1.KRShaped.
-func (*ZendeskSource) GetConditionSet() pkgapis.ConditionSet {
+func (*ZendeskSource) GetConditionSet() apis.ConditionSet {
 	return eventSourceConditionSet
 }
 
@@ -75,4 +75,37 @@ func (*ZendeskSource) GetEventTypes() []string {
 	return []string{
 		ZendeskTicketCreatedEventType,
 	}
+}
+
+// Status conditions
+const (
+	// ZendeskConditionTargetSynced has status True when the Zendesk Target and Trigger have been synced.
+	ZendeskConditionTargetSynced apis.ConditionType = "TargetSynced"
+)
+
+// Reasons for status conditions
+const (
+	// ZendeskReasonNoURL is set on a TargetSynced condition when the adapter URL is empty.
+	ZendeskReasonNoURL = "MissingAdapterURL"
+	// ZendeskReasonNoSecret is set on a TargetSynced condition when required secrets can't be obtained.
+	ZendeskReasonNoSecret = "MissingSecret"
+	// ZendeskReasonFailedSync is set on a TargetSynced condition when a CRUD API call returns an error.
+	ZendeskReasonFailedSync = "FailedSync"
+)
+
+// zendeskSourceConditionSet is a set of conditions for ZendeskSource objects.
+var zendeskSourceConditionSet = apis.NewLivingConditionSet(
+	ZendeskConditionTargetSynced,
+)
+
+// MarkTargetSynced sets the TargetSynced condition to True.
+func (s *ZendeskSourceStatus) MarkTargetSynced() {
+	zendeskSourceConditionSet.Manage(s).MarkTrue(ZendeskConditionTargetSynced)
+}
+
+// MarkTargetNotSynced sets the TargetSynced condition to False with the given
+// reason and associated message.
+func (s *ZendeskSourceStatus) MarkTargetNotSynced(reason, msg string) {
+	zendeskSourceConditionSet.Manage(s).MarkFalse(ZendeskConditionTargetSynced,
+		ZendeskReasonFailedSync, msg)
 }

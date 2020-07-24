@@ -18,6 +18,7 @@ package zendesksource
 
 import (
 	"context"
+	"time"
 
 	"github.com/kelseyhightower/envconfig"
 
@@ -32,6 +33,9 @@ import (
 	reconcilerv1alpha1 "github.com/triggermesh/knative-sources/pkg/client/generated/injection/reconciler/sources/v1alpha1/zendesksource"
 	"github.com/triggermesh/knative-sources/pkg/reconciler/common"
 )
+
+// the resync period ensures we regularly re-check the state of Zendesk Triggers.
+const informerResyncPeriod = time.Minute * 5
 
 // NewController creates a Reconciler for the event source and returns the result of NewImpl.
 func NewController(
@@ -59,7 +63,7 @@ func NewController(
 		impl.EnqueueControllerOf,
 	)
 
-	informerv1alpha1.Get(ctx).Informer().AddEventHandler(controller.HandleAll(impl.Enqueue))
+	informerv1alpha1.Get(ctx).Informer().AddEventHandlerWithResyncPeriod(controller.HandleAll(impl.Enqueue), informerResyncPeriod)
 
 	return impl
 }

@@ -34,8 +34,8 @@ type ZendeskSource struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   ZendeskSourceSpec `json:"spec,omitempty"`
-	Status EventSourceStatus `json:"status,omitempty"`
+	Spec   ZendeskSourceSpec   `json:"spec,omitempty"`
+	Status ZendeskSourceStatus `json:"status,omitempty"`
 }
 
 // Check the interfaces the event source should be implementing.

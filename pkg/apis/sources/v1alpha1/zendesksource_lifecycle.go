@@ -35,7 +35,7 @@ func (s *ZendeskSource) GetUntypedSpec() interface{} {
 
 // GetConditionSet implements duckv1.KRShaped.
 func (*ZendeskSource) GetConditionSet() apis.ConditionSet {
-	return eventSourceConditionSet
+	return zendeskSourceConditionSet
 }
 
 // GetStatus implements duckv1.KRShaped.
@@ -50,7 +50,7 @@ func (s *ZendeskSource) GetSink() *duckv1.Destination {
 
 // GetSourceStatus implements EventSource.
 func (s *ZendeskSource) GetSourceStatus() *EventSourceStatus {
-	return &s.Status
+	return &s.Status.EventSourceStatus
 }
 
 // AsEventSource implements EventSource.

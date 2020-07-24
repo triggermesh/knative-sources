@@ -19,7 +19,6 @@ package zendesksource
 import (
 	"context"
 	"fmt"
-	"net/http"
 	"strconv"
 
 	corev1 "k8s.io/api/core/v1"
@@ -27,9 +26,10 @@ import (
 
 	pkgapis "knative.dev/pkg/apis"
 
+	"github.com/nukosuke/go-zendesk/zendesk"
+
 	"github.com/triggermesh/knative-sources/pkg/apis/sources/v1alpha1"
 	"github.com/triggermesh/knative-sources/pkg/reconciler/common/skip"
-	"github.com/triggermesh/knative-sources/pkg/reconciler/zendesksource/zendesk"
 )
 
 func (r *Reconciler) ensureZendeskTargetAndTrigger(ctx context.Context) error {
@@ -49,112 +49,107 @@ func (r *Reconciler) ensureZendeskTargetAndTrigger(ctx context.Context) error {
 		return nil
 	}
 
-	ns := src.GetNamespace()
-	name := src.GetName()
 	spec := src.(pkgapis.HasSpec).GetUntypedSpec().(v1alpha1.ZendeskSourceSpec)
 
-	apiToken, err := r.secretFrom(ctx, ns, spec.Token.SecretKeyRef)
+	apiToken, err := r.secretFrom(ctx, src.GetNamespace(), spec.Token.SecretKeyRef)
 	if err != nil {
 		status.MarkTargetNotSynced(v1alpha1.ZendeskReasonNoSecret, "Cannot obtain Zendesk API token")
 		return err
 	}
 
-	webhookPassword, err := r.secretFrom(ctx, ns, spec.WebhookPassword.SecretKeyRef)
+	webhookPassword, err := r.secretFrom(ctx, src.GetNamespace(), spec.WebhookPassword.SecretKeyRef)
 	if err != nil {
 		status.MarkTargetNotSynced(v1alpha1.ZendeskReasonNoSecret, "Cannot obtain webhook password")
 		return err
 	}
 
-	client := zendesk.NewClient(spec.Email, apiToken, spec.Subdomain, &http.Client{})
-
-	target := &zendesk.Target{
-		TargetURL:   addr.URL.String(),
-		Type:        "http_target",
-		Method:      "post",
-		ContentType: "application/json",
-		Username:    spec.WebhookUsername,
-		Password:    webhookPassword,
-		Title:       "io.triggermesh.zendesksource." + ns + "." + name,
+	cred := zendesk.NewAPITokenCredential(spec.Email, apiToken)
+	client, err := zendesk.NewClient(nil)
+	if err != nil {
+		return fmt.Errorf("creating Zendesk client: %w", err)
 	}
+	if err := client.SetSubdomain(spec.Subdomain); err != nil {
+		return fmt.Errorf("setting Zendesk subdomain: %w", err)
+	}
+	client.SetCredential(cred)
 
-	tarwrap, err := client.ListTargets(ctx)
+	title := "io.triggermesh.zendesksource." + src.GetNamespace() + "." + src.GetName()
+
+	targets, _, err := client.GetTargets(ctx)
 	if err != nil {
 		status.MarkTargetNotSynced(v1alpha1.ZendeskReasonFailedSync, "Unable to list Targets")
-		return fmt.Errorf("error retrieving Zendesk targets: %w", err)
+		return fmt.Errorf("error retrieving Zendesk Targets: %w", err)
 	}
 
-	var t *zendesk.Target
-	for i := range tarwrap.Targets {
-		if tarwrap.Targets[i].Title == target.Title {
-			t = &tarwrap.Targets[i]
+	var currentTarget *zendesk.Target
+	for _, t := range targets {
+		if t.Title == title {
+			currentTarget = &t
 			break
 		}
 	}
 
-	if t == nil {
-		existing, err := client.CreateTarget(ctx, target)
+	// we only require the Target to exist, users can modify its contents
+	// after the integration is setup for the first time.
+	if currentTarget == nil {
+		desiredTarget := zendesk.Target{
+			Title:       title,
+			Type:        "http_target",
+			TargetURL:   addr.URL.String(),
+			Method:      "post",
+			Username:    spec.WebhookUsername,
+			Password:    webhookPassword,
+			ContentType: "application/json",
+		}
+
+		resp, err := client.CreateTarget(ctx, desiredTarget)
 		if err != nil {
-			// It could happen that the target already exists but is
-			// in a different page. We will need to support pagination
-			// in a future release of this source.
+			// TODO: It could happen that the target already exists
+			// but is in a different page. We will need to support
+			// pagination in a future release of this source.
 			status.MarkTargetNotSynced(v1alpha1.ZendeskReasonFailedSync, "Unable to create Target")
 			return fmt.Errorf("error creating Zendesk target: %w", err)
 		}
-		t = existing
+		currentTarget = &resp
 	}
 
-	triwrap, err := client.ListTriggers(ctx)
+	triggers, _, err := client.GetTriggers(ctx, &zendesk.TriggerListOptions{})
 	if err != nil {
 		status.MarkTargetNotSynced(v1alpha1.ZendeskReasonFailedSync, "Unable to list Triggers")
-		return fmt.Errorf("error retrieving Zendesk triggers: %w", err)
+		return fmt.Errorf("error retrieving Zendesk Triggers: %w", err)
 	}
 
-	var tr *zendesk.Trigger
-	for i := range triwrap.Triggers {
-		if triwrap.Triggers[i].Title == target.Title {
-			tr = &triwrap.Triggers[i]
+	var currentTrigger *zendesk.Trigger
+	for _, t := range triggers {
+		if t.Title == title {
+			currentTrigger = &t
 			break
 		}
 	}
 
-	if tr != nil {
-		// we only require matching the trigger title, users
-		// can modify the trigger contents after the integration
-		// is setup for the first time.
-		return nil
-	}
-
-	// Zendesk trigger. See: https://developer.zendesk.com/rest_api/docs/support/triggers
-	trigger := &zendesk.Trigger{
-		Title: target.Title,
-		Actions: []zendesk.TriggerAction{{
-			Field: "notification_target",
-			Value: []string{
-				strconv.FormatInt(t.ID, 10),
-				triggerPayloadJSON,
-			},
-		}},
-		Conditions: struct {
-			All []zendesk.TriggerCondition `json:"all"`
-			Any []zendesk.TriggerCondition `json:"any"`
-		}{
-			All: []zendesk.TriggerCondition{{
-				Field:    "update_type",
-				Operator: "is",
-				Value:    "Create",
+	// we only require the Trigger to exist, users can modify its contents
+	// after the integration is setup for the first time.
+	if currentTrigger == nil {
+		desiredTrigger := zendesk.Trigger{
+			Title: title,
+			Actions: []zendesk.TriggerAction{{
+				Field: "notification_target",
+				Value: []string{
+					strconv.FormatInt(currentTarget.ID, 10),
+					triggerPayloadJSON,
+				},
 			}},
-		},
-	}
+		}
+		desiredTrigger.Conditions.All = []zendesk.TriggerCondition{{
+			Field:    "update_type",
+			Operator: "is",
+			Value:    "Create",
+		}}
 
-	trigger.Conditions.All = []zendesk.TriggerCondition{{
-		Field:    "update_type",
-		Operator: "is",
-		Value:    "Create",
-	}}
-
-	if _, err = client.CreateTrigger(ctx, trigger); err != nil {
-		status.MarkTargetNotSynced(v1alpha1.ZendeskReasonFailedSync, "Unable to create Trigger")
-		return fmt.Errorf("error creating Zendesk target trigger: %w", err)
+		if _, err := client.CreateTrigger(ctx, desiredTrigger); err != nil {
+			status.MarkTargetNotSynced(v1alpha1.ZendeskReasonFailedSync, "Unable to create Trigger")
+			return fmt.Errorf("error creating Zendesk target trigger: %w", err)
+		}
 	}
 
 	status.MarkTargetSynced()

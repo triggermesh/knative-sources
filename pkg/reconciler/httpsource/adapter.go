@@ -95,14 +95,10 @@ func makeHTTPEnvs(src *v1alpha1.HTTPSource) []corev1.EnvVar {
 	envs := []corev1.EnvVar{{
 		Name:  envHTTPEventType,
 		Value: src.Spec.EventType,
+	}, {
+		Name:  envHTTPEventSource,
+		Value: src.AsEventSource(),
 	}}
-
-	if eventsource := src.Spec.EventSource; eventsource != nil {
-		envs = append(envs, corev1.EnvVar{
-			Name:  envHTTPEventSource,
-			Value: *eventsource,
-		})
-	}
 
 	if user, passref := src.Spec.BasicAuthUsername, src.Spec.BasicAuthPassword.SecretKeyRef; user != nil && passref != nil {
 		envs = append(envs, corev1.EnvVar{

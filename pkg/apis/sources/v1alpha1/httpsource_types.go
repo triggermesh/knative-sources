@@ -57,10 +57,10 @@ type HTTPSourceSpec struct {
 	//   and modifications of the event sent to the sink.
 	duckv1.SourceSpec `json:",inline"`
 
-	// EventType for the event that will be ingested.
+	// EventType for the event that will be generated.
 	EventType string `json:"eventType"`
 
-	// EventSource for the event that will be ingested.
+	// EventSource for the event that will be generated.
 	EventSource *string `json:"eventSource,omitempty"`
 
 	// BasicAuthUsername used for basic authentication.

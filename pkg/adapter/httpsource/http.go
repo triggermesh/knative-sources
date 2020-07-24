@@ -37,8 +37,8 @@ const (
 )
 
 type httpHandler struct {
-	eventtype   string
-	eventsource string
+	eventType   string
+	eventSource string
 
 	username string
 	password string
@@ -114,18 +114,18 @@ func (h *httpHandler) Start(ctx context.Context) error {
 // is up to this function to parse event wrapper and dispatch.
 func (h *httpHandler) handleAll(w http.ResponseWriter, r *http.Request) {
 	if r.Body == nil {
-		h.handleError(errors.New("request without body not supported"), w)
+		h.handleError(errors.New("request without body not supported"), http.StatusBadRequest, w)
 		return
 	}
 
 	if h.username != "" && h.password != "" {
 		us, ps, ok := r.BasicAuth()
 		if !ok {
-			h.handleError(errors.New("Authentication header not received"), w)
+			h.handleError(errors.New("Wrong authentication header"), http.StatusBadRequest, w)
 			return
 		}
 		if us != h.username || ps != h.password {
-			h.handleError(errors.New("Credentials are not valid"), w)
+			h.handleError(errors.New("Credentials are not valid"), http.StatusUnauthorized, w)
 			return
 		}
 	}
@@ -133,31 +133,31 @@ func (h *httpHandler) handleAll(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		h.handleError(err, w)
+		h.handleError(err, http.StatusInternalServerError, w)
 		return
 	}
 
 	event := cloudevents.NewEvent(cloudevents.VersionV1)
-	event.SetType(h.eventtype)
-	event.SetSource(h.eventsource)
+	event.SetType(h.eventType)
+	event.SetSource(h.eventSource)
 	event.SetID(string(uuid.NewUUID()))
 
 	if err := event.SetData(cloudevents.ApplicationJSON, body); err != nil {
-		h.handleError(fmt.Errorf("failed to set event data: %w", err), w)
+		h.handleError(fmt.Errorf("failed to set event data: %w", err), http.StatusInternalServerError, w)
 		return
 	}
 
 	if result := h.ceClient.Send(context.Background(), event); !cloudevents.IsACK(result) {
-		h.handleError(fmt.Errorf("could not send Cloud Event: %w", result), w)
+		h.handleError(fmt.Errorf("could not send Cloud Event: %w", result), http.StatusInternalServerError, w)
 	}
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 }
 
-func (h *httpHandler) handleError(err error, w http.ResponseWriter) {
+func (h *httpHandler) handleError(err error, code int, w http.ResponseWriter) {
 	h.logger.Error("An error ocurred", zap.Error(err))
-	http.Error(w, err.Error(), http.StatusInternalServerError)
+	http.Error(w, err.Error(), code)
 }
 
 func healthCheckHandler(w http.ResponseWriter, _ *http.Request) {

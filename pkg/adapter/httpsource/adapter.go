@@ -26,25 +26,19 @@ import (
 	"knative.dev/pkg/logging"
 )
 
-const defaultListenPort = 8080
-
-// New adapter implementation
+// NewAdapter implementation
 func NewAdapter(ctx context.Context, aEnv adapter.EnvConfigAccessor, ceClient cloudevents.Client) adapter.Adapter {
 	env := aEnv.(*envAccessor)
 	logger := logging.FromContext(ctx)
 
 	h := &httpHandler{
-		eventtype:   env.EventType,
-		eventsource: env.EventSource,
+		eventType:   env.EventType,
+		eventSource: env.EventSource,
 
 		username: env.BasicAuthUsername,
 		password: env.BasicAuthPassword,
 		ceClient: ceClient,
 		logger:   logger.Named("handler"),
-	}
-
-	if h.eventsource == "" {
-		h.eventsource = env.Namespace + "." + env.Name
 	}
 
 	return &httpAdapter{

@@ -55,11 +55,16 @@ func (s *HTTPSource) GetSourceStatus() *EventSourceStatus {
 
 // AsEventSource implements EventSource.
 func (s *HTTPSource) AsEventSource() string {
-	if *&s.Spec.EventSource != nil {
+	if s.Spec.EventSource != nil {
 		return *s.Spec.EventSource
 	}
 
-	return ""
+	sourceName := s.Name
+	if s.Namespace != "" {
+		sourceName = s.Namespace + "." + sourceName
+	}
+
+	return sourceName
 }
 
 // GetEventTypes implements EventSource.

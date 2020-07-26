@@ -108,7 +108,8 @@ func makeHTTPEnvs(src *v1alpha1.HTTPSource) []corev1.EnvVar {
 			Name: envHTTPBasicAuthPassword,
 			ValueFrom: &corev1.EnvVarSource{
 				SecretKeyRef: passref,
-			}})
+			},
+		})
 	}
 
 	return envs

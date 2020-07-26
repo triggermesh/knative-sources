@@ -22,7 +22,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"sync"
 	"time"
 
 	"k8s.io/apimachinery/pkg/util/uuid"
@@ -52,16 +51,6 @@ type httpHandler struct {
 // Start the server for receiving Http events. Will block until the stop channel closes.
 func (h *httpHandler) Start(ctx context.Context) error {
 	h.logger.Info("Starting Http event handler...")
-	ctx, cancel := context.WithCancel(ctx)
-	defer cancel()
-
-	// handle stop signals
-	go func() {
-		<-ctx.Done()
-		h.logger.Info("Shutdown signal received. Terminating")
-		h.srv.SetKeepAlivesEnabled(false)
-		cancel()
-	}()
 
 	m := http.NewServeMux()
 	m.HandleFunc("/", h.handleAll)
@@ -72,42 +61,19 @@ func (h *httpHandler) Start(ctx context.Context) error {
 		Handler: m,
 	}
 
-	serverErrCh := make(chan error)
-	defer close(serverErrCh)
+	done := make(chan bool, 1)
+	go h.gracefulShutdown(ctx.Done(), done)
 
-	var wg sync.WaitGroup
-
-	wg.Add(1)
-	go func() {
-		h.logger.Infof("Http Source is ready to handle requests at %s", h.srv.Addr)
-		serverErrCh <- h.srv.ListenAndServe()
-		wg.Done()
-	}()
-
-	var err error
-
-	select {
-	case serverErr := <-serverErrCh:
-		if serverErr != nil {
-			err = fmt.Errorf("failure during runtime of Http event handler: %w", serverErr)
-		}
-		cancel()
-
-	case <-ctx.Done():
-		h.logger.Info("Shutting server down")
-
-		shutdownCtx, cancelTimeout := context.WithTimeout(ctx, serverShutdownGracePeriod)
-		defer cancelTimeout()
-		if shutdownErr := h.srv.Shutdown(shutdownCtx); shutdownErr != nil {
-			err = fmt.Errorf("error during server shutdown: %w", shutdownErr)
-		}
-
-		// unblock server goroutine
-		<-serverErrCh
+	h.logger.Infof("Http Source is ready to handle requests at %s", h.srv.Addr)
+	if err := h.srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+		// if an error occurs listening we don't want a graceful shutdown, the
+		// server is not serving requests. Return and let the done channel die.
+		return fmt.Errorf("could not listen on %s: %w", h.srv.Addr, err)
 	}
 
-	wg.Wait()
-	return err
+	<-done
+	h.logger.Infof("Server stopped")
+	return nil
 }
 
 // handleAll receives all Http events at a single resource, it
@@ -163,4 +129,18 @@ func (h *httpHandler) handleError(err error, code int, w http.ResponseWriter) {
 func healthCheckHandler(w http.ResponseWriter, _ *http.Request) {
 	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 	w.WriteHeader(http.StatusOK)
+}
+
+func (h *httpHandler) gracefulShutdown(stopCh <-chan struct{}, done chan<- bool) {
+	<-stopCh
+	h.logger.Info("Server is shutting down...")
+
+	ctx, cancel := context.WithTimeout(context.Background(), serverShutdownGracePeriod)
+	defer cancel()
+
+	h.srv.SetKeepAlivesEnabled(false)
+	if err := h.srv.Shutdown(ctx); err != nil {
+		h.logger.Fatalf("Could not gracefully shutdown the server: %v", err)
+	}
+	close(done)
 }

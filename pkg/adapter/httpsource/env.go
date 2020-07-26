@@ -1,9 +1,12 @@
 /*
 Copyright (c) 2020 TriggerMesh Inc.
+
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
+
    http://www.apache.org/licenses/LICENSE-2.0
+
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -25,8 +28,8 @@ func EnvAccessor() adapter.EnvConfigAccessor {
 type envAccessor struct {
 	adapter.EnvConfig
 
-	EventType         string `envconfig:"HTTP_EVENT_TYPE"`
-	EventSource       string `envconfig:"HTTP_EVENT_SOURCE"`
+	EventType         string `envconfig:"HTTP_EVENT_TYPE" required:"true"`
+	EventSource       string `envconfig:"HTTP_EVENT_SOURCE" required:"true"`
 	BasicAuthUsername string `envconfig:"HTTP_BASICAUTH_USERNAME"`
 	BasicAuthPassword string `envconfig:"HTTP_BASICAUTH_PASSWORD"`
 }

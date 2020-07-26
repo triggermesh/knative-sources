@@ -20,7 +20,6 @@ import (
 	"context"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
-	"go.uber.org/zap"
 
 	"knative.dev/eventing/pkg/adapter/v2"
 	"knative.dev/pkg/logging"
@@ -29,32 +28,16 @@ import (
 // NewAdapter implementation
 func NewAdapter(ctx context.Context, aEnv adapter.EnvConfigAccessor, ceClient cloudevents.Client) adapter.Adapter {
 	env := aEnv.(*envAccessor)
-	logger := logging.FromContext(ctx)
 
-	h := &httpHandler{
+	return &httpHandler{
 		eventType:   env.EventType,
 		eventSource: env.EventSource,
 
 		username: env.BasicAuthUsername,
 		password: env.BasicAuthPassword,
 		ceClient: ceClient,
-		logger:   logger.Named("handler"),
-	}
-
-	return &httpAdapter{
-		handler: h,
-		logger:  logger,
+		logger:   logging.FromContext(ctx),
 	}
 }
 
-var _ adapter.Adapter = (*httpAdapter)(nil)
-
-type httpAdapter struct {
-	handler *httpHandler
-	logger  *zap.SugaredLogger
-}
-
-// Start runs the Http handler.
-func (a *httpAdapter) Start(ctx context.Context) error {
-	return a.handler.Start(ctx)
-}
+var _ adapter.Adapter = (*httpHandler)(nil)

@@ -54,7 +54,9 @@ func (s *SlackSource) GetSourceStatus() *EventSourceStatus {
 }
 
 // AsEventSource implements EventSource.
-func (*SlackSource) AsEventSource() string { return "" }
+func (s *SlackSource) AsEventSource() string {
+	return "slack/" + s.Name
+}
 
 // Supported event types
 const (

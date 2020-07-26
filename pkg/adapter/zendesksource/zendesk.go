@@ -212,7 +212,7 @@ func (h *zendeskAPIHandler) cloudEventFromWrapper(ze *ZendeskEvent) (*cloudevent
 		event.SetExtension("ticket_type", ticketType)
 	}
 	event.SetID(ze.ID())
-	event.SetType(v1alpha1.ZendeskSourceEventType)
+	event.SetType(v1alpha1.ZendeskTicketCreatedEventType)
 	event.SetSource(h.eventsource)
 	event.SetSubject(ze.Title())
 

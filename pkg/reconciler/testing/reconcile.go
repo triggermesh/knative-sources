@@ -17,6 +17,7 @@ limitations under the License.
 package testing
 
 import (
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -33,12 +34,14 @@ import (
 	eventingv1beta1 "knative.dev/eventing/pkg/apis/eventing/v1beta1"
 	"knative.dev/pkg/apis"
 	duckv1 "knative.dev/pkg/apis/duck/v1"
+	"knative.dev/pkg/reconciler"
 	rt "knative.dev/pkg/reconciler/testing"
 	servingv1 "knative.dev/serving/pkg/apis/serving/v1"
 
 	"github.com/triggermesh/knative-sources/pkg/apis/sources/v1alpha1"
 	"github.com/triggermesh/knative-sources/pkg/reconciler/common"
 	eventtesting "github.com/triggermesh/knative-sources/pkg/reconciler/common/event/testing"
+	"github.com/triggermesh/knative-sources/pkg/reconciler/common/skip"
 )
 
 const (
@@ -48,11 +51,18 @@ const (
 	tUID  = types.UID("00000000-0000-0000-0000-000000000000")
 )
 
-var tSinkURI = &apis.URL{
-	Scheme: "http",
-	Host:   "default.default.svc.example.com",
-	Path:   "/",
-}
+var (
+	tSinkURI = &apis.URL{
+		Scheme: "http",
+		Host:   "default.default.svc.example.com",
+		Path:   "/",
+	}
+	tAdapterURI = &apis.URL{
+		Scheme: "http",
+		Host:   "public.example.com",
+		Path:   "/",
+	}
+)
 
 // Test the Reconcile method of the controller.Reconciler implemented by controllers.
 //
@@ -70,12 +80,17 @@ func TestReconcile(t *testing.T, ctor Ctor, src v1alpha1.EventSource, adapterFn 
 	a := newAdapter()
 	n, k, r := nameKindAndResource(a)
 
+	// initialize a context that allows for skipping parts of the
+	// reconciliation this test suite should not execute
+	skipCtx := skip.EnableSkip(context.Background())
+
 	testCases := rt.TableTest{
 		// Creation/Deletion
 
 		{
 			Name: "Source object creation",
 			Key:  tKey,
+			Ctx:  skipCtx,
 			Objects: []runtime.Object{
 				newAdressable(),
 				newEventSource(noCEAttributes),
@@ -103,6 +118,7 @@ func TestReconcile(t *testing.T, ctor Ctor, src v1alpha1.EventSource, adapterFn 
 		{
 			Name: "Adapter becomes Ready",
 			Key:  tKey,
+			Ctx:  skipCtx,
 			Objects: []runtime.Object{
 				newAdressable(),
 				newEventSource(withSink, notDeployed(a)),
@@ -115,6 +131,7 @@ func TestReconcile(t *testing.T, ctor Ctor, src v1alpha1.EventSource, adapterFn 
 		{
 			Name: "Adapter becomes NotReady",
 			Key:  tKey,
+			Ctx:  skipCtx,
 			Objects: []runtime.Object{
 				newAdressable(),
 				newEventSource(withSink, deployed(a)),
@@ -127,6 +144,7 @@ func TestReconcile(t *testing.T, ctor Ctor, src v1alpha1.EventSource, adapterFn 
 		{
 			Name: "Adapter is outdated",
 			Key:  tKey,
+			Ctx:  skipCtx,
 			Objects: []runtime.Object{
 				newAdressable(),
 				newEventSource(withSink, deployed(a)),
@@ -262,9 +280,12 @@ func Populate(srcCpy v1alpha1.EventSource) {
 		Name:       addr.GetName(),
 	}
 
-	status := srcCpy.GetSourceStatus()
-	status.CloudEventAttributes = common.CreateCloudEventAttributes(srcCpy.AsEventSource(), srcCpy.GetEventTypes())
-	status.InitializeConditions()
+	// *reconcilerImpl.Reconcile calls this method before any reconciliation loop. Calling it here ensures that the
+	// object is initialized in the same manner, and prevents tests from wrongly reporting unexpected status updates
+	reconciler.PreProcessReconcile(context.Background(), srcCpy.(duckv1.KRShaped))
+
+	srcCpy.GetSourceStatus().CloudEventAttributes = common.CreateCloudEventAttributes(
+		srcCpy.AsEventSource(), srcCpy.GetEventTypes())
 }
 
 // sourceCtorWithOptions is a function that returns a source object with
@@ -391,6 +412,7 @@ func ready(object runtime.Object) {
 			Type:   v1alpha1.ConditionReady,
 			Status: corev1.ConditionTrue,
 		}})
+		o.Status.URL = tAdapterURI
 	}
 }
 

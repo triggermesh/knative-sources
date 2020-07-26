@@ -2,53 +2,15 @@
 
 ## Contents
 
-- [Development](#development)
-  - [Contents](#contents)
-  - [Building](#building)
-  - [Running the controller](#running-the-controller)
-    - [Locally](#locally)
-    - [Inside a cluster](#inside-a-cluster)
-  - [Adding event sources](#adding-event-sources)
-
-## Building
-
-Triggermesh Knative Sources use:
-
-- make
-- go 1.14
-- go modules
-
-Makefile `help` flag shows all targets per Source
-
-```sh
-$ make help
-
-Triggermesh Slack Event Source for Knative
-Usage:
-  make <source>
-  help                 Display this help
-  mod-download         Download go modules
-  build                Build the binary
-  release              Build release binaries
-  test                 Run unit tests
-  cover                Generate code coverage
-  lint                 Lint source files
-  vet                  Vet source files
-  fmt                  Format source files
-  fmt-test             Check source formatting
-  image                Builds the container image
-  cloudbuild-test      Test container image build with Google Cloud Build
-  cloudbuild           Build and publish image to GCR
-  clean                Clean build artifacts
-  gen-all              Generate all
-  gen-deepcopy         Generate deepcopy for API objects
-  gen-client           Generate clientset for API objects
-  gen-lister           Generate listers for API objects
-  gen-informer         Generate informers for API objects
-  gen-injection        Generate injection for API objects
-  gen-crd              Generate CRD manifests for API objects
-```
-
+1. [Running the controller](#running-the-controller)
+   * [Locally](#locally)
+   * [Inside a cluster](#inside-a-cluster)
+1. [Adding event sources](#adding-event-sources)
+   * [Type definition](#type-definition)
+   * [Custom resource definition](#custom-resource-definition)
+   * [Reconciler](#reconciler)
+   * [Adapter](#adapter)
+1. [External resources](#external-resources)
 
 ## Running the controller
 
@@ -58,8 +20,8 @@ Providing that the local environment is configured with a valid kubeconfig (eith
 `KUBECONFIG` environment variable), running the controller locally from the current development branch is as simple as
 executing
 
-```sh
-go run ./cmd/controller
+```
+$ go run ./cmd/knative-sources-controller
 ```
 
 > :information_source: The source controller requires a few environment variables to be exported in order to start.
@@ -82,24 +44,24 @@ go run ./cmd/controller
 One can build/push container images and deploy all relevant Kubernetes objects to a running cluster in a single command
 using [ko](https://github.com/google/ko).
 
-```sh
-$ ko apply --local -f ./config/
+```
+$ ko apply --local -f config/
 ...
-2020/04/07 13:44:00 Using base gcr.io/distroless/static:latest for github.com/triggermesh/knative-sources/slack/cmd/controller
-2020/04/07 13:44:01 Building github.com/triggermesh/knative-sources/slack/cmd/controller
-2020/04/07 13:44:05 Loading ko.local/slack-controller-0d0554a556
-2020/04/07 13:44:06 Loaded ko.local/slack-source-controller-0d0554a556
+2020/04/07 13:44:00 Using base gcr.io/distroless/static:latest for github.com/triggermesh/knative-sources/cmd/knative-sources-controller
+2020/04/07 13:44:01 Building github.com/triggermesh/knative-sources/cmd/knative-sources-controller
+2020/04/07 13:44:05 Loading ko.local/knative-sources-controller-1cb352222881
+2020/04/07 13:44:06 Loaded ko.local/knative-sources-controller-1cb352222881
 2020/04/07 13:44:06 Adding tag latest
 2020/04/07 13:44:06 Added tag latest
-deployment.apps/slack-source-controller created
+deployment.apps/knative-sources-controller created
 ```
 
 The controller will be deployed to the `triggermesh` namespace.
 
 ```console
-$ kubectl -n triggermesh get deployment/slack-source-controller
+$ kubectl -n triggermesh get deployment/knative-sources-controller
 NAME                           READY   UP-TO-DATE   AVAILABLE   AGE
-slack-source-controller   1/1     1            1           1m
+knative-sources-controller   1/1     1            1           1m
 ```
 
 > :information_source: Although `ko` does not make use of the `docker` client, the `--local` flag assumes the
@@ -110,4 +72,67 @@ slack-source-controller   1/1     1            1           1m
 
 ## Adding event sources
 
-Refer to Knative's [sample source](https://github.com/knative/sample-source) on how to develop event sources
+Follow these steps to add a new source to this repository.
+
+### Type definition
+
+Inside the `pkg/apis/sources/v1alpha1/` directory:
+
+1. Add the Go structs for your type to a new file following the naming convention `<RESOURCE>_types.go`.
+
+1. Add the defaulting methods for your type to a new file following the naming convention `<RESOURCE>_defaults.go`.
+
+1. Add the validation methods for your type to a new file following the naming convention `<RESOURCE>_validation.go`.
+
+1. Add the methods relevant to the lifecycle management of your type (status updates, etc.) to a new file following the
+   naming convention `<RESOURCE>_lifecycle.go`.
+
+Finally, generate the client, lister, informer and injection code using `make codegen`.
+
+| :warning: The Kubernetes code generators write their output to a directory named `github.com/triggermesh/knative-sources` relatively to`$GOPATH/src/`. Therefore, you must ensure your repository is cloned to this exact location prior to running any code generator. |
+| :--- |
+
+### Custom resource definition
+
+A `CustomResourceDefinition` object is required to register the new type into Kubernetes. A manifest for that object
+should be created inside the `config/` directory following the naming convention `300-<RESOURCE>.yaml`.
+
+### Reconciler
+
+Each source type is managed by its own _reconciler_. A reconciler is responsible for deploying an event source and
+synchronizing it with its corresponding API object (the custom type created above). In the Knative terminology, the
+application that implements the logic of the event source is called an _adapter_ (sometimes _receive-adapter_).
+
+To create a new reconciler, start by creating a new directory under `pkg/reconciler/` with the name of your resource,
+then:
+
+1. Copy the generated code from `pkg/client/generated/injection/reconciler/sources/v1alpha1/<RESOURCE>/stub/` to that
+   directory.
+
+1. Remove the `// Code generated by injection-gen. DO NOT EDIT.` comment from both `controller.go` and `reconciler.go`
+   files.
+
+1. Implement the `TODO`s in those same files. See existing reconcilers for best practices.
+
+1. Add the reconciler's `NewController` method to the shared `main` inside `cmd/controller/main.go`.
+
+> :information_source: Please refer to [Knative Dependency Injection][depinject] for more information about generated
+> reconcilers.
+
+### Adapter
+
+The adapter implements the business logic of the event source. It is decoupled from the reconciler, the contract between
+the two is usually based on environment variables that can be used to inject parameters to the adapter.
+
+1. Create a `main` package for the source's adapter in `cmd/<RESOURCE>`.
+
+1. If specific libraries are needed for that adapter, write them under `pkg/adapter/<RESOURCE>`.
+
+## External resources
+
+For a comprehensive and step-by-step tutorial about writing an event source for Knative, please refer to [Writing an
+event source with Receive Adapter][kndoc-source] (knative.dev).
+
+
+[depinject]: https://github.com/knative/pkg/blob/release-0.15/injection/README.md
+[kndoc-source]: https://knative.dev/v0.15-docs/eventing/samples/writing-receive-adapter-source/

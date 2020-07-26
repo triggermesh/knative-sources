@@ -55,9 +55,9 @@ spec:
         - name: METRICS_DOMAIN
           value: triggermesh.io/sources
         # Source adapters
-        - name: SLACKSOURCEADAPTER_IMAGE
+        - name: SLACKSOURCE_IMAGE
           value: ko://github.com/triggermesh/knative-sources/cmd/slacksource-adapter
-        - name: ZENDESKSOURCEADAPTER_IMAGE
+        - name: ZENDESKSOURCE_IMAGE
           value: ko://github.com/triggermesh/knative-sources/cmd/zendesksource-adapter
 
         securityContext:

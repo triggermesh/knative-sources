@@ -14,13 +14,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package slacksource
+package zendesksource
 
 import (
 	"context"
 	"testing"
 
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
+	fakek8sinjectionclient "knative.dev/pkg/client/injection/kube/client/fake"
 
 	"knative.dev/eventing/pkg/reconciler/source"
 	"knative.dev/pkg/controller"
@@ -30,7 +32,7 @@ import (
 
 	"github.com/triggermesh/knative-sources/pkg/apis/sources/v1alpha1"
 	fakeinjectionclient "github.com/triggermesh/knative-sources/pkg/client/generated/injection/client/fake"
-	reconcilerv1alpha1 "github.com/triggermesh/knative-sources/pkg/client/generated/injection/reconciler/sources/v1alpha1/slacksource"
+	reconcilerv1alpha1 "github.com/triggermesh/knative-sources/pkg/client/generated/injection/reconciler/sources/v1alpha1/zendesksource"
 	"github.com/triggermesh/knative-sources/pkg/reconciler/common"
 	. "github.com/triggermesh/knative-sources/pkg/reconciler/testing"
 )
@@ -61,19 +63,40 @@ func reconcilerCtor(cfg *adapterConfig) Ctor {
 
 		r := &Reconciler{
 			base:       base,
+			kubeClient: fakek8sinjectionclient.Get(ctx),
 			adapterCfg: cfg,
 		}
 
 		return reconcilerv1alpha1.NewReconciler(ctx, logging.FromContext(ctx),
-			fakeinjectionclient.Get(ctx), ls.GetSlackSourceLister(),
+			fakeinjectionclient.Get(ctx), ls.GetZendeskSourceLister(),
 			controller.GetEventRecorder(ctx), r)
 	}
 }
 
 // newEventSource returns a test source object with a minimal set of pre-filled attributes.
-func newEventSource() *v1alpha1.SlackSource {
-	src := &v1alpha1.SlackSource{
-		Spec: v1alpha1.SlackSourceSpec{},
+func newEventSource() *v1alpha1.ZendeskSource {
+	src := &v1alpha1.ZendeskSource{
+		Spec: v1alpha1.ZendeskSourceSpec{
+			Subdomain: "test",
+			Email:     "test@example.com",
+			Token: v1alpha1.SecretValueFromSource{
+				SecretKeyRef: &corev1.SecretKeySelector{
+					LocalObjectReference: corev1.LocalObjectReference{
+						Name: "test-secret",
+					},
+					Key: "keyId",
+				},
+			},
+			WebhookUsername: "test",
+			WebhookPassword: v1alpha1.SecretValueFromSource{
+				SecretKeyRef: &corev1.SecretKeySelector{
+					LocalObjectReference: corev1.LocalObjectReference{
+						Name: "test-secret",
+					},
+					Key: "keyId",
+				},
+			},
+		},
 	}
 
 	Populate(src)

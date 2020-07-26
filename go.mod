@@ -5,6 +5,7 @@ go 1.14
 // Top-level module control over the exact version used for important direct dependencies.
 // https://github.com/golang/go/wiki/Modules#when-should-i-use-the-replace-directive
 replace (
+	github.com/nukosuke/go-zendesk => github.com/triggermesh/go-zendesk v0.7.7-hotfix.1
 	k8s.io/apimachinery => k8s.io/apimachinery v0.17.6
 	k8s.io/client-go => k8s.io/client-go v0.17.6
 	k8s.io/code-generator => k8s.io/code-generator v0.17.6
@@ -12,10 +13,9 @@ replace (
 
 require (
 	github.com/cloudevents/sdk-go/v2 v2.0.1-0.20200630063327-b91da81265fe
-	github.com/imdario/mergo v0.3.9 // indirect
+	github.com/google/go-cmp v0.4.0
 	github.com/kelseyhightower/envconfig v1.4.0
-	github.com/prometheus/client_golang v1.7.1 // indirect
-	github.com/prometheus/statsd_exporter v0.17.0 // indirect
+	github.com/nukosuke/go-zendesk v0.7.6
 	github.com/stretchr/testify v1.6.1
 	go.uber.org/zap v1.15.0
 	k8s.io/api v0.18.1

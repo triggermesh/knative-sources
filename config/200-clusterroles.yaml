@@ -53,6 +53,7 @@ rules:
   resources:
   - slacksources
   - zendesksources
+  - httpsources
   verbs:
   - list
   - watch
@@ -63,6 +64,7 @@ rules:
   resources:
   - slacksources/status
   - zendesksources/status
+  - httpsources/status
   verbs:
   - update
 
@@ -131,6 +133,7 @@ rules:
   resources:
   - slacksources
   - zendesksources
+  - httpsources
   verbs:
   - get
   - list

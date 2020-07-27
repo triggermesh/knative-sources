@@ -27,12 +27,12 @@ import (
 // +genreconciler
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
-// HTTPSource is the schema for the Http source
+// HTTPSource is the schema for the event source.
 type HTTPSource struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   HTTPSourceSpec    `json:"spec"`
+	Spec   HTTPSourceSpec    `json:"spec,omitempty"`
 	Status EventSourceStatus `json:"status,omitempty"`
 }
 
@@ -42,7 +42,7 @@ var (
 	_ EventSource    = (*HTTPSource)(nil)
 )
 
-// HTTPSourceSpec holds the desired state of the HttpSource (from the client).
+// HTTPSourceSpec defines the desired state of the event source.
 type HTTPSourceSpec struct {
 	// inherits duck/v1 SourceSpec, which currently provides:
 	// * Sink - a reference to an object that will resolve to a domain name or
@@ -68,9 +68,9 @@ type HTTPSourceSpec struct {
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
-// HTTPSourceList is a list of HttpSource resources
+// HTTPSourceList contains a list of event sources.
 type HTTPSourceList struct {
 	metav1.TypeMeta `json:",inline"`
-	metav1.ListMeta `json:"metadata"`
+	metav1.ListMeta `json:"metadata,omitempty"`
 	Items           []HTTPSource `json:"items"`
 }

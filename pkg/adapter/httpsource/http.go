@@ -24,7 +24,7 @@ import (
 	"net/http"
 	"time"
 
-	"k8s.io/apimachinery/pkg/util/uuid"
+	"github.com/google/uuid"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"go.uber.org/zap"
@@ -106,7 +106,7 @@ func (h *httpHandler) handleAll(w http.ResponseWriter, r *http.Request) {
 	event := cloudevents.NewEvent(cloudevents.VersionV1)
 	event.SetType(h.eventType)
 	event.SetSource(h.eventSource)
-	event.SetID(string(uuid.NewUUID()))
+	event.SetID(uuid.New().String())
 
 	if err := event.SetData(cloudevents.ApplicationJSON, body); err != nil {
 		h.handleError(fmt.Errorf("failed to set event data: %w", err), http.StatusInternalServerError, w)

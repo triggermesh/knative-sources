@@ -14,6 +14,7 @@ replace (
 require (
 	github.com/cloudevents/sdk-go/v2 v2.0.1-0.20200630063327-b91da81265fe
 	github.com/google/go-cmp v0.4.0
+	github.com/google/uuid v1.1.1
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/nukosuke/go-zendesk v0.7.6
 	github.com/stretchr/testify v1.6.1

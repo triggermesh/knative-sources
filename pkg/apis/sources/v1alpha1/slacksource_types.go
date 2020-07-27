@@ -22,7 +22,6 @@ import (
 
 	pkgapis "knative.dev/pkg/apis"
 	duckv1 "knative.dev/pkg/apis/duck/v1"
-	"knative.dev/pkg/kmeta"
 )
 
 // +genclient
@@ -41,7 +40,6 @@ type SlackSource struct {
 // Check the interfaces the event source should be implementing.
 var (
 	_ runtime.Object      = (*SlackSource)(nil)
-	_ kmeta.OwnerRefable  = (*SlackSource)(nil)
 	_ pkgapis.Validatable = (*SlackSource)(nil)
 	_ pkgapis.Defaultable = (*SlackSource)(nil)
 	_ pkgapis.HasSpec     = (*SlackSource)(nil)

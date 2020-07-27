@@ -23,12 +23,16 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 
 	duckv1 "knative.dev/pkg/apis/duck/v1"
+	"knative.dev/pkg/kmeta"
 )
 
 // EventSource is implemented by all event source types.
 type EventSource interface {
 	metav1.Object
 	runtime.Object
+	// OwnerRefable is used to construct a generic reconciler for each
+	// source type, and convert source objects to owner references.
+	kmeta.OwnerRefable
 	// KRShaped is used by generated reconcilers to perform pre and
 	// post-reconcile status updates.
 	duckv1.KRShaped

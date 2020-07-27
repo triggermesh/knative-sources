@@ -22,7 +22,6 @@ import (
 
 	pkgapis "knative.dev/pkg/apis"
 	duckv1 "knative.dev/pkg/apis/duck/v1"
-	"knative.dev/pkg/kmeta"
 )
 
 // +genclient
@@ -41,7 +40,6 @@ type ZendeskSource struct {
 // Check the interfaces the event source should be implementing.
 var (
 	_ runtime.Object      = (*ZendeskSource)(nil)
-	_ kmeta.OwnerRefable  = (*ZendeskSource)(nil)
 	_ pkgapis.Validatable = (*ZendeskSource)(nil)
 	_ pkgapis.Defaultable = (*ZendeskSource)(nil)
 	_ pkgapis.HasSpec     = (*ZendeskSource)(nil)

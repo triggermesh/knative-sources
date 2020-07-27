@@ -29,6 +29,9 @@ import (
 type EventSource interface {
 	metav1.Object
 	runtime.Object
+	// KRShaped is used by generated reconcilers to perform pre and
+	// post-reconcile status updates.
+	duckv1.KRShaped
 	// GetSink returns the source's event sink.
 	GetSink() *duckv1.Destination
 	// GetSourceStatus returns the source's status.

@@ -45,7 +45,6 @@ var (
 	_ pkgapis.Validatable = (*SlackSource)(nil)
 	_ pkgapis.Defaultable = (*SlackSource)(nil)
 	_ pkgapis.HasSpec     = (*SlackSource)(nil)
-	_ duckv1.KRShaped     = (*SlackSource)(nil)
 	_ EventSource         = (*SlackSource)(nil)
 )
 

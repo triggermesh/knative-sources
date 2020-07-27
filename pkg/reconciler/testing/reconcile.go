@@ -282,7 +282,7 @@ func Populate(srcCpy v1alpha1.EventSource) {
 
 	// *reconcilerImpl.Reconcile calls this method before any reconciliation loop. Calling it here ensures that the
 	// object is initialized in the same manner, and prevents tests from wrongly reporting unexpected status updates
-	reconciler.PreProcessReconcile(context.Background(), srcCpy.(duckv1.KRShaped))
+	reconciler.PreProcessReconcile(context.Background(), srcCpy)
 
 	srcCpy.GetSourceStatus().CloudEventAttributes = common.CreateCloudEventAttributes(
 		srcCpy.AsEventSource(), srcCpy.GetEventTypes())

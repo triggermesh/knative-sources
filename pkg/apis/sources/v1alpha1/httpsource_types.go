@@ -44,7 +44,6 @@ var (
 	_ pkgapis.Validatable = (*HTTPSource)(nil)
 	_ pkgapis.Defaultable = (*HTTPSource)(nil)
 	_ pkgapis.HasSpec     = (*HTTPSource)(nil)
-	_ duckv1.KRShaped     = (*HTTPSource)(nil)
 	_ EventSource         = (*HTTPSource)(nil)
 )
 

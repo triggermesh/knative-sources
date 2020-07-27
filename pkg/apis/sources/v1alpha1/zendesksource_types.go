@@ -45,7 +45,6 @@ var (
 	_ pkgapis.Validatable = (*ZendeskSource)(nil)
 	_ pkgapis.Defaultable = (*ZendeskSource)(nil)
 	_ pkgapis.HasSpec     = (*ZendeskSource)(nil)
-	_ duckv1.KRShaped     = (*ZendeskSource)(nil)
 	_ EventSource         = (*ZendeskSource)(nil)
 )
 

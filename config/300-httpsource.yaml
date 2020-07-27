@@ -24,8 +24,7 @@ spec:
   group: sources.triggermesh.io
   scope: Namespaced
   names:
-    kind: HttpSource
-    listKind: HttpSourceList
+    kind: HTTPSource
     plural: httpsources
     categories:
     - all

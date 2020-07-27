@@ -28,11 +28,6 @@ func (*SlackSource) GetGroupVersionKind() schema.GroupVersionKind {
 	return SchemeGroupVersion.WithKind("SlackSource")
 }
 
-// GetUntypedSpec implements apis.HasSpec.
-func (s *SlackSource) GetUntypedSpec() interface{} {
-	return s.Spec
-}
-
 // GetConditionSet implements duckv1.KRShaped.
 func (*SlackSource) GetConditionSet() pkgapis.ConditionSet {
 	return eventSourceConditionSet

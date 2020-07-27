@@ -39,11 +39,9 @@ type ZendeskSource struct {
 
 // Check the interfaces the event source should be implementing.
 var (
-	_ runtime.Object      = (*ZendeskSource)(nil)
-	_ pkgapis.Validatable = (*ZendeskSource)(nil)
-	_ pkgapis.Defaultable = (*ZendeskSource)(nil)
-	_ pkgapis.HasSpec     = (*ZendeskSource)(nil)
-	_ EventSource         = (*ZendeskSource)(nil)
+	_ runtime.Object  = (*ZendeskSource)(nil)
+	_ pkgapis.HasSpec = (*ZendeskSource)(nil)
+	_ EventSource     = (*ZendeskSource)(nil)
 )
 
 // ZendeskSourceSpec defines the desired state of the event source.

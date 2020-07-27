@@ -28,11 +28,6 @@ func (*HTTPSource) GetGroupVersionKind() schema.GroupVersionKind {
 	return SchemeGroupVersion.WithKind("HttpSource")
 }
 
-// GetUntypedSpec implements apis.HasSpec.
-func (s *HTTPSource) GetUntypedSpec() interface{} {
-	return s.Spec
-}
-
 // GetConditionSet implements duckv1.KRShaped.
 func (s *HTTPSource) GetConditionSet() pkgapis.ConditionSet {
 	return eventSourceConditionSet

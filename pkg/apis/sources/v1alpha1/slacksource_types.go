@@ -20,7 +20,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 
-	pkgapis "knative.dev/pkg/apis"
 	duckv1 "knative.dev/pkg/apis/duck/v1"
 )
 
@@ -39,11 +38,8 @@ type SlackSource struct {
 
 // Check the interfaces the event source should be implementing.
 var (
-	_ runtime.Object      = (*SlackSource)(nil)
-	_ pkgapis.Validatable = (*SlackSource)(nil)
-	_ pkgapis.Defaultable = (*SlackSource)(nil)
-	_ pkgapis.HasSpec     = (*SlackSource)(nil)
-	_ EventSource         = (*SlackSource)(nil)
+	_ runtime.Object = (*SlackSource)(nil)
+	_ EventSource    = (*SlackSource)(nil)
 )
 
 // SlackSourceSpec defines the desired state of the event source.

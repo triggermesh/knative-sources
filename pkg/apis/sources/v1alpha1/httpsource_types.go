@@ -20,7 +20,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 
-	pkgapis "knative.dev/pkg/apis"
 	duckv1 "knative.dev/pkg/apis/duck/v1"
 )
 
@@ -39,11 +38,8 @@ type HTTPSource struct {
 
 // Check the interfaces the event source should be implementing.
 var (
-	_ runtime.Object      = (*HTTPSource)(nil)
-	_ pkgapis.Validatable = (*HTTPSource)(nil)
-	_ pkgapis.Defaultable = (*HTTPSource)(nil)
-	_ pkgapis.HasSpec     = (*HTTPSource)(nil)
-	_ EventSource         = (*HTTPSource)(nil)
+	_ runtime.Object = (*HTTPSource)(nil)
+	_ EventSource    = (*HTTPSource)(nil)
 )
 
 // HTTPSourceSpec holds the desired state of the HttpSource (from the client).

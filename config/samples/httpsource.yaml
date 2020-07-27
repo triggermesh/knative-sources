@@ -17,8 +17,8 @@ kind: HTTPSource
 metadata:
   name: httpsource-test
 spec:
-  eventType: 'mycustom.event'
-  eventSource: 'instance-abc123'
+  eventType: com.example.mysample.event
+  eventSource: instance-abc123
   basicAuthUsername: customuser
   basicAuthPassword:
     secretKeyRef:

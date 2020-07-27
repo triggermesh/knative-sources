@@ -18,6 +18,8 @@ limitations under the License.
 
 package v1alpha1
 
+type HTTPSourceExpansion interface{}
+
 type SlackSourceExpansion interface{}
 
 type ZendeskSourceExpansion interface{}

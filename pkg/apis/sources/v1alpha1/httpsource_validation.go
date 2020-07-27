@@ -14,20 +14,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package main
+package v1alpha1
 
 import (
-	"knative.dev/pkg/injection/sharedmain"
+	"context"
 
-	"github.com/triggermesh/knative-sources/pkg/reconciler/httpsource"
-	"github.com/triggermesh/knative-sources/pkg/reconciler/slacksource"
-	"github.com/triggermesh/knative-sources/pkg/reconciler/zendesksource"
+	"knative.dev/pkg/apis"
 )
 
-func main() {
-	sharedmain.Main("knative-sources-controller",
-		slacksource.NewController,
-		zendesksource.NewController,
-		httpsource.NewController,
-	)
-}
+// Validate implements apis.Validatable.
+func (*HTTPSource) Validate(context.Context) *apis.FieldError { return nil }

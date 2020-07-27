@@ -14,20 +14,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package main
+package v1alpha1
 
-import (
-	"knative.dev/pkg/injection/sharedmain"
+import "context"
 
-	"github.com/triggermesh/knative-sources/pkg/reconciler/httpsource"
-	"github.com/triggermesh/knative-sources/pkg/reconciler/slacksource"
-	"github.com/triggermesh/knative-sources/pkg/reconciler/zendesksource"
-)
-
-func main() {
-	sharedmain.Main("knative-sources-controller",
-		slacksource.NewController,
-		zendesksource.NewController,
-		httpsource.NewController,
-	)
-}
+// SetDefaults implements apis.Defaultable.
+func (*HTTPSource) SetDefaults(_ context.Context) {}

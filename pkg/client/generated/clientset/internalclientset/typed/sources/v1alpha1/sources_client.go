@@ -26,6 +26,7 @@ import (
 
 type SourcesV1alpha1Interface interface {
 	RESTClient() rest.Interface
+	HTTPSourcesGetter
 	SlackSourcesGetter
 	ZendeskSourcesGetter
 }
@@ -33,6 +34,10 @@ type SourcesV1alpha1Interface interface {
 // SourcesV1alpha1Client is used to interact with features provided by the sources.triggermesh.io group.
 type SourcesV1alpha1Client struct {
 	restClient rest.Interface
+}
+
+func (c *SourcesV1alpha1Client) HTTPSources(namespace string) HTTPSourceInterface {
+	return newHTTPSources(c, namespace)
 }
 
 func (c *SourcesV1alpha1Client) SlackSources(namespace string) SlackSourceInterface {

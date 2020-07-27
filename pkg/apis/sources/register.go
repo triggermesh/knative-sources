@@ -33,4 +33,10 @@ var (
 		Group:    GroupName,
 		Resource: "zendesksources",
 	}
+
+	// HTTPSourceResource represents an event source for generic HTTP events.
+	HTTPSourceResource = schema.GroupResource{
+		Group:    GroupName,
+		Resource: "httpsources",
+	}
 )

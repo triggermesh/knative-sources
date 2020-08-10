@@ -17,7 +17,6 @@ limitations under the License.
 package httpsource
 
 import (
-	"fmt"
 	"strconv"
 
 	corev1 "k8s.io/api/core/v1"
@@ -31,8 +30,6 @@ import (
 	"github.com/triggermesh/knative-sources/pkg/reconciler/common"
 	"github.com/triggermesh/knative-sources/pkg/reconciler/common/resource"
 )
-
-const adapterName = "httpsource"
 
 const (
 	envHTTPEventType         = "HTTP_EVENT_TYPE"
@@ -56,8 +53,10 @@ type adapterConfig struct {
 // adapterServiceBuilder returns an AdapterServiceBuilderFunc for the
 // given source object and adapter config.
 func adapterServiceBuilder(src *v1alpha1.HTTPSource, cfg *adapterConfig) common.AdapterServiceBuilderFunc {
+	adapterName := common.AdapterName(src)
+
 	return func(sinkURI *apis.URL) *servingv1.Service {
-		name := kmeta.ChildName(fmt.Sprintf("%s-", adapterName), src.Name)
+		name := kmeta.ChildName(adapterName+"-", src.Name)
 
 		var sinkURIStr string
 		if sinkURI != nil {

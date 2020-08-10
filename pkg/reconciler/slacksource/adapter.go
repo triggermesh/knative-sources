@@ -17,7 +17,6 @@ limitations under the License.
 package slacksource
 
 import (
-	"fmt"
 	"strconv"
 
 	corev1 "k8s.io/api/core/v1"
@@ -31,8 +30,6 @@ import (
 	"github.com/triggermesh/knative-sources/pkg/reconciler/common"
 	"github.com/triggermesh/knative-sources/pkg/reconciler/common/resource"
 )
-
-const adapterName = "slacksource"
 
 const (
 	envSlackAppID         = "SLACK_APP_ID"
@@ -54,8 +51,10 @@ type adapterConfig struct {
 // adapterServiceBuilder returns an AdapterServiceBuilderFunc for the
 // given source object and adapter config.
 func adapterServiceBuilder(src *v1alpha1.SlackSource, cfg *adapterConfig) common.AdapterServiceBuilderFunc {
+	adapterName := common.AdapterName(src)
+
 	return func(sinkURI *apis.URL) *servingv1.Service {
-		name := kmeta.ChildName(fmt.Sprintf("%s-", adapterName), src.Name)
+		name := kmeta.ChildName(adapterName+"-", src.Name)
 
 		var sinkURIStr string
 		if sinkURI != nil {

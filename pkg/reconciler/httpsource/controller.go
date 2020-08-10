@@ -38,10 +38,13 @@ func NewController(
 	cmw configmap.Watcher,
 ) *controller.Impl {
 
+	typ := (*v1alpha1.HTTPSource)(nil)
+	app := common.AdapterName(typ)
+
 	adapterCfg := &adapterConfig{
-		configs: source.WatchConfigurations(ctx, adapterName, cmw, source.WithLogging, source.WithMetrics),
+		configs: source.WatchConfigurations(ctx, app, cmw, source.WithLogging, source.WithMetrics),
 	}
-	envconfig.MustProcess(adapterName, adapterCfg)
+	envconfig.MustProcess(app, adapterCfg)
 
 	r := &Reconciler{
 		adapterCfg: adapterCfg,
@@ -50,7 +53,7 @@ func NewController(
 
 	r.base = common.NewGenericServiceReconciler(
 		ctx,
-		(&v1alpha1.HTTPSource{}).GetGroupVersionKind(),
+		typ.GetGroupVersionKind(),
 		impl.EnqueueKey,
 		impl.EnqueueControllerOf,
 	)

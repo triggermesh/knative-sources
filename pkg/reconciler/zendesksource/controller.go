@@ -43,12 +43,15 @@ func NewController(
 	cmw configmap.Watcher,
 ) *controller.Impl {
 
+	typ := (*v1alpha1.ZendeskSource)(nil)
+	app := common.AdapterName(typ)
+
 	// Calling envconfig.Process() with a prefix appends that prefix
 	// (uppercased) to the Go field name, e.g. MYSOURCE_IMAGE.
 	adapterCfg := &adapterConfig{
-		configs: source.WatchConfigurations(ctx, adapterName, cmw, source.WithLogging, source.WithMetrics),
+		configs: source.WatchConfigurations(ctx, app, cmw, source.WithLogging, source.WithMetrics),
 	}
-	envconfig.MustProcess(adapterName, adapterCfg)
+	envconfig.MustProcess(app, adapterCfg)
 
 	r := &Reconciler{
 		adapterCfg: adapterCfg,
@@ -58,7 +61,7 @@ func NewController(
 
 	r.base = common.NewGenericServiceReconciler(
 		ctx,
-		(&v1alpha1.ZendeskSource{}).GetGroupVersionKind(),
+		typ.GetGroupVersionKind(),
 		impl.EnqueueKey,
 		impl.EnqueueControllerOf,
 	)

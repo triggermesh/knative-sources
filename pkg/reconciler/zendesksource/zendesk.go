@@ -23,6 +23,7 @@ import (
 	"strconv"
 
 	corev1 "k8s.io/api/core/v1"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	pkgapis "knative.dev/pkg/apis"
@@ -42,10 +43,18 @@ func (r *Reconciler) ensureZendeskTargetAndTrigger(ctx context.Context) error {
 	src := v1alpha1.SourceFromContext(ctx)
 	status := &src.(*v1alpha1.ZendeskSource).Status
 
-	addr := src.GetSourceStatus().Address
+	adapter, err := r.base.FindAdapter(src)
+	switch {
+	case apierrors.IsNotFound(err):
+		return nil
+	case err != nil:
+		return fmt.Errorf("finding receive adapter: %w", err)
+	}
+
+	url := adapter.Status.URL
 
 	// skip this cycle if the adapter URL wasn't yet determined
-	if addr == nil || addr.URL == nil {
+	if !adapter.IsReady() || url == nil {
 		status.MarkTargetNotSynced(v1alpha1.ZendeskReasonNoURL,
 			"The receive adapter did not report its public URL yet")
 		return nil
@@ -101,7 +110,7 @@ func (r *Reconciler) ensureZendeskTargetAndTrigger(ctx context.Context) error {
 		desiredTarget := zendesk.Target{
 			Title:       title,
 			Type:        "http_target",
-			TargetURL:   addr.URL.String(),
+			TargetURL:   url.String(),
 			Method:      "post",
 			Username:    spec.WebhookUsername,
 			Password:    webhookPassword,

@@ -58,7 +58,6 @@ rules:
   - list
   - watch
   - get
-  - patch
 - apiGroups:
   - sources.triggermesh.io
   resources:
@@ -67,6 +66,14 @@ rules:
   - httpsources/status
   verbs:
   - update
+
+# Set finalizers
+- apiGroups:
+  - sources.triggermesh.io
+  resources:
+  - zendesksources
+  verbs:
+  - patch
 
 # Read credentials
 - apiGroups:

@@ -17,12 +17,20 @@ limitations under the License.
 package v1alpha1
 
 import (
+	"context"
+
+	"go.uber.org/zap"
+
 	appsv1 "k8s.io/api/apps/v1"
+	coreclientv1 "k8s.io/client-go/kubernetes/typed/core/v1"
 
 	"knative.dev/eventing/pkg/apis/duck"
 	"knative.dev/pkg/apis"
 	duckv1 "knative.dev/pkg/apis/duck/v1"
+	"knative.dev/pkg/logging"
 	servingv1 "knative.dev/serving/pkg/apis/serving/v1"
+
+	"github.com/triggermesh/knative-sources/pkg/status"
 )
 
 // eventSourceConditionSet is a common set of conditions for event sources
@@ -60,14 +68,20 @@ func (s *EventSourceStatus) MarkNoSink() {
 // or False.
 func (s *EventSourceStatus) PropagateAvailability(obj interface{}) {
 	switch o := obj.(type) {
-	case *appsv1.Deployment:
-		s.propagateDeploymentAvailability(o)
 	case *servingv1.Service:
 		s.propagateServiceAvailability(o)
 	}
 }
 
-func (s *EventSourceStatus) propagateDeploymentAvailability(d *appsv1.Deployment) {
+// PropagateDeploymentAvailability uses the readiness of the provided
+// Deployment to determine whether the Deployed condition should be marked as
+// True or False.
+// Given an optional PodInterface, the status of dependant Pods is inspected to
+// generate a more meaningful failure reason in case of non-ready status of the
+// Deployment.
+func (s *EventSourceStatus) PropagateDeploymentAvailability(ctx context.Context,
+	d *appsv1.Deployment, pi coreclientv1.PodInterface) {
+
 	// Deployments are not addressable
 	s.Address = nil
 
@@ -82,6 +96,7 @@ func (s *EventSourceStatus) propagateDeploymentAvailability(d *appsv1.Deployment
 		return
 	}
 
+	reason := ReasonUnavailable
 	msg := "The adapter Deployment is unavailable"
 
 	for _, cond := range d.Status.Conditions {
@@ -90,7 +105,17 @@ func (s *EventSourceStatus) propagateDeploymentAvailability(d *appsv1.Deployment
 		}
 	}
 
-	eventSourceConditionSet.Manage(s).MarkFalse(ConditionDeployed, ReasonUnavailable, msg)
+	if pi != nil {
+		ws, err := status.DeploymentPodsWaitingState(d, pi)
+		if err != nil {
+			logging.FromContext(ctx).Warn("Unable to look up statuses of dependant Pods", zap.Error(err))
+		} else if ws != nil {
+			reason = ws.Reason
+			msg += ": " + ws.Message
+		}
+	}
+
+	eventSourceConditionSet.Manage(s).MarkFalse(ConditionDeployed, reason, msg)
 }
 
 func (s *EventSourceStatus) propagateServiceAvailability(ksvc *servingv1.Service) {

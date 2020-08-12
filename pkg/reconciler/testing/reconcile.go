@@ -331,9 +331,7 @@ func deployed(adapter runtime.Object) sourceOption {
 	adapter = adapter.DeepCopyObject()
 	ready(adapter)
 
-	return func(src v1alpha1.EventSource) {
-		src.GetSourceStatus().PropagateAvailability(adapter)
-	}
+	return propagateAdapterAvailabilityFunc(adapter)
 }
 
 // Deployed: False
@@ -341,9 +339,7 @@ func notDeployed(adapter runtime.Object) sourceOption {
 	adapter = adapter.DeepCopyObject()
 	notReady(adapter)
 
-	return func(src v1alpha1.EventSource) {
-		src.GetSourceStatus().PropagateAvailability(adapter)
-	}
+	return propagateAdapterAvailabilityFunc(adapter)
 }
 
 // Deployed: Unknown with error
@@ -357,8 +353,17 @@ func unknownDeployedWithError(adapter runtime.Object) sourceOption {
 		nilObj = (*servingv1.Service)(nil)
 	}
 
+	return propagateAdapterAvailabilityFunc(nilObj)
+}
+
+func propagateAdapterAvailabilityFunc(adapter runtime.Object) func(src v1alpha1.EventSource) {
 	return func(src v1alpha1.EventSource) {
-		src.GetSourceStatus().PropagateAvailability(nilObj)
+		switch a := adapter.(type) {
+		case *appsv1.Deployment:
+			src.GetSourceStatus().PropagateDeploymentAvailability(context.Background(), a, nil)
+		case *servingv1.Service:
+			src.GetSourceStatus().PropagateAvailability(a)
+		}
 	}
 }
 

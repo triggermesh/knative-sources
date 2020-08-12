@@ -28,10 +28,12 @@ import (
 
 	pkgapis "knative.dev/pkg/apis"
 	"knative.dev/pkg/controller"
+	"knative.dev/pkg/reconciler"
 
 	"github.com/nukosuke/go-zendesk/zendesk"
 
 	"github.com/triggermesh/knative-sources/pkg/apis/sources/v1alpha1"
+	"github.com/triggermesh/knative-sources/pkg/reconciler/common/event"
 	"github.com/triggermesh/knative-sources/pkg/reconciler/common/skip"
 )
 
@@ -84,7 +86,7 @@ func (r *Reconciler) ensureZendeskTargetAndTrigger(ctx context.Context) error {
 	}
 	client.SetCredential(cred)
 
-	title := "io.triggermesh.zendesksource." + src.GetNamespace() + "." + src.GetName()
+	title := targetTitle(src)
 
 	targets, _, err := client.GetTargets(ctx)
 	switch {
@@ -170,6 +172,101 @@ func (r *Reconciler) ensureZendeskTargetAndTrigger(ctx context.Context) error {
 	status.MarkTargetSynced()
 
 	return nil
+}
+
+func (r *Reconciler) ensureNoZendeskTargetAndTrigger(ctx context.Context) error {
+	if skip.Skip(ctx) {
+		return nil
+	}
+
+	src := v1alpha1.SourceFromContext(ctx)
+
+	spec := src.(pkgapis.HasSpec).GetUntypedSpec().(v1alpha1.ZendeskSourceSpec)
+
+	apiToken, err := r.secretFrom(ctx, src.GetNamespace(), spec.Token.SecretKeyRef)
+	if err != nil {
+		return err
+	}
+
+	cred := zendesk.NewAPITokenCredential(spec.Email, apiToken)
+	client, err := zendesk.NewClient(nil)
+	if err != nil {
+		return fmt.Errorf("creating Zendesk client: %w", err)
+	}
+	if err := client.SetSubdomain(spec.Subdomain); err != nil {
+		return fmt.Errorf("setting Zendesk subdomain: %w", err)
+	}
+	client.SetCredential(cred)
+
+	title := targetTitle(src)
+
+	triggers, _, err := client.GetTriggers(ctx, &zendesk.TriggerListOptions{})
+	switch {
+	case isDenied(err):
+		// it is unlikely that we recover from auth errors in the
+		// finalizer, so we simply record a warning event and return to
+		// allow the reconciler to remove the finalizer
+		return reconciler.NewEvent(corev1.EventTypeWarning, ReasonFailedTargetDelete,
+			"Authorization error finalizing Zendesk Target %q. Ignoring: %s", title, err)
+
+	case err != nil:
+		// wrap any other error to fail the finalization
+		event := reconciler.NewEvent(corev1.EventTypeWarning, ReasonFailedTargetDelete,
+			"Error retrieving Zendesk Triggers: %s", err)
+		return fmt.Errorf("%w", event)
+	}
+
+	var currentTrigger *zendesk.Trigger
+	for _, t := range triggers {
+		if t.Title == title {
+			currentTrigger = &t
+			break
+		}
+	}
+
+	if currentTrigger != nil {
+		if err := client.DeleteTrigger(ctx, currentTrigger.ID); err != nil {
+			// wrap the error to fail the finalization
+			event := reconciler.NewEvent(corev1.EventTypeWarning, ReasonFailedTargetDelete,
+				"Error finalizing Zendesk Trigger %q: %s", title, err)
+			return fmt.Errorf("%w", event)
+		}
+		event.Normal(ctx, ReasonTargetDeleted, "Zendesk Trigger %q was deleted", title)
+	}
+
+	targets, _, err := client.GetTargets(ctx)
+	if err != nil {
+		// wrap any other error to fail the finalization
+		event := reconciler.NewEvent(corev1.EventTypeWarning, ReasonFailedTargetDelete,
+			"Error retrieving Zendesk Targets: %s", err)
+		return fmt.Errorf("%w", event)
+	}
+
+	var currentTarget *zendesk.Target
+	for _, t := range targets {
+		if t.Title == title {
+			currentTarget = &t
+			break
+		}
+	}
+
+	if currentTarget != nil {
+		if err := client.DeleteTarget(ctx, currentTarget.ID); err != nil {
+			// wrap the error to fail the finalization
+			event := reconciler.NewEvent(corev1.EventTypeWarning, ReasonFailedTargetDelete,
+				"Error finalizing Zendesk Target %q: %s", title, err)
+			return fmt.Errorf("%w", event)
+		}
+		event.Normal(ctx, ReasonTargetDeleted, "Zendesk Target %q was deleted", title)
+	}
+
+	return nil
+}
+
+// targetTitle returns a Zendesk Target/Trigger title suitable for the given
+// source object.
+func targetTitle(src metav1.Object) string {
+	return "io.triggermesh.zendesksource." + src.GetNamespace() + "." + src.GetName()
 }
 
 // secretFrom handles the retrieval of secretes from the within the defined namepace

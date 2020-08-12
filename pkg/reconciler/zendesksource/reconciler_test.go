@@ -30,6 +30,7 @@ import (
 	"knative.dev/pkg/resolver"
 	fakeservinginjectionclient "knative.dev/serving/pkg/client/injection/client/fake"
 
+	"github.com/triggermesh/knative-sources/pkg/apis/sources"
 	"github.com/triggermesh/knative-sources/pkg/apis/sources/v1alpha1"
 	fakeinjectionclient "github.com/triggermesh/knative-sources/pkg/client/generated/injection/client/fake"
 	reconcilerv1alpha1 "github.com/triggermesh/knative-sources/pkg/client/generated/injection/reconciler/sources/v1alpha1/zendesksource"
@@ -98,6 +99,10 @@ func newEventSource() *v1alpha1.ZendeskSource {
 			},
 		},
 	}
+
+	// assume finalizer is already set to prevent the generated reconciler
+	// from generating an extra Patch action
+	src.Finalizers = []string{sources.ZendeskSourceResource.String()}
 
 	Populate(src)
 

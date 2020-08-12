@@ -108,6 +108,7 @@ func TestReconcile(t *testing.T, ctor Ctor, src v1alpha1.EventSource, adapterFn 
 		{
 			Name: "Source object deletion",
 			Key:  tKey,
+			Ctx:  skipCtx,
 			Objects: []runtime.Object{
 				newEventSource(deleted),
 			},
@@ -365,6 +366,9 @@ func unknownDeployedWithError(adapter runtime.Object) sourceOption {
 func deleted(src v1alpha1.EventSource) {
 	t := metav1.Unix(0, 0)
 	src.SetDeletionTimestamp(&t)
+	// ignore assertion of Finalizer in those tests because not all types
+	// implement it
+	src.SetFinalizers(nil)
 }
 
 /* Adapter */

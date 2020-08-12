@@ -197,7 +197,7 @@ func (r *GenericServiceReconciler) reconcileAdapter(ctx context.Context, desired
 
 	currentAdapter, err := r.getOrCreateAdapter(ctx, desiredAdapter)
 	if err != nil {
-		src.GetSourceStatus().PropagateAvailability(currentAdapter)
+		src.GetSourceStatus().PropagateServiceAvailability(currentAdapter)
 		return err
 	}
 
@@ -205,7 +205,7 @@ func (r *GenericServiceReconciler) reconcileAdapter(ctx context.Context, desired
 	if err != nil {
 		return fmt.Errorf("failed to synchronize adapter Service: %w", err)
 	}
-	src.GetSourceStatus().PropagateAvailability(currentAdapter)
+	src.GetSourceStatus().PropagateServiceAvailability(currentAdapter)
 
 	return nil
 }

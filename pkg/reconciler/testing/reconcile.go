@@ -362,7 +362,7 @@ func propagateAdapterAvailabilityFunc(adapter runtime.Object) func(src v1alpha1.
 		case *appsv1.Deployment:
 			src.GetSourceStatus().PropagateDeploymentAvailability(context.Background(), a, nil)
 		case *servingv1.Service:
-			src.GetSourceStatus().PropagateAvailability(a)
+			src.GetSourceStatus().PropagateServiceAvailability(a)
 		}
 	}
 }

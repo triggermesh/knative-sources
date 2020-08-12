@@ -63,16 +63,6 @@ func (s *EventSourceStatus) MarkNoSink() {
 		ReasonSinkNotFound, "The sink does not exist or its URI is not set")
 }
 
-// PropagateAvailability uses the readiness of the provided Deployment or
-// Service to determine whether the Deployed condition should be marked as True
-// or False.
-func (s *EventSourceStatus) PropagateAvailability(obj interface{}) {
-	switch o := obj.(type) {
-	case *servingv1.Service:
-		s.propagateServiceAvailability(o)
-	}
-}
-
 // PropagateDeploymentAvailability uses the readiness of the provided
 // Deployment to determine whether the Deployed condition should be marked as
 // True or False.
@@ -118,7 +108,9 @@ func (s *EventSourceStatus) PropagateDeploymentAvailability(ctx context.Context,
 	eventSourceConditionSet.Manage(s).MarkFalse(ConditionDeployed, reason, msg)
 }
 
-func (s *EventSourceStatus) propagateServiceAvailability(ksvc *servingv1.Service) {
+// PropagateServiceAvailability uses the readiness of the provided Service to
+// determine whether the Deployed condition should be marked as True or False.
+func (s *EventSourceStatus) PropagateServiceAvailability(ksvc *servingv1.Service) {
 	if ksvc == nil {
 		eventSourceConditionSet.Manage(s).MarkUnknown(ConditionDeployed, ReasonUnavailable,
 			"The status of the adapter Service can not be determined")
@@ -136,9 +128,19 @@ func (s *EventSourceStatus) propagateServiceAvailability(ksvc *servingv1.Service
 	}
 
 	msg := "The adapter Service is unavailable"
-	readyCond := ksvc.Status.GetCondition(servingv1.ServiceConditionReady)
-	if readyCond != nil && readyCond.Message != "" {
-		msg += ": " + readyCond.Message
+
+	// the RoutesReady condition surfaces the reason why network traffic
+	// cannot be routed to the Service
+	routesCond := ksvc.Status.GetCondition(servingv1.ServiceConditionRoutesReady)
+	if routesCond != nil && routesCond.Message != "" {
+		msg += "; " + routesCond.Message
+	}
+
+	// the ConfigurationsReady condition surfaces the reason why an
+	// underlying Pod is failing
+	configCond := ksvc.Status.GetCondition(servingv1.ServiceConditionConfigurationsReady)
+	if configCond != nil && configCond.Message != "" {
+		msg += "; " + configCond.Message
 	}
 
 	eventSourceConditionSet.Manage(s).MarkFalse(ConditionDeployed, ReasonUnavailable, msg)

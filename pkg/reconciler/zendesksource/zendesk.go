@@ -95,7 +95,7 @@ func (r *Reconciler) ensureZendeskTargetAndTrigger(ctx context.Context) error {
 
 	case err != nil:
 		status.MarkTargetNotSynced(v1alpha1.ZendeskReasonFailedSync, "Unable to list Targets")
-		return fmt.Errorf("error retrieving Zendesk Targets: %w", err)
+		return fmt.Errorf("retrieving Zendesk Targets: %w", err)
 	}
 
 	var currentTarget *zendesk.Target
@@ -125,7 +125,7 @@ func (r *Reconciler) ensureZendeskTargetAndTrigger(ctx context.Context) error {
 			// but is in a different page. We will need to support
 			// pagination in a future release of this source.
 			status.MarkTargetNotSynced(v1alpha1.ZendeskReasonFailedSync, "Unable to create Target")
-			return fmt.Errorf("error creating Zendesk target: %w", err)
+			return fmt.Errorf("creating Zendesk Target: %w", err)
 		}
 		currentTarget = &resp
 	}
@@ -133,7 +133,7 @@ func (r *Reconciler) ensureZendeskTargetAndTrigger(ctx context.Context) error {
 	triggers, _, err := client.GetTriggers(ctx, &zendesk.TriggerListOptions{})
 	if err != nil {
 		status.MarkTargetNotSynced(v1alpha1.ZendeskReasonFailedSync, "Unable to list Triggers")
-		return fmt.Errorf("error retrieving Zendesk Triggers: %w", err)
+		return fmt.Errorf("retrieving Zendesk Triggers: %w", err)
 	}
 
 	var currentTrigger *zendesk.Trigger
@@ -165,7 +165,7 @@ func (r *Reconciler) ensureZendeskTargetAndTrigger(ctx context.Context) error {
 
 		if _, err := client.CreateTrigger(ctx, desiredTrigger); err != nil {
 			status.MarkTargetNotSynced(v1alpha1.ZendeskReasonFailedSync, "Unable to create Trigger")
-			return fmt.Errorf("error creating Zendesk target trigger: %w", err)
+			return fmt.Errorf("creating Zendesk Trigger: %w", err)
 		}
 	}
 

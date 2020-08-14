@@ -100,7 +100,7 @@ func (s *EventSourceStatus) PropagateDeploymentAvailability(ctx context.Context,
 		if err != nil {
 			logging.FromContext(ctx).Warn("Unable to look up statuses of dependant Pods", zap.Error(err))
 		} else if ws != nil {
-			reason = ws.Reason
+			reason = status.ExactReason(ws)
 			msg += ": " + ws.Message
 		}
 	}
@@ -127,6 +127,7 @@ func (s *EventSourceStatus) PropagateServiceAvailability(ksvc *servingv1.Service
 		return
 	}
 
+	reason := ReasonUnavailable
 	msg := "The adapter Service is unavailable"
 
 	// the RoutesReady condition surfaces the reason why network traffic
@@ -140,8 +141,11 @@ func (s *EventSourceStatus) PropagateServiceAvailability(ksvc *servingv1.Service
 	// underlying Pod is failing
 	configCond := ksvc.Status.GetCondition(servingv1.ServiceConditionConfigurationsReady)
 	if configCond != nil && configCond.Message != "" {
+		if r := status.ExactReason(configCond); r != configCond.Reason {
+			reason = r
+		}
 		msg += "; " + configCond.Message
 	}
 
-	eventSourceConditionSet.Manage(s).MarkFalse(ConditionDeployed, ReasonUnavailable, msg)
+	eventSourceConditionSet.Manage(s).MarkFalse(ConditionDeployed, reason, msg)
 }

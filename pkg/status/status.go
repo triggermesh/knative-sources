@@ -46,7 +46,7 @@ const (
 func DeploymentPodsWaitingState(d *appsv1.Deployment,
 	pi coreclientv1.PodInterface) (*corev1.ContainerStateWaiting, error) {
 
-	pods, err := pi.List(metav1.ListOptions{LabelSelector: d.Spec.Selector.String()})
+	pods, err := pi.List(metav1.ListOptions{LabelSelector: metav1.FormatLabelSelector(d.Spec.Selector)})
 	if err != nil {
 		return nil, err
 	}

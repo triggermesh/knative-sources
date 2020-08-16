@@ -93,8 +93,9 @@ const (
 	ZendeskReasonFailedSync = "FailedSync"
 )
 
-// zendeskSourceConditionSet is a set of conditions for ZendeskSource objects.
-var zendeskSourceConditionSet = apis.NewLivingConditionSet(
+// zendeskSourceConditionSet is a set of status conditions for ZendeskSource
+// objects.
+var zendeskSourceConditionSet = NewEventSourceConditionSet(
 	ZendeskConditionTargetSynced,
 )
 

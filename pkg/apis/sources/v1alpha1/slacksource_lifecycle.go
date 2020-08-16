@@ -43,9 +43,12 @@ func (s *SlackSource) GetSink() *duckv1.Destination {
 	return &s.Spec.Sink
 }
 
-// GetSourceStatus implements EventSource.
-func (s *SlackSource) GetSourceStatus() *EventSourceStatus {
-	return &s.Status
+// GetStatusManager implements EventSource.
+func (s *SlackSource) GetStatusManager() *EventSourceStatusManager {
+	return &EventSourceStatusManager{
+		ConditionSet:      s.GetConditionSet(),
+		EventSourceStatus: &s.Status,
+	}
 }
 
 // AsEventSource implements EventSource.

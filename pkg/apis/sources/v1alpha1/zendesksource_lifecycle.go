@@ -48,9 +48,12 @@ func (s *ZendeskSource) GetSink() *duckv1.Destination {
 	return &s.Spec.Sink
 }
 
-// GetSourceStatus implements EventSource.
-func (s *ZendeskSource) GetSourceStatus() *EventSourceStatus {
-	return &s.Status.EventSourceStatus
+// GetStatusManager implements EventSource.
+func (s *ZendeskSource) GetStatusManager() *EventSourceStatusManager {
+	return &EventSourceStatusManager{
+		ConditionSet:      s.GetConditionSet(),
+		EventSourceStatus: &s.Status.EventSourceStatus,
+	}
 }
 
 // AsEventSource implements EventSource.

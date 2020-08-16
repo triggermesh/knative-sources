@@ -43,9 +43,12 @@ func (s *HTTPSource) GetSink() *duckv1.Destination {
 	return &s.Spec.Sink
 }
 
-// GetSourceStatus implements EventSource.
-func (s *HTTPSource) GetSourceStatus() *EventSourceStatus {
-	return &s.Status
+// GetStatusManager implements EventSource.
+func (s *HTTPSource) GetStatusManager() *EventSourceStatusManager {
+	return &EventSourceStatusManager{
+		ConditionSet:      s.GetConditionSet(),
+		EventSourceStatus: &s.Status,
+	}
 }
 
 // AsEventSource implements EventSource.

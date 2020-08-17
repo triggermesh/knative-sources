@@ -206,8 +206,9 @@ func (r *Reconciler) ensureNoZendeskTargetAndTrigger(ctx context.Context) error 
 		// it is unlikely that we recover from auth errors in the
 		// finalizer, so we simply record a warning event and return to
 		// allow the reconciler to remove the finalizer
-		return reconciler.NewEvent(corev1.EventTypeWarning, ReasonFailedTargetDelete,
-			"Authorization error finalizing Zendesk Target %q. Ignoring: %s", title, err)
+		event.Warn(ctx, ReasonFailedTargetDelete, "Authorization error finalizing Zendesk Target %q. "+
+			"Ignoring: %s", title, err)
+		return nil
 
 	case err != nil:
 		// wrap any other error to fail the finalization

@@ -181,11 +181,21 @@ func (r *Reconciler) ensureNoZendeskTargetAndTrigger(ctx context.Context) error 
 
 	src := v1alpha1.SourceFromContext(ctx)
 
+	title := targetTitle(src)
+
 	spec := src.(pkgapis.HasSpec).GetUntypedSpec().(v1alpha1.ZendeskSourceSpec)
 
 	apiToken, err := r.secretFrom(ctx, src.GetNamespace(), spec.Token.SecretKeyRef)
-	if err != nil {
-		return err
+	switch {
+	case apierrors.IsNotFound(err):
+		// the finalizer is unlikely to recover from a missing Secret,
+		// so we simply record a warning event and return
+		event.Warn(ctx, ReasonFailedTargetDelete, "Secret missing while finalizing Zendesk Target %q. "+
+			"Ignoring: %s", title, err)
+		return nil
+
+	case err != nil:
+		return fmt.Errorf("reading Zendesk API token: %w", err)
 	}
 
 	cred := zendesk.NewAPITokenCredential(spec.Email, apiToken)
@@ -197,8 +207,6 @@ func (r *Reconciler) ensureNoZendeskTargetAndTrigger(ctx context.Context) error 
 		return fmt.Errorf("setting Zendesk subdomain: %w", err)
 	}
 	client.SetCredential(cred)
-
-	title := targetTitle(src)
 
 	triggers, _, err := client.GetTriggers(ctx, &zendesk.TriggerListOptions{})
 	switch {

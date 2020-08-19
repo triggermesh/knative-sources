@@ -102,6 +102,25 @@ rules:
   verbs:
   - get
 
+# Acquire leases for leader election
+- apiGroups:
+  - coordination.k8s.io
+  resources:
+  - leases
+  verbs:
+  - create
+- apiGroups:
+  - coordination.k8s.io
+  resourceNames:
+  - knative-sources-controller.github.com-triggermesh-knative-sources-pkg-reconciler-slacksource.reconciler.00-of-01
+  - knative-sources-controller.github.com-triggermesh-knative-sources-pkg-reconciler-zendesksource.reconciler.00-of-01
+  - knative-sources-controller.github.com-triggermesh-knative-sources-pkg-reconciler-httpsource.reconciler.00-of-01
+  resources:
+  - leases
+  verbs:
+  - get
+  - update
+
 # Resolve sink URIs
 - apiGroups:
   - ''

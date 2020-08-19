@@ -14,10 +14,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// import (
-// 	cloudevents "github.com/cloudevents/sdk-go/v2"
-// )
-
 package slacksource
 
 import (

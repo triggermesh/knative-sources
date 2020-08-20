@@ -88,7 +88,7 @@ rules:
   - ''
   resources:
   - configmaps
-  verbs: &listwatch
+  verbs:
   - list
   - watch
 - apiGroups:
@@ -120,28 +120,6 @@ rules:
   verbs:
   - get
   - update
-
-# Resolve sink URIs
-- apiGroups:
-  - ''
-  resources:
-  - services
-  verbs: *listwatch
-- apiGroups:
-  - serving.knative.dev
-  resources:
-  - services
-  verbs: *listwatch
-- apiGroups:
-  - eventing.knative.dev
-  resources:
-  - brokers
-  verbs: *listwatch
-- apiGroups:
-  - messaging.knative.dev
-  resources:
-  - channels
-  verbs: *listwatch
 
 # Determine the exact reason why Deployments fail
 - apiGroups:

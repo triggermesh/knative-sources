@@ -33,8 +33,9 @@ import (
 	"github.com/nukosuke/go-zendesk/zendesk"
 
 	"github.com/triggermesh/knative-sources/pkg/apis/sources/v1alpha1"
-	"github.com/triggermesh/knative-sources/pkg/reconciler/common/event"
-	"github.com/triggermesh/knative-sources/pkg/reconciler/common/skip"
+	pkgsourcesv1alpha1 "github.com/triggermesh/pkg/apis/sources/v1alpha1"
+	"github.com/triggermesh/pkg/reconciler/event"
+	"github.com/triggermesh/pkg/reconciler/skip"
 )
 
 func (r *Reconciler) ensureZendeskTargetAndTrigger(ctx context.Context) error {
@@ -42,7 +43,7 @@ func (r *Reconciler) ensureZendeskTargetAndTrigger(ctx context.Context) error {
 		return nil
 	}
 
-	src := v1alpha1.SourceFromContext(ctx)
+	src := pkgsourcesv1alpha1.SourceFromContext(ctx)
 	status := &src.(*v1alpha1.ZendeskSource).Status
 
 	adapter, err := r.base.FindAdapter(src)
@@ -179,7 +180,7 @@ func (r *Reconciler) ensureNoZendeskTargetAndTrigger(ctx context.Context) error 
 		return nil
 	}
 
-	src := v1alpha1.SourceFromContext(ctx)
+	src := pkgsourcesv1alpha1.SourceFromContext(ctx)
 
 	title := targetTitle(src)
 

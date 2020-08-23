@@ -21,6 +21,8 @@ import (
 
 	pkgapis "knative.dev/pkg/apis"
 	duckv1 "knative.dev/pkg/apis/duck/v1"
+
+	"github.com/triggermesh/pkg/apis/sources/v1alpha1"
 )
 
 // GetGroupVersionKind implements kmeta.OwnerRefable.
@@ -30,7 +32,7 @@ func (*SlackSource) GetGroupVersionKind() schema.GroupVersionKind {
 
 // GetConditionSet implements duckv1.KRShaped.
 func (*SlackSource) GetConditionSet() pkgapis.ConditionSet {
-	return eventSourceConditionSet
+	return v1alpha1.EventSourceConditionSet
 }
 
 // GetStatus implements duckv1.KRShaped.
@@ -44,8 +46,8 @@ func (s *SlackSource) GetSink() *duckv1.Destination {
 }
 
 // GetStatusManager implements EventSource.
-func (s *SlackSource) GetStatusManager() *EventSourceStatusManager {
-	return &EventSourceStatusManager{
+func (s *SlackSource) GetStatusManager() *v1alpha1.EventSourceStatusManager {
+	return &v1alpha1.EventSourceStatusManager{
 		ConditionSet:      s.GetConditionSet(),
 		EventSourceStatus: &s.Status,
 	}

@@ -34,8 +34,8 @@ import (
 	"github.com/triggermesh/knative-sources/pkg/apis/sources/v1alpha1"
 	fakeinjectionclient "github.com/triggermesh/knative-sources/pkg/client/generated/injection/client/fake"
 	reconcilerv1alpha1 "github.com/triggermesh/knative-sources/pkg/client/generated/injection/reconciler/sources/v1alpha1/zendesksource"
-	"github.com/triggermesh/knative-sources/pkg/reconciler/common"
 	. "github.com/triggermesh/knative-sources/pkg/reconciler/testing"
+	"github.com/triggermesh/pkg/reconciler"
 )
 
 func TestReconcileSource(t *testing.T) {
@@ -56,7 +56,7 @@ func TestReconcileSource(t *testing.T) {
 // reconcilerCtor returns a Ctor for a source Reconciler.
 func reconcilerCtor(cfg *adapterConfig) Ctor {
 	return func(t *testing.T, ctx context.Context, ls *Listers) controller.Reconciler {
-		base := common.GenericServiceReconciler{
+		base := reconciler.GenericServiceReconciler{
 			SinkResolver: resolver.NewURIResolver(ctx, func(types.NamespacedName) {}),
 			Lister:       ls.GetServiceLister().Services,
 			Client:       fakeservinginjectionclient.Get(ctx).ServingV1().Services,

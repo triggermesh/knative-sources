@@ -16,29 +16,7 @@ limitations under the License.
 
 package v1alpha1
 
-import (
-	corev1 "k8s.io/api/core/v1"
-	duckv1 "knative.dev/pkg/apis/duck/v1"
-)
-
-// EventSourceStatus defines the observed state of an event source.
-type EventSourceStatus struct {
-	duckv1.SourceStatus  `json:",inline"`
-	duckv1.AddressStatus `json:",inline"`
-}
-
-// ValueFromField is a struct field that can have its value either defined
-// explicitly or sourced from another entity.
-type ValueFromField struct {
-	// Optional: no more than one of the following may be specified.
-
-	// Field value.
-	// +optional
-	Value string `json:"value,omitempty"`
-	// Field value from a Kubernetes Secret.
-	// +optional
-	ValueFromSecret *corev1.SecretKeySelector `json:"valueFromSecret,omitempty"`
-}
+import corev1 "k8s.io/api/core/v1"
 
 // SecretValueFromSource represents the source of a secret value
 type SecretValueFromSource struct {

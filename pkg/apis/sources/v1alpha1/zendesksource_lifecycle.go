@@ -21,6 +21,8 @@ import (
 
 	"knative.dev/pkg/apis"
 	duckv1 "knative.dev/pkg/apis/duck/v1"
+
+	"github.com/triggermesh/pkg/apis/sources/v1alpha1"
 )
 
 // GetGroupVersionKind implements kmeta.OwnerRefable.
@@ -49,8 +51,8 @@ func (s *ZendeskSource) GetSink() *duckv1.Destination {
 }
 
 // GetStatusManager implements EventSource.
-func (s *ZendeskSource) GetStatusManager() *EventSourceStatusManager {
-	return &EventSourceStatusManager{
+func (s *ZendeskSource) GetStatusManager() *v1alpha1.EventSourceStatusManager {
+	return &v1alpha1.EventSourceStatusManager{
 		ConditionSet:      s.GetConditionSet(),
 		EventSourceStatus: &s.Status.EventSourceStatus,
 	}
@@ -98,7 +100,7 @@ const (
 
 // zendeskSourceConditionSet is a set of status conditions for ZendeskSource
 // objects.
-var zendeskSourceConditionSet = NewEventSourceConditionSet(
+var zendeskSourceConditionSet = v1alpha1.NewEventSourceConditionSet(
 	ZendeskConditionTargetSynced,
 )
 

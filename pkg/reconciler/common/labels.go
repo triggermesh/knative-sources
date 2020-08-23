@@ -16,26 +16,8 @@ limitations under the License.
 
 package common
 
-// Kubernetes recommended labels
-// https://kubernetes.io/docs/concepts/overview/working-with-objects/common-labels/
-const (
-	// AppNameLabel is the name of the application.
-	AppNameLabel = "app.kubernetes.io/name"
-	// AppInstanceLabel is a unique name identifying the instance of an application.
-	AppInstanceLabel = "app.kubernetes.io/instance"
-	// AppVersionLabel is the current version of the application.
-	AppVersionLabel = "app.kubernetes.io/version"
-	// AppComponentLabel is the component within the architecture.
-	AppComponentLabel = "app.kubernetes.io/component"
-	// AppPartOfLabel is the name of a higher level application this one is part of.
-	AppPartOfLabel = "app.kubernetes.io/part-of"
-	// AppManagedByLabel is the tool being used to manage the operation of an application.
-	AppManagedByLabel = "app.kubernetes.io/managed-by"
-)
-
 // Common label values
 const (
-	PartOf           = "knative-sources"
-	ManagedBy        = "knative-sources-controller"
-	AdapterComponent = "adapter"
+	PartOf    = "knative-sources"
+	ManagedBy = "knative-sources-controller"
 )

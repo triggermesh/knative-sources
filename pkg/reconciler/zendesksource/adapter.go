@@ -26,7 +26,8 @@ import (
 
 	"github.com/triggermesh/knative-sources/pkg/apis/sources/v1alpha1"
 	"github.com/triggermesh/knative-sources/pkg/reconciler/common"
-	"github.com/triggermesh/knative-sources/pkg/reconciler/common/resource"
+	"github.com/triggermesh/pkg/reconciler"
+	"github.com/triggermesh/pkg/reconciler/resource"
 )
 
 const (
@@ -49,8 +50,8 @@ type adapterConfig struct {
 
 // adapterServiceBuilder returns an AdapterServiceBuilderFunc for the
 // given source object and adapter config.
-func adapterServiceBuilder(src *v1alpha1.ZendeskSource, cfg *adapterConfig) common.AdapterServiceBuilderFunc {
-	adapterName := common.AdapterName(src)
+func adapterServiceBuilder(src *v1alpha1.ZendeskSource, cfg *adapterConfig) reconciler.AdapterServiceBuilderFunc {
+	adapterName := reconciler.AdapterName(src)
 
 	return func(sinkURI *apis.URL) *servingv1.Service {
 		name := kmeta.ChildName(adapterName+"-", src.Name)
@@ -63,29 +64,29 @@ func adapterServiceBuilder(src *v1alpha1.ZendeskSource, cfg *adapterConfig) comm
 		return resource.NewKnService(src.Namespace, name,
 			resource.Controller(src),
 
-			resource.Label(common.AppNameLabel, adapterName),
-			resource.Label(common.AppInstanceLabel, src.Name),
-			resource.Label(common.AppComponentLabel, common.AdapterComponent),
-			resource.Label(common.AppPartOfLabel, common.PartOf),
-			resource.Label(common.AppManagedByLabel, common.ManagedBy),
+			resource.Label(reconciler.AppNameLabel, adapterName),
+			resource.Label(reconciler.AppInstanceLabel, src.Name),
+			resource.Label(reconciler.AppComponentLabel, reconciler.ComponentAdapter),
+			resource.Label(reconciler.AppPartOfLabel, common.PartOf),
+			resource.Label(reconciler.AppManagedByLabel, common.ManagedBy),
 
-			resource.PodLabel(common.AppNameLabel, adapterName),
-			resource.PodLabel(common.AppInstanceLabel, src.Name),
-			resource.PodLabel(common.AppComponentLabel, common.AdapterComponent),
-			resource.PodLabel(common.AppPartOfLabel, common.PartOf),
-			resource.PodLabel(common.AppManagedByLabel, common.ManagedBy),
+			resource.PodLabel(reconciler.AppNameLabel, adapterName),
+			resource.PodLabel(reconciler.AppInstanceLabel, src.Name),
+			resource.PodLabel(reconciler.AppComponentLabel, reconciler.ComponentAdapter),
+			resource.PodLabel(reconciler.AppPartOfLabel, common.PartOf),
+			resource.PodLabel(reconciler.AppManagedByLabel, common.ManagedBy),
 
 			resource.Image(cfg.Image),
 
-			resource.EnvVar(common.EnvName, src.Name),
-			resource.EnvVar(common.EnvNamespace, src.Namespace),
-			resource.EnvVar(common.EnvSink, sinkURIStr),
+			resource.EnvVar(reconciler.EnvName, src.Name),
+			resource.EnvVar(reconciler.EnvNamespace, src.Namespace),
+			resource.EnvVar(reconciler.EnvSink, sinkURIStr),
 			resource.EnvVar(envZdSubdomain, src.Spec.Subdomain),
 			resource.EnvVar(envZdWebhookUser, src.Spec.WebhookUsername),
 			resource.EnvVarFromSecret(envZdWebhookPwd,
 				src.Spec.WebhookPassword.SecretKeyRef.Name,
 				src.Spec.WebhookPassword.SecretKeyRef.Key),
-			resource.EnvVar(common.EnvMetricsPrometheusPort, strconv.Itoa(int(metricsPrometheusPort))),
+			resource.EnvVar(reconciler.EnvMetricsPrometheusPort, strconv.Itoa(int(metricsPrometheusPort))),
 			resource.EnvVars(cfg.configs.ToEnvVars()...),
 		)
 	}

@@ -31,7 +31,7 @@ import (
 	"github.com/triggermesh/knative-sources/pkg/apis/sources/v1alpha1"
 	informerv1alpha1 "github.com/triggermesh/knative-sources/pkg/client/generated/injection/informers/sources/v1alpha1/zendesksource"
 	reconcilerv1alpha1 "github.com/triggermesh/knative-sources/pkg/client/generated/injection/reconciler/sources/v1alpha1/zendesksource"
-	"github.com/triggermesh/knative-sources/pkg/reconciler/common"
+	"github.com/triggermesh/pkg/reconciler"
 )
 
 // the resync period ensures we regularly re-check the state of Zendesk Triggers.
@@ -44,7 +44,7 @@ func NewController(
 ) *controller.Impl {
 
 	typ := (*v1alpha1.ZendeskSource)(nil)
-	app := common.AdapterName(typ)
+	app := reconciler.AdapterName(typ)
 
 	// Calling envconfig.Process() with a prefix appends that prefix
 	// (uppercased) to the Go field name, e.g. MYSOURCE_IMAGE.
@@ -59,7 +59,7 @@ func NewController(
 	}
 	impl := reconcilerv1alpha1.NewImpl(ctx, r)
 
-	r.base = common.NewGenericServiceReconciler(
+	r.base = reconciler.NewGenericServiceReconciler(
 		ctx,
 		typ.GetGroupVersionKind(),
 		impl.EnqueueKey,

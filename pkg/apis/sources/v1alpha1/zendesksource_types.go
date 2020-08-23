@@ -22,6 +22,8 @@ import (
 
 	pkgapis "knative.dev/pkg/apis"
 	duckv1 "knative.dev/pkg/apis/duck/v1"
+
+	"github.com/triggermesh/pkg/apis/sources/v1alpha1"
 )
 
 // +genclient
@@ -39,9 +41,9 @@ type ZendeskSource struct {
 
 // Check the interfaces the event source should be implementing.
 var (
-	_ runtime.Object  = (*ZendeskSource)(nil)
-	_ pkgapis.HasSpec = (*ZendeskSource)(nil)
-	_ EventSource     = (*ZendeskSource)(nil)
+	_ runtime.Object       = (*ZendeskSource)(nil)
+	_ pkgapis.HasSpec      = (*ZendeskSource)(nil)
+	_ v1alpha1.EventSource = (*ZendeskSource)(nil)
 )
 
 // ZendeskSourceSpec defines the desired state of the event source.
@@ -75,7 +77,7 @@ type ZendeskSourceSpec struct {
 
 // ZendeskSourceStatus defines the observed state of the event source.
 type ZendeskSourceStatus struct {
-	EventSourceStatus `json:",inline"`
+	v1alpha1.EventSourceStatus `json:",inline"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object

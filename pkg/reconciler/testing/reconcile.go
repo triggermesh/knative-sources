@@ -34,14 +34,14 @@ import (
 	eventingv1beta1 "knative.dev/eventing/pkg/apis/eventing/v1beta1"
 	"knative.dev/pkg/apis"
 	duckv1 "knative.dev/pkg/apis/duck/v1"
-	"knative.dev/pkg/reconciler"
+	knreconciler "knative.dev/pkg/reconciler"
 	rt "knative.dev/pkg/reconciler/testing"
 	servingv1 "knative.dev/serving/pkg/apis/serving/v1"
 
-	"github.com/triggermesh/knative-sources/pkg/apis/sources/v1alpha1"
-	"github.com/triggermesh/knative-sources/pkg/reconciler/common"
-	eventtesting "github.com/triggermesh/knative-sources/pkg/reconciler/common/event/testing"
-	"github.com/triggermesh/knative-sources/pkg/reconciler/common/skip"
+	"github.com/triggermesh/pkg/apis/sources/v1alpha1"
+	"github.com/triggermesh/pkg/reconciler"
+	eventtesting "github.com/triggermesh/pkg/reconciler/event/testing"
+	"github.com/triggermesh/pkg/reconciler/skip"
 )
 
 const (
@@ -283,9 +283,9 @@ func Populate(srcCpy v1alpha1.EventSource) {
 
 	// *reconcilerImpl.Reconcile calls this method before any reconciliation loop. Calling it here ensures that the
 	// object is initialized in the same manner, and prevents tests from wrongly reporting unexpected status updates.
-	reconciler.PreProcessReconcile(context.Background(), srcCpy)
+	knreconciler.PreProcessReconcile(context.Background(), srcCpy)
 
-	srcCpy.GetStatusManager().CloudEventAttributes = common.CreateCloudEventAttributes(
+	srcCpy.GetStatusManager().CloudEventAttributes = reconciler.CreateCloudEventAttributes(
 		srcCpy.AsEventSource(), srcCpy.GetEventTypes())
 }
 
@@ -389,9 +389,9 @@ func adapterCtor(adapterFn interface{}, src v1alpha1.EventSource) adapterCtorWit
 		var obj runtime.Object
 
 		switch typedAdapterFn := adapterFn.(type) {
-		case common.AdapterDeploymentBuilderFunc:
+		case reconciler.AdapterDeploymentBuilderFunc:
 			obj = typedAdapterFn(tSinkURI)
-		case common.AdapterServiceBuilderFunc:
+		case reconciler.AdapterServiceBuilderFunc:
 			obj = typedAdapterFn(tSinkURI)
 		}
 
@@ -418,7 +418,7 @@ func ready(object runtime.Object) {
 		}
 	case *servingv1.Service:
 		o.Status.SetConditions(apis.Conditions{{
-			Type:   v1alpha1.ConditionReady,
+			Type:   apis.ConditionReady,
 			Status: corev1.ConditionTrue,
 		}})
 		o.Status.URL = tAdapterURI
@@ -437,7 +437,7 @@ func notReady(object runtime.Object) {
 		}
 	case *servingv1.Service:
 		o.Status.SetConditions(apis.Conditions{{
-			Type:   v1alpha1.ConditionReady,
+			Type:   apis.ConditionReady,
 			Status: corev1.ConditionFalse,
 		}})
 	}
@@ -473,23 +473,23 @@ func newAdressable() *eventingv1beta1.Broker {
 /* Events */
 
 func createAdapterEvent(name, kind string) string {
-	return eventtesting.Eventf(corev1.EventTypeNormal, common.ReasonAdapterCreate, "Created adapter %s %q", kind, name)
+	return eventtesting.Eventf(corev1.EventTypeNormal, reconciler.ReasonAdapterCreate, "Created adapter %s %q", kind, name)
 }
 func updateAdapterEvent(name, kind string) string {
-	return eventtesting.Eventf(corev1.EventTypeNormal, common.ReasonAdapterUpdate, "Updated adapter %s %q", kind, name)
+	return eventtesting.Eventf(corev1.EventTypeNormal, reconciler.ReasonAdapterUpdate, "Updated adapter %s %q", kind, name)
 }
 func failCreateAdapterEvent(name, kind, resource string) string {
-	return eventtesting.Eventf(corev1.EventTypeWarning, common.ReasonFailedAdapterCreate, "Failed to create adapter %s %q: "+
+	return eventtesting.Eventf(corev1.EventTypeWarning, reconciler.ReasonFailedAdapterCreate, "Failed to create adapter %s %q: "+
 		"inducing failure for create %s", kind, name, resource)
 }
 func failUpdateAdapterEvent(name, kind, resource string) string {
-	return eventtesting.Eventf(corev1.EventTypeWarning, common.ReasonFailedAdapterUpdate, "Failed to update adapter %s %q: "+
+	return eventtesting.Eventf(corev1.EventTypeWarning, reconciler.ReasonFailedAdapterUpdate, "Failed to update adapter %s %q: "+
 		"inducing failure for update %s", kind, name, resource)
 }
 func badSinkEvent() string {
 	addrGVK := newAdressable().GetGroupVersionKind()
 
-	return eventtesting.Eventf(corev1.EventTypeWarning, common.ReasonBadSinkURI, "Could not resolve sink URI: "+
+	return eventtesting.Eventf(corev1.EventTypeWarning, reconciler.ReasonBadSinkURI, "Could not resolve sink URI: "+
 		"failed to get ref &ObjectReference{Kind:%s,Namespace:%s,Name:%s,UID:,APIVersion:%s,ResourceVersion:,FieldPath:,}: "+
 		"%s %q not found",
 		addrGVK.Kind, tNs, tName, addrGVK.GroupVersion().String(),

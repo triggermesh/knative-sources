@@ -28,7 +28,7 @@ import (
 	"github.com/triggermesh/knative-sources/pkg/apis/sources/v1alpha1"
 	informerv1alpha1 "github.com/triggermesh/knative-sources/pkg/client/generated/injection/informers/sources/v1alpha1/httpsource"
 	reconcilerv1alpha1 "github.com/triggermesh/knative-sources/pkg/client/generated/injection/reconciler/sources/v1alpha1/httpsource"
-	"github.com/triggermesh/knative-sources/pkg/reconciler/common"
+	"github.com/triggermesh/pkg/reconciler"
 )
 
 // NewController initializes the controller and is called by the generated code
@@ -39,7 +39,7 @@ func NewController(
 ) *controller.Impl {
 
 	typ := (*v1alpha1.HTTPSource)(nil)
-	app := common.AdapterName(typ)
+	app := reconciler.AdapterName(typ)
 
 	adapterCfg := &adapterConfig{
 		configs: source.WatchConfigurations(ctx, app, cmw, source.WithLogging, source.WithMetrics),
@@ -51,7 +51,7 @@ func NewController(
 	}
 	impl := reconcilerv1alpha1.NewImpl(ctx, r)
 
-	r.base = common.NewGenericServiceReconciler(
+	r.base = reconciler.NewGenericServiceReconciler(
 		ctx,
 		typ.GetGroupVersionKind(),
 		impl.EnqueueKey,

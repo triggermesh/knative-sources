@@ -21,16 +21,18 @@ import (
 	"fmt"
 
 	"k8s.io/client-go/kubernetes"
-	"knative.dev/pkg/reconciler"
+
+	knreconciler "knative.dev/pkg/reconciler"
 
 	"github.com/triggermesh/knative-sources/pkg/apis/sources/v1alpha1"
 	reconcilerv1alpha1 "github.com/triggermesh/knative-sources/pkg/client/generated/injection/reconciler/sources/v1alpha1/zendesksource"
-	"github.com/triggermesh/knative-sources/pkg/reconciler/common"
+	pkgsourcesv1alpha1 "github.com/triggermesh/pkg/apis/sources/v1alpha1"
+	"github.com/triggermesh/pkg/reconciler"
 )
 
 // Reconciler implements controller.Reconciler for the event source type.
 type Reconciler struct {
-	base       common.GenericServiceReconciler
+	base       reconciler.GenericServiceReconciler
 	kubeClient kubernetes.Interface
 	adapterCfg *adapterConfig
 }
@@ -42,9 +44,9 @@ var _ reconcilerv1alpha1.Interface = (*Reconciler)(nil)
 var _ reconcilerv1alpha1.Finalizer = (*Reconciler)(nil)
 
 // ReconcileKind implements Interface.ReconcileKind.
-func (r *Reconciler) ReconcileKind(ctx context.Context, src *v1alpha1.ZendeskSource) reconciler.Event {
+func (r *Reconciler) ReconcileKind(ctx context.Context, src *v1alpha1.ZendeskSource) knreconciler.Event {
 	// inject source into context for usage in reconciliation logic
-	ctx = v1alpha1.WithSource(ctx, src)
+	ctx = pkgsourcesv1alpha1.WithSource(ctx, src)
 
 	if err := r.base.ReconcileSource(ctx, adapterServiceBuilder(src, r.adapterCfg)); err != nil {
 		return fmt.Errorf("failed to reconcile source: %w", err)
@@ -54,9 +56,9 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, src *v1alpha1.ZendeskSou
 }
 
 // FinalizeKind is called when the resource is deleted.
-func (r *Reconciler) FinalizeKind(ctx context.Context, src *v1alpha1.ZendeskSource) reconciler.Event {
+func (r *Reconciler) FinalizeKind(ctx context.Context, src *v1alpha1.ZendeskSource) knreconciler.Event {
 	// inject source into context for usage in finalization logic
-	ctx = v1alpha1.WithSource(ctx, src)
+	ctx = pkgsourcesv1alpha1.WithSource(ctx, src)
 
 	// The finalizer blocks the deletion of the source object until
 	// ensureNoZendeskTargetAndTrigger succeeds to ensure that we don't

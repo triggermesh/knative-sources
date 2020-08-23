@@ -19,16 +19,17 @@ package httpsource
 import (
 	"context"
 
-	"knative.dev/pkg/reconciler"
+	knreconciler "knative.dev/pkg/reconciler"
 
 	"github.com/triggermesh/knative-sources/pkg/apis/sources/v1alpha1"
 	reconcilerv1alpha1 "github.com/triggermesh/knative-sources/pkg/client/generated/injection/reconciler/sources/v1alpha1/httpsource"
-	"github.com/triggermesh/knative-sources/pkg/reconciler/common"
+	pkgsourcesv1alpha1 "github.com/triggermesh/pkg/apis/sources/v1alpha1"
+	"github.com/triggermesh/pkg/reconciler"
 )
 
 // Reconciler implements controller.Reconciler for the event source type.
 type Reconciler struct {
-	base       common.GenericServiceReconciler
+	base       reconciler.GenericServiceReconciler
 	adapterCfg *adapterConfig
 }
 
@@ -36,9 +37,9 @@ type Reconciler struct {
 var _ reconcilerv1alpha1.Interface = (*Reconciler)(nil)
 
 // ReconcileKind implements Interface.ReconcileKind.
-func (r *Reconciler) ReconcileKind(ctx context.Context, src *v1alpha1.HTTPSource) reconciler.Event {
+func (r *Reconciler) ReconcileKind(ctx context.Context, src *v1alpha1.HTTPSource) knreconciler.Event {
 	// inject source into context for usage in reconciliation logic
-	ctx = v1alpha1.WithSource(ctx, src)
+	ctx = pkgsourcesv1alpha1.WithSource(ctx, src)
 
 	return r.base.ReconcileSource(ctx, adapterServiceBuilder(src, r.adapterCfg))
 }

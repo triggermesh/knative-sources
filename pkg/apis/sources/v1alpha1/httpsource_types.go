@@ -21,6 +21,8 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 
 	duckv1 "knative.dev/pkg/apis/duck/v1"
+
+	"github.com/triggermesh/pkg/apis/sources/v1alpha1"
 )
 
 // +genclient
@@ -32,14 +34,14 @@ type HTTPSource struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   HTTPSourceSpec    `json:"spec,omitempty"`
-	Status EventSourceStatus `json:"status,omitempty"`
+	Spec   HTTPSourceSpec             `json:"spec,omitempty"`
+	Status v1alpha1.EventSourceStatus `json:"status,omitempty"`
 }
 
 // Check the interfaces the event source should be implementing.
 var (
-	_ runtime.Object = (*HTTPSource)(nil)
-	_ EventSource    = (*HTTPSource)(nil)
+	_ runtime.Object       = (*HTTPSource)(nil)
+	_ v1alpha1.EventSource = (*HTTPSource)(nil)
 )
 
 // HTTPSourceSpec defines the desired state of the event source.

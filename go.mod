@@ -12,12 +12,14 @@ replace (
 
 require (
 	github.com/cloudevents/sdk-go/v2 v2.2.0
+	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/google/go-cmp v0.5.1
 	github.com/google/uuid v1.1.1
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/nukosuke/go-zendesk v0.7.7
 	github.com/stretchr/testify v1.6.1
 	go.uber.org/zap v1.15.0
+	golang.org/x/net v0.0.0-20200707034311-ab3426394381
 	k8s.io/api v0.18.7-rc.0
 	k8s.io/apimachinery v0.18.7-rc.0
 	k8s.io/client-go v11.0.1-0.20190805182717-6502b5e7b1b5+incompatible

@@ -8,7 +8,7 @@ jobs:
   checkout:
     executor:
       name: go/default
-      tag: '1.14'
+      tag: '1.15'
     steps:
       - checkout
       - go/mod-download-cached
@@ -21,7 +21,7 @@ jobs:
   build:
     executor:
       name: go/default
-      tag: '1.14'
+      tag: '1.15'
     steps:
       - attach_workspace:
           at: ~/
@@ -37,7 +37,7 @@ jobs:
   test:
     executor:
       name: go/default
-      tag: '1.14'
+      tag: '1.15'
     steps:
       - attach_workspace:
           at: ~/
@@ -76,7 +76,7 @@ jobs:
     description: Patches target cluster configuration
     executor:
       name: go/default
-      tag: '1.14'
+      tag: '1.15'
     parameters:
       cluster:
         type: string
@@ -119,7 +119,7 @@ jobs:
   release:
     executor:
       name: go/default
-      tag: '1.14'
+      tag: '1.15'
     steps:
       - attach_workspace:
           at: ~/

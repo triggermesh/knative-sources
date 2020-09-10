@@ -28,7 +28,6 @@ import (
 	"strconv"
 	"strings"
 	"sync"
-	"time"
 
 	"go.uber.org/zap"
 	"golang.org/x/net/publicsuffix"
@@ -48,6 +47,10 @@ type Bayeux interface {
 	Subscribe(topic string, replayID int) ([]SubscriptionResponse, error)
 }
 
+// ConnectResponseCallback is the signature for callback functions
+// that handle connect responses that contain data.
+type ConnectResponseCallback func(msg *ConnectResponse)
+
 type bayeux struct {
 	creds *Credentials
 
@@ -60,13 +63,15 @@ type bayeux struct {
 	msgCh  chan *ConnectResponse
 	stopCh chan struct{}
 
+	callback ConnectResponseCallback
+
 	logger *zap.SugaredLogger
 	ctx    context.Context
 	mutex  sync.RWMutex
 }
 
 // NewBayeux creates a Bayeux client for Salesforce Streaming API consumption.
-func NewBayeux(ctx context.Context, credentials *Credentials, apiVersion string, subscriptions []string, client *http.Client, logger *zap.SugaredLogger) Bayeux {
+func NewBayeux(ctx context.Context, credentials *Credentials, apiVersion string, subscriptions []string, callback ConnectResponseCallback, client *http.Client, logger *zap.SugaredLogger) Bayeux {
 	return &bayeux{
 		creds: credentials,
 
@@ -77,6 +82,8 @@ func NewBayeux(ctx context.Context, credentials *Credentials, apiVersion string,
 		msgCh:  make(chan *ConnectResponse),
 		errCh:  make(chan error),
 		stopCh: make(chan struct{}),
+
+		callback: callback,
 
 		logger: logger,
 		ctx:    ctx,
@@ -120,26 +127,21 @@ func (b *bayeux) Start() error {
 						b.manageMeta(&crs[i])
 						continue
 					}
-
 					b.msgCh <- &crs[i]
 				}
 			}
 		}
 	}()
 
-	// Worker loop will run until the connect loop is stopped
+	// Worker loop will run until the connect loop is stopped.
 	for {
 		select {
 		case msg := <-b.msgCh:
-			if msg.Channel == connectChannel || msg.Channel == subscribeChannel {
-				b.logger.Infof("", msg.Channel, msg.Successful)
-			}
-
-			fmt.Printf("received message: %v\n", msg)
-		case msg := <-b.errCh:
-			fmt.Printf("received error: %v\n", msg)
+			b.callback(msg)
+		case err := <-b.errCh:
+			b.logger.Errorf("Error receiving stream events: %v", err)
 		case <-b.stopCh:
-			return nil
+			break
 		}
 	}
 
@@ -197,19 +199,6 @@ func (b *bayeux) Handshake() error {
 	return nil
 }
 
-// func (b *bayeux) connectLoop() error {
-// 	for {
-// 		select {
-// 		case msg := <-b.msgCh:
-// 			fmt.Printf("received message %v\n", msg)
-// 		case err := <-b.errCh:
-// 			fmt.Printf("received error %v\n", err)
-// 		case <-b.ctx.Done():
-// 			fmt.Printf("context cancelled\n")
-// 		}
-// 	}
-// }
-
 // Connect will start to receive events.
 // This is a blocking function
 func (b *bayeux) Connect() ([]ConnectResponse, error) {
@@ -217,22 +206,10 @@ func (b *bayeux) Connect() ([]ConnectResponse, error) {
 	payload := `{"channel": "` + connectChannel + `", "connectionType": "long-polling", "clientId": "` + b.clientID + `"}`
 
 	res, err := b.doPost(payload)
-	// TODO check if context is done
 	if err != nil {
-		//b.errCh <- err
 		return nil, fmt.Errorf("error sending connect request: %+w", err)
 	}
 	defer res.Body.Close()
-
-	// var by []byte
-	// if res.Body != nil {
-	// 	by, _ = ioutil.ReadAll(res.Body)
-	// }
-	// // Restore the io.ReadCloser to its original state
-	// res.Body = ioutil.NopCloser(bytes.NewBuffer(by))
-	// // Use the content
-	// s := string(by)
-	// fmt.Printf("\nConnect  Body: %s\n\n", s)
 
 	c := []ConnectResponse{}
 	err = json.NewDecoder(res.Body).Decode(&c)
@@ -303,51 +280,4 @@ func (b *bayeux) doPost(payload string) (*http.Response, error) {
 	}
 
 	return res, nil
-}
-
-// CommonResponse for all structures at Bayeux protocol.
-type CommonResponse struct {
-	Channel    string `json:"channel"`
-	ClientID   string `json:"clientId"`
-	Successful bool   `json:"successful"`
-	Error      string `json:"error,omitempty"`
-}
-
-// HandshakeResponse for Bayeux protocol.
-type HandshakeResponse struct {
-	Channel         string          `json:"channel"`
-	Version         string          `json:"version"`
-	ConnectionTypes []string        `json:"supportedConnectionTypes"`
-	ClientID        string          `json:"clientId"`
-	Successful      bool            `json:"successful"`
-	Extension       json.RawMessage `json:"ext,omitempty"`
-}
-
-// ConnectResponse for Bayeux protocol
-type ConnectResponse struct {
-	Channel    string `json:"channel"`
-	ClientID   string `json:"clientId"`
-	Successful bool   `json:"successful"`
-	Error      string `json:"error,omitempty"`
-	Data       struct {
-		Event struct {
-			CreatedDate time.Time `json:"createdDate"`
-			ReplayID    int       `json:"replayId"`
-			Type        string    `json:"type"`
-		} `json:"event,omitempty"`
-		Schema  string          `json:"schema"`
-		SObject json.RawMessage `json:"sobject"`
-		Payload json.RawMessage `json:"payload"`
-	} `json:"data,omitempty"`
-	Advice struct {
-		Reconnect string `json:"reconnect,omitempty"`
-		Timeout   int    `json:"timeout,omitempty"`
-		Interval  int    `json:"interval,omitempty"`
-	} `json:"advice,omitempty"`
-}
-
-// SubscriptionResponse for Bayeux protocol
-type SubscriptionResponse struct {
-	CommonResponse `json:",inline"`
-	Subscription   string `json:"subscription,omitempty"`
 }

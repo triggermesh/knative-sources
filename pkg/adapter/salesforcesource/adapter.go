@@ -18,10 +18,11 @@ package salesforcesource
 
 import (
 	"context"
-	"errors"
+	"encoding/json"
 	"net/http"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
+	"github.com/google/uuid"
 	"go.uber.org/zap"
 
 	"knative.dev/eventing/pkg/adapter/v2"
@@ -44,36 +45,57 @@ func NewAdapter(ctx context.Context, aEnv adapter.EnvConfigAccessor, ceClient cl
 	env := aEnv.(*envAccessor)
 	logger := logging.FromContext(ctx)
 
-	creds, err := sfclient.AuthenticateCredentialsJWT(env.CertKey, env.ClientID, env.User, env.AuthServer, http.DefaultClient)
-	client := sfclient.NewBayeux(ctx, creds, env.Version, env.Subscriptions, http.DefaultClient, logger.Named("bayeux"))
-
-	if err != nil {
-		logger.Panic(err)
-	}
-
-	return &salesforceAdapter{
-		client: client,
-
+	adapter := &salesforceAdapter{
 		ceClient: ceClient,
 		logger:   logging.FromContext(ctx),
 	}
+
+	creds, err := sfclient.AuthenticateCredentialsJWT(env.CertKey, env.ClientID, env.User, env.AuthServer, http.DefaultClient)
+	if err != nil {
+		logger.Panic(err)
+	}
+	adapter.client = sfclient.NewBayeux(ctx, creds, env.Version, env.Subscriptions, adapter.handle, http.DefaultClient, logger.Named("bayeux"))
+
+	return adapter
 }
 
 // Start runs the handler.
 func (a *salesforceAdapter) Start(ctx context.Context) error {
+	return a.client.Start()
+}
 
-	// if err := a.client.Handshake(); err != nil {
-	// 	return fmt.Errorf("error handshaking Salesforce: %w", err)
-	// }
-	// cr, err := a.client.Connect()
-	// if err != nil {
-	// 	return fmt.Errorf("error connecting to Salesforce: %w", err)
-	// }
+func (a *salesforceAdapter) handle(msg *sfclient.ConnectResponse) {
+	event := cloudevents.NewEvent(cloudevents.VersionV1)
 
-	// a.logger.Infof("received connect response: %v", cr)
-
-	if err := a.client.Start(); err != nil {
-		return err
+	// TODO REPLACE THIS!!!
+	event.SetType("salesforce.stream")
+	event.SetSource("source name")
+	event.SetID(uuid.New().String())
+	if err := event.SetData(cloudevents.ApplicationJSON, msg.Data); err != nil {
+		a.logger.Error("failed to set event data: %w", err)
+		return
 	}
-	return errors.New("not implemented")
+	event.SetSubject(subjectNameFromConnectResponse(msg))
+
+	if result := a.ceClient.Send(context.Background(), event); !cloudevents.IsACK(result) {
+		a.logger.Error("could not send CloudEvent: %s", event.String())
+	}
+}
+
+func subjectNameFromConnectResponse(msg *sfclient.ConnectResponse) string {
+
+	// if ChangeDataCapture look for entity/operation
+	cdc := &sfclient.ChangeDataCapturePayload{}
+	if err := json.Unmarshal(msg.Data.Payload, cdc); err == nil {
+		return cdc.ChangeEventHeader.EntityName + "/" + cdc.ChangeEventHeader.ChangeType
+	}
+
+	// if PushTopic look for object-name/event-operation
+	ptso := &sfclient.PushTopicSObject{}
+	if err := json.Unmarshal(msg.Data.Payload, ptso); err == nil {
+		return ptso.Name + "/" + msg.Data.Event.Type
+	}
+
+	// default to channel
+	return msg.Channel
 }

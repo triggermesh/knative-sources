@@ -28,10 +28,11 @@ func EnvAccessor() adapter.EnvConfigAccessor {
 type envAccessor struct {
 	adapter.EnvConfig
 
-	ClientID   string `envconfig:"SALESFORCE_CLIENT_ID" required:"true"`
-	AuthServer string `envconfig:"SALESFORCE_AUTH_SERVER" required:"true"`
-	User       string `envconfig:"SALESFORCE_USER" required:"true"`
-	CertKey    string `envconfig:"SALESFORCE_CERT_KEY" required:"true"`
+	ClientID      string   `envconfig:"SALESFORCE_CLIENT_ID" required:"true"`
+	AuthServer    string   `envconfig:"SALESFORCE_AUTH_SERVER" required:"true"`
+	User          string   `envconfig:"SALESFORCE_USER" required:"true"`
+	CertKey       string   `envconfig:"SALESFORCE_CERT_KEY" required:"true"`
+	Subscriptions []string `envconfig:"SALESFORCE_SUBCRIPTIONS" required:"true"`
 
 	Version string `envconfig:"SALESFORCE_VERSION" default:"48.0"`
 }

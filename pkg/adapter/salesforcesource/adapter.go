@@ -19,7 +19,6 @@ package salesforcesource
 import (
 	"context"
 	"errors"
-	"fmt"
 	"net/http"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
@@ -46,7 +45,7 @@ func NewAdapter(ctx context.Context, aEnv adapter.EnvConfigAccessor, ceClient cl
 	logger := logging.FromContext(ctx)
 
 	creds, err := sfclient.AuthenticateCredentialsJWT(env.CertKey, env.ClientID, env.User, env.AuthServer, http.DefaultClient)
-	client := sfclient.NewBayeux(ctx, creds, env.Version, http.DefaultClient)
+	client := sfclient.NewBayeux(ctx, creds, env.Version, env.Subscriptions, http.DefaultClient, logger.Named("bayeux"))
 
 	if err != nil {
 		logger.Panic(err)
@@ -62,12 +61,19 @@ func NewAdapter(ctx context.Context, aEnv adapter.EnvConfigAccessor, ceClient cl
 
 // Start runs the handler.
 func (a *salesforceAdapter) Start(ctx context.Context) error {
-	if err := a.client.Handshake(); err != nil {
-		return fmt.Errorf("error handshaking Salesforce: %w", err)
-	}
-	if err := a.client.Connect(); err != nil {
-		return fmt.Errorf("error connecting to Salesforce: %w", err)
-	}
 
+	// if err := a.client.Handshake(); err != nil {
+	// 	return fmt.Errorf("error handshaking Salesforce: %w", err)
+	// }
+	// cr, err := a.client.Connect()
+	// if err != nil {
+	// 	return fmt.Errorf("error connecting to Salesforce: %w", err)
+	// }
+
+	// a.logger.Infof("received connect response: %v", cr)
+
+	if err := a.client.Start(); err != nil {
+		return err
+	}
 	return errors.New("not implemented")
 }

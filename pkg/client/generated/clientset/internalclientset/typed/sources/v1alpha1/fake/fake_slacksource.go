@@ -19,6 +19,8 @@ limitations under the License.
 package fake
 
 import (
+	"context"
+
 	v1alpha1 "github.com/triggermesh/knative-sources/pkg/apis/sources/v1alpha1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	labels "k8s.io/apimachinery/pkg/labels"
@@ -39,7 +41,7 @@ var slacksourcesResource = schema.GroupVersionResource{Group: "sources.triggerme
 var slacksourcesKind = schema.GroupVersionKind{Group: "sources.triggermesh.io", Version: "v1alpha1", Kind: "SlackSource"}
 
 // Get takes name of the slackSource, and returns the corresponding slackSource object, and an error if there is any.
-func (c *FakeSlackSources) Get(name string, options v1.GetOptions) (result *v1alpha1.SlackSource, err error) {
+func (c *FakeSlackSources) Get(ctx context.Context, name string, options v1.GetOptions) (result *v1alpha1.SlackSource, err error) {
 	obj, err := c.Fake.
 		Invokes(testing.NewGetAction(slacksourcesResource, c.ns, name), &v1alpha1.SlackSource{})
 
@@ -50,7 +52,7 @@ func (c *FakeSlackSources) Get(name string, options v1.GetOptions) (result *v1al
 }
 
 // List takes label and field selectors, and returns the list of SlackSources that match those selectors.
-func (c *FakeSlackSources) List(opts v1.ListOptions) (result *v1alpha1.SlackSourceList, err error) {
+func (c *FakeSlackSources) List(ctx context.Context, opts v1.ListOptions) (result *v1alpha1.SlackSourceList, err error) {
 	obj, err := c.Fake.
 		Invokes(testing.NewListAction(slacksourcesResource, slacksourcesKind, c.ns, opts), &v1alpha1.SlackSourceList{})
 
@@ -72,14 +74,14 @@ func (c *FakeSlackSources) List(opts v1.ListOptions) (result *v1alpha1.SlackSour
 }
 
 // Watch returns a watch.Interface that watches the requested slackSources.
-func (c *FakeSlackSources) Watch(opts v1.ListOptions) (watch.Interface, error) {
+func (c *FakeSlackSources) Watch(ctx context.Context, opts v1.ListOptions) (watch.Interface, error) {
 	return c.Fake.
 		InvokesWatch(testing.NewWatchAction(slacksourcesResource, c.ns, opts))
 
 }
 
 // Create takes the representation of a slackSource and creates it.  Returns the server's representation of the slackSource, and an error, if there is any.
-func (c *FakeSlackSources) Create(slackSource *v1alpha1.SlackSource) (result *v1alpha1.SlackSource, err error) {
+func (c *FakeSlackSources) Create(ctx context.Context, slackSource *v1alpha1.SlackSource, opts v1.CreateOptions) (result *v1alpha1.SlackSource, err error) {
 	obj, err := c.Fake.
 		Invokes(testing.NewCreateAction(slacksourcesResource, c.ns, slackSource), &v1alpha1.SlackSource{})
 
@@ -90,7 +92,7 @@ func (c *FakeSlackSources) Create(slackSource *v1alpha1.SlackSource) (result *v1
 }
 
 // Update takes the representation of a slackSource and updates it. Returns the server's representation of the slackSource, and an error, if there is any.
-func (c *FakeSlackSources) Update(slackSource *v1alpha1.SlackSource) (result *v1alpha1.SlackSource, err error) {
+func (c *FakeSlackSources) Update(ctx context.Context, slackSource *v1alpha1.SlackSource, opts v1.UpdateOptions) (result *v1alpha1.SlackSource, err error) {
 	obj, err := c.Fake.
 		Invokes(testing.NewUpdateAction(slacksourcesResource, c.ns, slackSource), &v1alpha1.SlackSource{})
 
@@ -102,7 +104,7 @@ func (c *FakeSlackSources) Update(slackSource *v1alpha1.SlackSource) (result *v1
 
 // UpdateStatus was generated because the type contains a Status member.
 // Add a +genclient:noStatus comment above the type to avoid generating UpdateStatus().
-func (c *FakeSlackSources) UpdateStatus(slackSource *v1alpha1.SlackSource) (*v1alpha1.SlackSource, error) {
+func (c *FakeSlackSources) UpdateStatus(ctx context.Context, slackSource *v1alpha1.SlackSource, opts v1.UpdateOptions) (*v1alpha1.SlackSource, error) {
 	obj, err := c.Fake.
 		Invokes(testing.NewUpdateSubresourceAction(slacksourcesResource, "status", c.ns, slackSource), &v1alpha1.SlackSource{})
 
@@ -113,7 +115,7 @@ func (c *FakeSlackSources) UpdateStatus(slackSource *v1alpha1.SlackSource) (*v1a
 }
 
 // Delete takes name of the slackSource and deletes it. Returns an error if one occurs.
-func (c *FakeSlackSources) Delete(name string, options *v1.DeleteOptions) error {
+func (c *FakeSlackSources) Delete(ctx context.Context, name string, opts v1.DeleteOptions) error {
 	_, err := c.Fake.
 		Invokes(testing.NewDeleteAction(slacksourcesResource, c.ns, name), &v1alpha1.SlackSource{})
 
@@ -121,15 +123,15 @@ func (c *FakeSlackSources) Delete(name string, options *v1.DeleteOptions) error 
 }
 
 // DeleteCollection deletes a collection of objects.
-func (c *FakeSlackSources) DeleteCollection(options *v1.DeleteOptions, listOptions v1.ListOptions) error {
-	action := testing.NewDeleteCollectionAction(slacksourcesResource, c.ns, listOptions)
+func (c *FakeSlackSources) DeleteCollection(ctx context.Context, opts v1.DeleteOptions, listOpts v1.ListOptions) error {
+	action := testing.NewDeleteCollectionAction(slacksourcesResource, c.ns, listOpts)
 
 	_, err := c.Fake.Invokes(action, &v1alpha1.SlackSourceList{})
 	return err
 }
 
 // Patch applies the patch and returns the patched slackSource.
-func (c *FakeSlackSources) Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *v1alpha1.SlackSource, err error) {
+func (c *FakeSlackSources) Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *v1alpha1.SlackSource, err error) {
 	obj, err := c.Fake.
 		Invokes(testing.NewPatchSubresourceAction(slacksourcesResource, c.ns, name, pt, data, subresources...), &v1alpha1.SlackSource{})
 

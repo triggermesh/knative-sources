@@ -19,6 +19,8 @@ limitations under the License.
 package fake
 
 import (
+	"context"
+
 	v1alpha1 "github.com/triggermesh/knative-sources/pkg/apis/sources/v1alpha1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	labels "k8s.io/apimachinery/pkg/labels"
@@ -39,7 +41,7 @@ var httpsourcesResource = schema.GroupVersionResource{Group: "sources.triggermes
 var httpsourcesKind = schema.GroupVersionKind{Group: "sources.triggermesh.io", Version: "v1alpha1", Kind: "HTTPSource"}
 
 // Get takes name of the hTTPSource, and returns the corresponding hTTPSource object, and an error if there is any.
-func (c *FakeHTTPSources) Get(name string, options v1.GetOptions) (result *v1alpha1.HTTPSource, err error) {
+func (c *FakeHTTPSources) Get(ctx context.Context, name string, options v1.GetOptions) (result *v1alpha1.HTTPSource, err error) {
 	obj, err := c.Fake.
 		Invokes(testing.NewGetAction(httpsourcesResource, c.ns, name), &v1alpha1.HTTPSource{})
 
@@ -50,7 +52,7 @@ func (c *FakeHTTPSources) Get(name string, options v1.GetOptions) (result *v1alp
 }
 
 // List takes label and field selectors, and returns the list of HTTPSources that match those selectors.
-func (c *FakeHTTPSources) List(opts v1.ListOptions) (result *v1alpha1.HTTPSourceList, err error) {
+func (c *FakeHTTPSources) List(ctx context.Context, opts v1.ListOptions) (result *v1alpha1.HTTPSourceList, err error) {
 	obj, err := c.Fake.
 		Invokes(testing.NewListAction(httpsourcesResource, httpsourcesKind, c.ns, opts), &v1alpha1.HTTPSourceList{})
 
@@ -72,14 +74,14 @@ func (c *FakeHTTPSources) List(opts v1.ListOptions) (result *v1alpha1.HTTPSource
 }
 
 // Watch returns a watch.Interface that watches the requested hTTPSources.
-func (c *FakeHTTPSources) Watch(opts v1.ListOptions) (watch.Interface, error) {
+func (c *FakeHTTPSources) Watch(ctx context.Context, opts v1.ListOptions) (watch.Interface, error) {
 	return c.Fake.
 		InvokesWatch(testing.NewWatchAction(httpsourcesResource, c.ns, opts))
 
 }
 
 // Create takes the representation of a hTTPSource and creates it.  Returns the server's representation of the hTTPSource, and an error, if there is any.
-func (c *FakeHTTPSources) Create(hTTPSource *v1alpha1.HTTPSource) (result *v1alpha1.HTTPSource, err error) {
+func (c *FakeHTTPSources) Create(ctx context.Context, hTTPSource *v1alpha1.HTTPSource, opts v1.CreateOptions) (result *v1alpha1.HTTPSource, err error) {
 	obj, err := c.Fake.
 		Invokes(testing.NewCreateAction(httpsourcesResource, c.ns, hTTPSource), &v1alpha1.HTTPSource{})
 
@@ -90,7 +92,7 @@ func (c *FakeHTTPSources) Create(hTTPSource *v1alpha1.HTTPSource) (result *v1alp
 }
 
 // Update takes the representation of a hTTPSource and updates it. Returns the server's representation of the hTTPSource, and an error, if there is any.
-func (c *FakeHTTPSources) Update(hTTPSource *v1alpha1.HTTPSource) (result *v1alpha1.HTTPSource, err error) {
+func (c *FakeHTTPSources) Update(ctx context.Context, hTTPSource *v1alpha1.HTTPSource, opts v1.UpdateOptions) (result *v1alpha1.HTTPSource, err error) {
 	obj, err := c.Fake.
 		Invokes(testing.NewUpdateAction(httpsourcesResource, c.ns, hTTPSource), &v1alpha1.HTTPSource{})
 
@@ -102,7 +104,7 @@ func (c *FakeHTTPSources) Update(hTTPSource *v1alpha1.HTTPSource) (result *v1alp
 
 // UpdateStatus was generated because the type contains a Status member.
 // Add a +genclient:noStatus comment above the type to avoid generating UpdateStatus().
-func (c *FakeHTTPSources) UpdateStatus(hTTPSource *v1alpha1.HTTPSource) (*v1alpha1.HTTPSource, error) {
+func (c *FakeHTTPSources) UpdateStatus(ctx context.Context, hTTPSource *v1alpha1.HTTPSource, opts v1.UpdateOptions) (*v1alpha1.HTTPSource, error) {
 	obj, err := c.Fake.
 		Invokes(testing.NewUpdateSubresourceAction(httpsourcesResource, "status", c.ns, hTTPSource), &v1alpha1.HTTPSource{})
 
@@ -113,7 +115,7 @@ func (c *FakeHTTPSources) UpdateStatus(hTTPSource *v1alpha1.HTTPSource) (*v1alph
 }
 
 // Delete takes name of the hTTPSource and deletes it. Returns an error if one occurs.
-func (c *FakeHTTPSources) Delete(name string, options *v1.DeleteOptions) error {
+func (c *FakeHTTPSources) Delete(ctx context.Context, name string, opts v1.DeleteOptions) error {
 	_, err := c.Fake.
 		Invokes(testing.NewDeleteAction(httpsourcesResource, c.ns, name), &v1alpha1.HTTPSource{})
 
@@ -121,15 +123,15 @@ func (c *FakeHTTPSources) Delete(name string, options *v1.DeleteOptions) error {
 }
 
 // DeleteCollection deletes a collection of objects.
-func (c *FakeHTTPSources) DeleteCollection(options *v1.DeleteOptions, listOptions v1.ListOptions) error {
-	action := testing.NewDeleteCollectionAction(httpsourcesResource, c.ns, listOptions)
+func (c *FakeHTTPSources) DeleteCollection(ctx context.Context, opts v1.DeleteOptions, listOpts v1.ListOptions) error {
+	action := testing.NewDeleteCollectionAction(httpsourcesResource, c.ns, listOpts)
 
 	_, err := c.Fake.Invokes(action, &v1alpha1.HTTPSourceList{})
 	return err
 }
 
 // Patch applies the patch and returns the patched hTTPSource.
-func (c *FakeHTTPSources) Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *v1alpha1.HTTPSource, err error) {
+func (c *FakeHTTPSources) Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *v1alpha1.HTTPSource, err error) {
 	obj, err := c.Fake.
 		Invokes(testing.NewPatchSubresourceAction(httpsourcesResource, c.ns, name, pt, data, subresources...), &v1alpha1.HTTPSource{})
 

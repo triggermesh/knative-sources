@@ -19,6 +19,7 @@ limitations under the License.
 package v1alpha1
 
 import (
+	"context"
 	"time"
 
 	v1alpha1 "github.com/triggermesh/knative-sources/pkg/apis/sources/v1alpha1"
@@ -37,15 +38,15 @@ type ZendeskSourcesGetter interface {
 
 // ZendeskSourceInterface has methods to work with ZendeskSource resources.
 type ZendeskSourceInterface interface {
-	Create(*v1alpha1.ZendeskSource) (*v1alpha1.ZendeskSource, error)
-	Update(*v1alpha1.ZendeskSource) (*v1alpha1.ZendeskSource, error)
-	UpdateStatus(*v1alpha1.ZendeskSource) (*v1alpha1.ZendeskSource, error)
-	Delete(name string, options *v1.DeleteOptions) error
-	DeleteCollection(options *v1.DeleteOptions, listOptions v1.ListOptions) error
-	Get(name string, options v1.GetOptions) (*v1alpha1.ZendeskSource, error)
-	List(opts v1.ListOptions) (*v1alpha1.ZendeskSourceList, error)
-	Watch(opts v1.ListOptions) (watch.Interface, error)
-	Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *v1alpha1.ZendeskSource, err error)
+	Create(ctx context.Context, zendeskSource *v1alpha1.ZendeskSource, opts v1.CreateOptions) (*v1alpha1.ZendeskSource, error)
+	Update(ctx context.Context, zendeskSource *v1alpha1.ZendeskSource, opts v1.UpdateOptions) (*v1alpha1.ZendeskSource, error)
+	UpdateStatus(ctx context.Context, zendeskSource *v1alpha1.ZendeskSource, opts v1.UpdateOptions) (*v1alpha1.ZendeskSource, error)
+	Delete(ctx context.Context, name string, opts v1.DeleteOptions) error
+	DeleteCollection(ctx context.Context, opts v1.DeleteOptions, listOpts v1.ListOptions) error
+	Get(ctx context.Context, name string, opts v1.GetOptions) (*v1alpha1.ZendeskSource, error)
+	List(ctx context.Context, opts v1.ListOptions) (*v1alpha1.ZendeskSourceList, error)
+	Watch(ctx context.Context, opts v1.ListOptions) (watch.Interface, error)
+	Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *v1alpha1.ZendeskSource, err error)
 	ZendeskSourceExpansion
 }
 
@@ -64,20 +65,20 @@ func newZendeskSources(c *SourcesV1alpha1Client, namespace string) *zendeskSourc
 }
 
 // Get takes name of the zendeskSource, and returns the corresponding zendeskSource object, and an error if there is any.
-func (c *zendeskSources) Get(name string, options v1.GetOptions) (result *v1alpha1.ZendeskSource, err error) {
+func (c *zendeskSources) Get(ctx context.Context, name string, options v1.GetOptions) (result *v1alpha1.ZendeskSource, err error) {
 	result = &v1alpha1.ZendeskSource{}
 	err = c.client.Get().
 		Namespace(c.ns).
 		Resource("zendesksources").
 		Name(name).
 		VersionedParams(&options, scheme.ParameterCodec).
-		Do().
+		Do(ctx).
 		Into(result)
 	return
 }
 
 // List takes label and field selectors, and returns the list of ZendeskSources that match those selectors.
-func (c *zendeskSources) List(opts v1.ListOptions) (result *v1alpha1.ZendeskSourceList, err error) {
+func (c *zendeskSources) List(ctx context.Context, opts v1.ListOptions) (result *v1alpha1.ZendeskSourceList, err error) {
 	var timeout time.Duration
 	if opts.TimeoutSeconds != nil {
 		timeout = time.Duration(*opts.TimeoutSeconds) * time.Second
@@ -88,13 +89,13 @@ func (c *zendeskSources) List(opts v1.ListOptions) (result *v1alpha1.ZendeskSour
 		Resource("zendesksources").
 		VersionedParams(&opts, scheme.ParameterCodec).
 		Timeout(timeout).
-		Do().
+		Do(ctx).
 		Into(result)
 	return
 }
 
 // Watch returns a watch.Interface that watches the requested zendeskSources.
-func (c *zendeskSources) Watch(opts v1.ListOptions) (watch.Interface, error) {
+func (c *zendeskSources) Watch(ctx context.Context, opts v1.ListOptions) (watch.Interface, error) {
 	var timeout time.Duration
 	if opts.TimeoutSeconds != nil {
 		timeout = time.Duration(*opts.TimeoutSeconds) * time.Second
@@ -105,87 +106,90 @@ func (c *zendeskSources) Watch(opts v1.ListOptions) (watch.Interface, error) {
 		Resource("zendesksources").
 		VersionedParams(&opts, scheme.ParameterCodec).
 		Timeout(timeout).
-		Watch()
+		Watch(ctx)
 }
 
 // Create takes the representation of a zendeskSource and creates it.  Returns the server's representation of the zendeskSource, and an error, if there is any.
-func (c *zendeskSources) Create(zendeskSource *v1alpha1.ZendeskSource) (result *v1alpha1.ZendeskSource, err error) {
+func (c *zendeskSources) Create(ctx context.Context, zendeskSource *v1alpha1.ZendeskSource, opts v1.CreateOptions) (result *v1alpha1.ZendeskSource, err error) {
 	result = &v1alpha1.ZendeskSource{}
 	err = c.client.Post().
 		Namespace(c.ns).
 		Resource("zendesksources").
+		VersionedParams(&opts, scheme.ParameterCodec).
 		Body(zendeskSource).
-		Do().
+		Do(ctx).
 		Into(result)
 	return
 }
 
 // Update takes the representation of a zendeskSource and updates it. Returns the server's representation of the zendeskSource, and an error, if there is any.
-func (c *zendeskSources) Update(zendeskSource *v1alpha1.ZendeskSource) (result *v1alpha1.ZendeskSource, err error) {
+func (c *zendeskSources) Update(ctx context.Context, zendeskSource *v1alpha1.ZendeskSource, opts v1.UpdateOptions) (result *v1alpha1.ZendeskSource, err error) {
 	result = &v1alpha1.ZendeskSource{}
 	err = c.client.Put().
 		Namespace(c.ns).
 		Resource("zendesksources").
 		Name(zendeskSource.Name).
+		VersionedParams(&opts, scheme.ParameterCodec).
 		Body(zendeskSource).
-		Do().
+		Do(ctx).
 		Into(result)
 	return
 }
 
 // UpdateStatus was generated because the type contains a Status member.
 // Add a +genclient:noStatus comment above the type to avoid generating UpdateStatus().
-
-func (c *zendeskSources) UpdateStatus(zendeskSource *v1alpha1.ZendeskSource) (result *v1alpha1.ZendeskSource, err error) {
+func (c *zendeskSources) UpdateStatus(ctx context.Context, zendeskSource *v1alpha1.ZendeskSource, opts v1.UpdateOptions) (result *v1alpha1.ZendeskSource, err error) {
 	result = &v1alpha1.ZendeskSource{}
 	err = c.client.Put().
 		Namespace(c.ns).
 		Resource("zendesksources").
 		Name(zendeskSource.Name).
 		SubResource("status").
+		VersionedParams(&opts, scheme.ParameterCodec).
 		Body(zendeskSource).
-		Do().
+		Do(ctx).
 		Into(result)
 	return
 }
 
 // Delete takes name of the zendeskSource and deletes it. Returns an error if one occurs.
-func (c *zendeskSources) Delete(name string, options *v1.DeleteOptions) error {
+func (c *zendeskSources) Delete(ctx context.Context, name string, opts v1.DeleteOptions) error {
 	return c.client.Delete().
 		Namespace(c.ns).
 		Resource("zendesksources").
 		Name(name).
-		Body(options).
-		Do().
+		Body(&opts).
+		Do(ctx).
 		Error()
 }
 
 // DeleteCollection deletes a collection of objects.
-func (c *zendeskSources) DeleteCollection(options *v1.DeleteOptions, listOptions v1.ListOptions) error {
+func (c *zendeskSources) DeleteCollection(ctx context.Context, opts v1.DeleteOptions, listOpts v1.ListOptions) error {
 	var timeout time.Duration
-	if listOptions.TimeoutSeconds != nil {
-		timeout = time.Duration(*listOptions.TimeoutSeconds) * time.Second
+	if listOpts.TimeoutSeconds != nil {
+		timeout = time.Duration(*listOpts.TimeoutSeconds) * time.Second
 	}
 	return c.client.Delete().
 		Namespace(c.ns).
 		Resource("zendesksources").
-		VersionedParams(&listOptions, scheme.ParameterCodec).
+		VersionedParams(&listOpts, scheme.ParameterCodec).
 		Timeout(timeout).
-		Body(options).
-		Do().
+		Body(&opts).
+		Do(ctx).
 		Error()
 }
 
 // Patch applies the patch and returns the patched zendeskSource.
-func (c *zendeskSources) Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *v1alpha1.ZendeskSource, err error) {
+func (c *zendeskSources) Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *v1alpha1.ZendeskSource, err error) {
 	result = &v1alpha1.ZendeskSource{}
 	err = c.client.Patch(pt).
 		Namespace(c.ns).
 		Resource("zendesksources").
-		SubResource(subresources...).
 		Name(name).
+		SubResource(subresources...).
+		VersionedParams(&opts, scheme.ParameterCodec).
 		Body(data).
-		Do().
+		Do(ctx).
 		Into(result)
 	return
 }

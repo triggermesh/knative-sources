@@ -19,6 +19,8 @@ limitations under the License.
 package fake
 
 import (
+	"context"
+
 	v1alpha1 "github.com/triggermesh/knative-sources/pkg/apis/sources/v1alpha1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	labels "k8s.io/apimachinery/pkg/labels"
@@ -39,7 +41,7 @@ var zendesksourcesResource = schema.GroupVersionResource{Group: "sources.trigger
 var zendesksourcesKind = schema.GroupVersionKind{Group: "sources.triggermesh.io", Version: "v1alpha1", Kind: "ZendeskSource"}
 
 // Get takes name of the zendeskSource, and returns the corresponding zendeskSource object, and an error if there is any.
-func (c *FakeZendeskSources) Get(name string, options v1.GetOptions) (result *v1alpha1.ZendeskSource, err error) {
+func (c *FakeZendeskSources) Get(ctx context.Context, name string, options v1.GetOptions) (result *v1alpha1.ZendeskSource, err error) {
 	obj, err := c.Fake.
 		Invokes(testing.NewGetAction(zendesksourcesResource, c.ns, name), &v1alpha1.ZendeskSource{})
 
@@ -50,7 +52,7 @@ func (c *FakeZendeskSources) Get(name string, options v1.GetOptions) (result *v1
 }
 
 // List takes label and field selectors, and returns the list of ZendeskSources that match those selectors.
-func (c *FakeZendeskSources) List(opts v1.ListOptions) (result *v1alpha1.ZendeskSourceList, err error) {
+func (c *FakeZendeskSources) List(ctx context.Context, opts v1.ListOptions) (result *v1alpha1.ZendeskSourceList, err error) {
 	obj, err := c.Fake.
 		Invokes(testing.NewListAction(zendesksourcesResource, zendesksourcesKind, c.ns, opts), &v1alpha1.ZendeskSourceList{})
 
@@ -72,14 +74,14 @@ func (c *FakeZendeskSources) List(opts v1.ListOptions) (result *v1alpha1.Zendesk
 }
 
 // Watch returns a watch.Interface that watches the requested zendeskSources.
-func (c *FakeZendeskSources) Watch(opts v1.ListOptions) (watch.Interface, error) {
+func (c *FakeZendeskSources) Watch(ctx context.Context, opts v1.ListOptions) (watch.Interface, error) {
 	return c.Fake.
 		InvokesWatch(testing.NewWatchAction(zendesksourcesResource, c.ns, opts))
 
 }
 
 // Create takes the representation of a zendeskSource and creates it.  Returns the server's representation of the zendeskSource, and an error, if there is any.
-func (c *FakeZendeskSources) Create(zendeskSource *v1alpha1.ZendeskSource) (result *v1alpha1.ZendeskSource, err error) {
+func (c *FakeZendeskSources) Create(ctx context.Context, zendeskSource *v1alpha1.ZendeskSource, opts v1.CreateOptions) (result *v1alpha1.ZendeskSource, err error) {
 	obj, err := c.Fake.
 		Invokes(testing.NewCreateAction(zendesksourcesResource, c.ns, zendeskSource), &v1alpha1.ZendeskSource{})
 
@@ -90,7 +92,7 @@ func (c *FakeZendeskSources) Create(zendeskSource *v1alpha1.ZendeskSource) (resu
 }
 
 // Update takes the representation of a zendeskSource and updates it. Returns the server's representation of the zendeskSource, and an error, if there is any.
-func (c *FakeZendeskSources) Update(zendeskSource *v1alpha1.ZendeskSource) (result *v1alpha1.ZendeskSource, err error) {
+func (c *FakeZendeskSources) Update(ctx context.Context, zendeskSource *v1alpha1.ZendeskSource, opts v1.UpdateOptions) (result *v1alpha1.ZendeskSource, err error) {
 	obj, err := c.Fake.
 		Invokes(testing.NewUpdateAction(zendesksourcesResource, c.ns, zendeskSource), &v1alpha1.ZendeskSource{})
 
@@ -102,7 +104,7 @@ func (c *FakeZendeskSources) Update(zendeskSource *v1alpha1.ZendeskSource) (resu
 
 // UpdateStatus was generated because the type contains a Status member.
 // Add a +genclient:noStatus comment above the type to avoid generating UpdateStatus().
-func (c *FakeZendeskSources) UpdateStatus(zendeskSource *v1alpha1.ZendeskSource) (*v1alpha1.ZendeskSource, error) {
+func (c *FakeZendeskSources) UpdateStatus(ctx context.Context, zendeskSource *v1alpha1.ZendeskSource, opts v1.UpdateOptions) (*v1alpha1.ZendeskSource, error) {
 	obj, err := c.Fake.
 		Invokes(testing.NewUpdateSubresourceAction(zendesksourcesResource, "status", c.ns, zendeskSource), &v1alpha1.ZendeskSource{})
 
@@ -113,7 +115,7 @@ func (c *FakeZendeskSources) UpdateStatus(zendeskSource *v1alpha1.ZendeskSource)
 }
 
 // Delete takes name of the zendeskSource and deletes it. Returns an error if one occurs.
-func (c *FakeZendeskSources) Delete(name string, options *v1.DeleteOptions) error {
+func (c *FakeZendeskSources) Delete(ctx context.Context, name string, opts v1.DeleteOptions) error {
 	_, err := c.Fake.
 		Invokes(testing.NewDeleteAction(zendesksourcesResource, c.ns, name), &v1alpha1.ZendeskSource{})
 
@@ -121,15 +123,15 @@ func (c *FakeZendeskSources) Delete(name string, options *v1.DeleteOptions) erro
 }
 
 // DeleteCollection deletes a collection of objects.
-func (c *FakeZendeskSources) DeleteCollection(options *v1.DeleteOptions, listOptions v1.ListOptions) error {
-	action := testing.NewDeleteCollectionAction(zendesksourcesResource, c.ns, listOptions)
+func (c *FakeZendeskSources) DeleteCollection(ctx context.Context, opts v1.DeleteOptions, listOpts v1.ListOptions) error {
+	action := testing.NewDeleteCollectionAction(zendesksourcesResource, c.ns, listOpts)
 
 	_, err := c.Fake.Invokes(action, &v1alpha1.ZendeskSourceList{})
 	return err
 }
 
 // Patch applies the patch and returns the patched zendeskSource.
-func (c *FakeZendeskSources) Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *v1alpha1.ZendeskSource, err error) {
+func (c *FakeZendeskSources) Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *v1alpha1.ZendeskSource, err error) {
 	obj, err := c.Fake.
 		Invokes(testing.NewPatchSubresourceAction(zendesksourcesResource, c.ns, name, pt, data, subresources...), &v1alpha1.ZendeskSource{})
 

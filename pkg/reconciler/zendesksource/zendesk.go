@@ -278,9 +278,9 @@ func targetTitle(src metav1.Object) string {
 	return "io.triggermesh.zendesksource." + src.GetNamespace() + "." + src.GetName()
 }
 
-// secretFrom handles the retrieval of secretes from the within the defined namepace
+// secretFrom retrieves a value from a Secret.
 func (r *Reconciler) secretFrom(ctx context.Context, namespace string, secretKeySelector *corev1.SecretKeySelector) (string, error) {
-	secret, err := r.kubeClient.CoreV1().Secrets(namespace).Get(secretKeySelector.Name, metav1.GetOptions{})
+	secret, err := r.kubeClient.CoreV1().Secrets(namespace).Get(ctx, secretKeySelector.Name, metav1.GetOptions{})
 	if err != nil {
 		return "", err
 	}

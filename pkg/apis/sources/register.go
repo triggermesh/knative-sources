@@ -28,6 +28,12 @@ var (
 		Resource: "slacksources",
 	}
 
+	// OciMetricsSourceResource represents an event source for OCI Metrics.
+	OciMetricsSourceResource = schema.GroupResource{
+		Group:    GroupName,
+		Resource: "ocimetricssources",
+	}
+
 	// ZendeskSourceResource represents an event source for Zendesk.
 	ZendeskSourceResource = schema.GroupResource{
 		Group:    GroupName,

@@ -26,6 +26,8 @@ import (
 type Interface interface {
 	// HTTPSources returns a HTTPSourceInformer.
 	HTTPSources() HTTPSourceInformer
+	// OciMetricsSources returns a OciMetricsSourceInformer.
+	OciMetricsSources() OciMetricsSourceInformer
 	// SlackSources returns a SlackSourceInformer.
 	SlackSources() SlackSourceInformer
 	// ZendeskSources returns a ZendeskSourceInformer.
@@ -46,6 +48,11 @@ func New(f internalinterfaces.SharedInformerFactory, namespace string, tweakList
 // HTTPSources returns a HTTPSourceInformer.
 func (v *version) HTTPSources() HTTPSourceInformer {
 	return &hTTPSourceInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
+}
+
+// OciMetricsSources returns a OciMetricsSourceInformer.
+func (v *version) OciMetricsSources() OciMetricsSourceInformer {
+	return &ociMetricsSourceInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
 }
 
 // SlackSources returns a SlackSourceInformer.

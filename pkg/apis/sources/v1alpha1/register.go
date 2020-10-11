@@ -37,6 +37,7 @@ var (
 func addKnownTypes(scheme *runtime.Scheme) error {
 	scheme.AddKnownTypes(SchemeGroupVersion,
 		&SlackSource{}, &SlackSourceList{},
+		&OciMetricsSource{}, &OciMetricsSourceList{},
 		&ZendeskSource{}, &ZendeskSourceList{},
 		&HTTPSource{}, &HTTPSourceList{},
 	)

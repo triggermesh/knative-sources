@@ -26,6 +26,14 @@ type HTTPSourceListerExpansion interface{}
 // HTTPSourceNamespaceLister.
 type HTTPSourceNamespaceListerExpansion interface{}
 
+// OciMetricsSourceListerExpansion allows custom methods to be added to
+// OciMetricsSourceLister.
+type OciMetricsSourceListerExpansion interface{}
+
+// OciMetricsSourceNamespaceListerExpansion allows custom methods to be added to
+// OciMetricsSourceNamespaceLister.
+type OciMetricsSourceNamespaceListerExpansion interface{}
+
 // SlackSourceListerExpansion allows custom methods to be added to
 // SlackSourceLister.
 type SlackSourceListerExpansion interface{}

@@ -32,6 +32,10 @@ func (c *FakeSourcesV1alpha1) HTTPSources(namespace string) v1alpha1.HTTPSourceI
 	return &FakeHTTPSources{c, namespace}
 }
 
+func (c *FakeSourcesV1alpha1) OciMetricsSources(namespace string) v1alpha1.OciMetricsSourceInterface {
+	return &FakeOciMetricsSources{c, namespace}
+}
+
 func (c *FakeSourcesV1alpha1) SlackSources(namespace string) v1alpha1.SlackSourceInterface {
 	return &FakeSlackSources{c, namespace}
 }

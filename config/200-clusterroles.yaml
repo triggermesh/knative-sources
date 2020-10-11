@@ -52,6 +52,7 @@ rules:
   - sources.triggermesh.io
   resources:
   - slacksources
+  - ocimetricssources
   - zendesksources
   - httpsources
   verbs:
@@ -62,6 +63,7 @@ rules:
   - sources.triggermesh.io
   resources:
   - slacksources/status
+  - ocimetricssources/status
   - zendesksources/status
   - httpsources/status
   verbs:
@@ -113,6 +115,7 @@ rules:
   - coordination.k8s.io
   resourceNames:
   - knative-sources-controller.github.com-triggermesh-knative-sources-pkg-reconciler-slacksource.reconciler.00-of-01
+  - knative-sources-controller.github.com-triggermesh-knative-sources-pkg-reconciler-ocimetricssource.reconciler.00-of-01
   - knative-sources-controller.github.com-triggermesh-knative-sources-pkg-reconciler-zendesksource.reconciler.00-of-01
   - knative-sources-controller.github.com-triggermesh-knative-sources-pkg-reconciler-httpsource.reconciler.00-of-01
   resources:
@@ -144,6 +147,7 @@ rules:
   - sources.triggermesh.io
   resources:
   - slacksources
+  - ocimetricssources
   - zendesksources
   - httpsources
   verbs:

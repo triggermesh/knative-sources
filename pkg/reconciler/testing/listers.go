@@ -99,6 +99,11 @@ func (l *Listers) GetSlackSourceLister() listersv1alpha1.SlackSourceLister {
 	return listersv1alpha1.NewSlackSourceLister(l.IndexerFor(&v1alpha1.SlackSource{}))
 }
 
+// GetOCIMetricsSourceLister returns a Lister for OciMetricsSource objects.
+func (l *Listers) GetOciMetricsSourceLister() listersv1alpha1.OciMetricsSourceLister {
+	return listersv1alpha1.NewOciMetricsSourceLister(l.IndexerFor(&v1alpha1.OciMetricsSource{}))
+}
+
 // GetZendeskSourceLister returns a Lister for ZendeskSource objects.
 func (l *Listers) GetZendeskSourceLister() listersv1alpha1.ZendeskSourceLister {
 	return listersv1alpha1.NewZendeskSourceLister(l.IndexerFor(&v1alpha1.ZendeskSource{}))

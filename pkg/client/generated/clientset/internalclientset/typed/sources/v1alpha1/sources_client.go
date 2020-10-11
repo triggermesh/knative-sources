@@ -27,6 +27,7 @@ import (
 type SourcesV1alpha1Interface interface {
 	RESTClient() rest.Interface
 	HTTPSourcesGetter
+	OciMetricsSourcesGetter
 	SlackSourcesGetter
 	ZendeskSourcesGetter
 }
@@ -38,6 +39,10 @@ type SourcesV1alpha1Client struct {
 
 func (c *SourcesV1alpha1Client) HTTPSources(namespace string) HTTPSourceInterface {
 	return newHTTPSources(c, namespace)
+}
+
+func (c *SourcesV1alpha1Client) OciMetricsSources(namespace string) OciMetricsSourceInterface {
+	return newOciMetricsSources(c, namespace)
 }
 
 func (c *SourcesV1alpha1Client) SlackSources(namespace string) SlackSourceInterface {

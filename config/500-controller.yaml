@@ -57,6 +57,8 @@ spec:
         # Source adapters
         - name: SLACKSOURCE_IMAGE
           value: ko://github.com/triggermesh/knative-sources/cmd/slacksource-adapter
+        - name: OCIMETRICSSOURCE_IMAGE
+          value: ko://github.com/triggermesh/knative-sources/cmd/ocimetricssource-adapter
         - name: ZENDESKSOURCE_IMAGE
           value: ko://github.com/triggermesh/knative-sources/cmd/zendesksource-adapter
         - name: HTTPSOURCE_IMAGE

@@ -30,7 +30,7 @@ Binaries will be generated for your current OS and architecture inside the root 
 Those binaries can also be packaged as container images in order to run inside a Kubernetes cluster:
 
 ```sh
-$ make image
+$ make images
 ```
 
 All make targets can be listed:

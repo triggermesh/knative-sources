@@ -54,8 +54,8 @@ func NewController(
 	envconfig.MustProcess(app, adapterCfg)
 
 	r := &Reconciler{
-		adapterCfg: adapterCfg,
-		kubeClient: kubeclient.Get(ctx),
+		adapterCfg:   adapterCfg,
+		secretClient: kubeclient.Get(ctx).CoreV1().Secrets,
 	}
 	impl := reconcilerv1alpha1.NewImpl(ctx, r)
 

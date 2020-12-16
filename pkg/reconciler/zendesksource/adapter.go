@@ -32,7 +32,7 @@ import (
 const (
 	envZdSubdomain   = "ZENDESK_SUBDOMAIN"
 	envZdWebhookUser = "ZENDESK_WEBHOOK_USERNAME"
-	envZdWebhookPwd  = "ZENDESK_WEBHOOK_PASSWORD"
+	envZdWebhookPwd  = "ZENDESK_WEBHOOK_PASSWORD" //nolint:gosec
 )
 
 const metricsPrometheusPort uint16 = 9092

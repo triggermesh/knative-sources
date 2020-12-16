@@ -18,6 +18,7 @@ package zendesksource
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -25,6 +26,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	coreclientv1 "k8s.io/client-go/kubernetes/typed/core/v1"
 
 	pkgapis "knative.dev/pkg/apis"
 	"knative.dev/pkg/controller"
@@ -64,112 +66,132 @@ func (r *Reconciler) ensureZendeskTargetAndTrigger(ctx context.Context) error {
 
 	spec := src.(pkgapis.HasSpec).GetUntypedSpec().(v1alpha1.ZendeskSourceSpec)
 
-	apiToken, err := r.secretFrom(ctx, src.GetNamespace(), spec.Token.SecretKeyRef)
+	apiToken, err := secretFrom(ctx, r.secretClient(src.GetNamespace()), spec.Token.SecretKeyRef)
 	if err != nil {
 		status.MarkTargetNotSynced(v1alpha1.ZendeskReasonNoSecret, "Cannot obtain Zendesk API token")
 		return err
 	}
 
-	webhookPassword, err := r.secretFrom(ctx, src.GetNamespace(), spec.WebhookPassword.SecretKeyRef)
+	webhookPassword, err := secretFrom(ctx, r.secretClient(src.GetNamespace()), spec.WebhookPassword.SecretKeyRef)
 	if err != nil {
 		status.MarkTargetNotSynced(v1alpha1.ZendeskReasonNoSecret, "Cannot obtain webhook password")
 		return err
 	}
 
-	cred := zendesk.NewAPITokenCredential(spec.Email, apiToken)
-	client, err := zendesk.NewClient(nil)
+	client, err := zendeskClient(spec.Email, spec.Subdomain, apiToken)
 	if err != nil {
-		return fmt.Errorf("creating Zendesk client: %w", err)
+		return fmt.Errorf("getting Zendesk client: %w", err)
 	}
-	if err := client.SetSubdomain(spec.Subdomain); err != nil {
-		return fmt.Errorf("setting Zendesk subdomain: %w", err)
-	}
-	client.SetCredential(cred)
 
 	title := targetTitle(src)
 
+	currentTarget, err := ensureTarget(ctx, status, client,
+		desiredTarget(title, url.String(), spec.WebhookUsername, webhookPassword),
+	)
+	if err != nil {
+		return err
+	}
+
+	err = ensureTrigger(ctx, status, client,
+		desiredTrigger(title, strconv.FormatInt(currentTarget.ID, 10)),
+	)
+	if err != nil {
+		return err
+	}
+
+	status.MarkTargetSynced()
+	return nil
+}
+
+func desiredTarget(title, url, webhookUsername, webhookPassword string) *zendesk.Target {
+	return &zendesk.Target{
+		Title:       title,
+		Type:        "http_target",
+		TargetURL:   url,
+		Method:      "post",
+		Username:    webhookUsername,
+		Password:    webhookPassword,
+		ContentType: "application/json",
+	}
+}
+
+func desiredTrigger(title, targetID string) *zendesk.Trigger {
+	trg := &zendesk.Trigger{
+		Title: title,
+		Actions: []zendesk.TriggerAction{{
+			Field: "notification_target",
+			Value: []string{
+				targetID,
+				triggerPayloadJSON,
+			},
+		}},
+	}
+	trg.Conditions.All = []zendesk.TriggerCondition{{
+		Field:    "update_type",
+		Operator: "is",
+		Value:    "Create",
+	}}
+
+	return trg
+}
+
+func ensureTarget(ctx context.Context, status *v1alpha1.ZendeskSourceStatus,
+	client *zendesk.Client, desired *zendesk.Target) (*zendesk.Target, error) {
+
+	// TODO: It could happen that the target already exists but is in a
+	// different page. We will need to support pagination in a future
+	// release of this source.
 	targets, _, err := client.GetTargets(ctx)
 	switch {
 	case isDenied(err):
-		return controller.NewPermanentError(err)
+		return nil, controller.NewPermanentError(err)
 
 	case err != nil:
 		status.MarkTargetNotSynced(v1alpha1.ZendeskReasonFailedSync, "Unable to list Targets")
-		return fmt.Errorf("retrieving Zendesk Targets: %w", err)
+		return nil, fmt.Errorf("retrieving Zendesk Targets: %w", err)
 	}
 
-	var currentTarget *zendesk.Target
 	for _, t := range targets {
-		if t.Title == title {
-			currentTarget = &t
-			break
+		if t.Title == desired.Title {
+			// TODO: ensure the target's state didn't drift since
+			// its creation
+			return &t, nil
 		}
 	}
 
-	// we only require the Target to exist, users can modify its contents
-	// after the integration is setup for the first time.
-	if currentTarget == nil {
-		desiredTarget := zendesk.Target{
-			Title:       title,
-			Type:        "http_target",
-			TargetURL:   url.String(),
-			Method:      "post",
-			Username:    spec.WebhookUsername,
-			Password:    webhookPassword,
-			ContentType: "application/json",
-		}
-
-		resp, err := client.CreateTarget(ctx, desiredTarget)
-		if err != nil {
-			// TODO: It could happen that the target already exists
-			// but is in a different page. We will need to support
-			// pagination in a future release of this source.
-			status.MarkTargetNotSynced(v1alpha1.ZendeskReasonFailedSync, "Unable to create Target")
-			return fmt.Errorf("creating Zendesk Target: %w", err)
-		}
-		currentTarget = &resp
+	target, err := client.CreateTarget(ctx, *desired)
+	if err != nil {
+		status.MarkTargetNotSynced(v1alpha1.ZendeskReasonFailedSync, "Unable to create Target")
+		return nil, fmt.Errorf("creating Zendesk Target: %w", err)
 	}
 
+	return &target, nil
+}
+
+func ensureTrigger(ctx context.Context, status *v1alpha1.ZendeskSourceStatus,
+	client *zendesk.Client, desired *zendesk.Trigger) error {
+
+	// TODO: It could happen that the trigger already exists but is in a
+	// different page. We will need to support pagination in a future
+	// release of this source.
 	triggers, _, err := client.GetTriggers(ctx, &zendesk.TriggerListOptions{})
 	if err != nil {
 		status.MarkTargetNotSynced(v1alpha1.ZendeskReasonFailedSync, "Unable to list Triggers")
 		return fmt.Errorf("retrieving Zendesk Triggers: %w", err)
 	}
 
-	var currentTrigger *zendesk.Trigger
 	for _, t := range triggers {
-		if t.Title == title {
-			currentTrigger = &t
-			break
+		if t.Title == desired.Title {
+			// TODO: ensure the trigger's state didn't drift since
+			// its creation
+			return nil
 		}
 	}
 
-	// we only require the Trigger to exist, users can modify its contents
-	// after the integration is setup for the first time.
-	if currentTrigger == nil {
-		desiredTrigger := zendesk.Trigger{
-			Title: title,
-			Actions: []zendesk.TriggerAction{{
-				Field: "notification_target",
-				Value: []string{
-					strconv.FormatInt(currentTarget.ID, 10),
-					triggerPayloadJSON,
-				},
-			}},
-		}
-		desiredTrigger.Conditions.All = []zendesk.TriggerCondition{{
-			Field:    "update_type",
-			Operator: "is",
-			Value:    "Create",
-		}}
-
-		if _, err := client.CreateTrigger(ctx, desiredTrigger); err != nil {
-			status.MarkTargetNotSynced(v1alpha1.ZendeskReasonFailedSync, "Unable to create Trigger")
-			return fmt.Errorf("creating Zendesk Trigger: %w", err)
-		}
+	if _, err := client.CreateTrigger(ctx, *desired); err != nil {
+		status.MarkTargetNotSynced(v1alpha1.ZendeskReasonFailedSync, "Unable to create Trigger")
+		return fmt.Errorf("creating Zendesk Trigger: %w", err)
 	}
-
-	status.MarkTargetSynced()
 
 	return nil
 }
@@ -185,7 +207,7 @@ func (r *Reconciler) ensureNoZendeskTargetAndTrigger(ctx context.Context) error 
 
 	spec := src.(pkgapis.HasSpec).GetUntypedSpec().(v1alpha1.ZendeskSourceSpec)
 
-	apiToken, err := r.secretFrom(ctx, src.GetNamespace(), spec.Token.SecretKeyRef)
+	apiToken, err := secretFrom(ctx, r.secretClient(src.GetNamespace()), spec.Token.SecretKeyRef)
 	switch {
 	case apierrors.IsNotFound(err):
 		// the finalizer is unlikely to recover from a missing Secret,
@@ -198,23 +220,26 @@ func (r *Reconciler) ensureNoZendeskTargetAndTrigger(ctx context.Context) error 
 		return fmt.Errorf("reading Zendesk API token: %w", err)
 	}
 
-	cred := zendesk.NewAPITokenCredential(spec.Email, apiToken)
-	client, err := zendesk.NewClient(nil)
+	client, err := zendeskClient(spec.Email, spec.Subdomain, apiToken)
 	if err != nil {
-		return fmt.Errorf("creating Zendesk client: %w", err)
+		return fmt.Errorf("getting Zendesk client: %w", err)
 	}
-	if err := client.SetSubdomain(spec.Subdomain); err != nil {
-		return fmt.Errorf("setting Zendesk subdomain: %w", err)
-	}
-	client.SetCredential(cred)
 
+	if err := ensureNoTrigger(ctx, client, title); err != nil {
+		return err
+	}
+
+	return ensureNoTarget(ctx, client, title)
+}
+
+func ensureNoTrigger(ctx context.Context, client *zendesk.Client, title string) error {
 	triggers, _, err := client.GetTriggers(ctx, &zendesk.TriggerListOptions{})
 	switch {
 	case isDenied(err):
 		// it is unlikely that we recover from auth errors in the
 		// finalizer, so we simply record a warning event and return to
 		// allow the reconciler to remove the finalizer
-		event.Warn(ctx, ReasonFailedTargetDelete, "Authorization error finalizing Zendesk Target %q. "+
+		event.Warn(ctx, ReasonFailedTargetDelete, "Authorization error finalizing Zendesk Trigger %q. "+
 			"Ignoring: %s", title, err)
 		return nil
 
@@ -228,23 +253,37 @@ func (r *Reconciler) ensureNoZendeskTargetAndTrigger(ctx context.Context) error 
 	var currentTrigger *zendesk.Trigger
 	for _, t := range triggers {
 		if t.Title == title {
-			currentTrigger = &t
+			currentTrigger = &t //nolint:scopelint,exportloopref,gosec
 			break
 		}
 	}
-
-	if currentTrigger != nil {
-		if err := client.DeleteTrigger(ctx, currentTrigger.ID); err != nil {
-			// wrap the error to fail the finalization
-			event := reconciler.NewEvent(corev1.EventTypeWarning, ReasonFailedTargetDelete,
-				"Error finalizing Zendesk Trigger %q: %s", title, err)
-			return fmt.Errorf("%w", event)
-		}
-		event.Normal(ctx, ReasonTargetDeleted, "Zendesk Trigger %q was deleted", title)
+	if currentTrigger == nil {
+		return nil
 	}
 
+	if err := client.DeleteTrigger(ctx, currentTrigger.ID); err != nil {
+		// wrap the error event to fail the finalization
+		event := reconciler.NewEvent(corev1.EventTypeWarning, ReasonFailedTargetDelete,
+			"Error finalizing Zendesk Trigger %q: %s", title, err)
+		return fmt.Errorf("%w", event)
+	}
+	event.Normal(ctx, ReasonTargetDeleted, "Zendesk Trigger %q was deleted", title)
+
+	return nil
+}
+
+func ensureNoTarget(ctx context.Context, client *zendesk.Client, title string) error {
 	targets, _, err := client.GetTargets(ctx)
-	if err != nil {
+	switch {
+	case isDenied(err):
+		// it is unlikely that we recover from auth errors in the
+		// finalizer, so we simply record a warning event and return to
+		// allow the reconciler to remove the finalizer
+		event.Warn(ctx, ReasonFailedTargetDelete, "Authorization error finalizing Zendesk Target %q. "+
+			"Ignoring: %s", title, err)
+		return nil
+
+	case err != nil:
 		// wrap any other error to fail the finalization
 		event := reconciler.NewEvent(corev1.EventTypeWarning, ReasonFailedTargetDelete,
 			"Error retrieving Zendesk Targets: %s", err)
@@ -254,20 +293,21 @@ func (r *Reconciler) ensureNoZendeskTargetAndTrigger(ctx context.Context) error 
 	var currentTarget *zendesk.Target
 	for _, t := range targets {
 		if t.Title == title {
-			currentTarget = &t
+			currentTarget = &t //nolint:scopelint,exportloopref,gosec
 			break
 		}
 	}
-
-	if currentTarget != nil {
-		if err := client.DeleteTarget(ctx, currentTarget.ID); err != nil {
-			// wrap the error to fail the finalization
-			event := reconciler.NewEvent(corev1.EventTypeWarning, ReasonFailedTargetDelete,
-				"Error finalizing Zendesk Target %q: %s", title, err)
-			return fmt.Errorf("%w", event)
-		}
-		event.Normal(ctx, ReasonTargetDeleted, "Zendesk Target %q was deleted", title)
+	if currentTarget == nil {
+		return nil
 	}
+
+	if err := client.DeleteTarget(ctx, currentTarget.ID); err != nil {
+		// wrap the error event to fail the finalization
+		event := reconciler.NewEvent(corev1.EventTypeWarning, ReasonFailedTargetDelete,
+			"Error finalizing Zendesk Target %q: %s", title, err)
+		return fmt.Errorf("%w", event)
+	}
+	event.Normal(ctx, ReasonTargetDeleted, "Zendesk Target %q was deleted", title)
 
 	return nil
 }
@@ -279,10 +319,12 @@ func targetTitle(src metav1.Object) string {
 }
 
 // secretFrom retrieves a value from a Secret.
-func (r *Reconciler) secretFrom(ctx context.Context, namespace string, secretKeySelector *corev1.SecretKeySelector) (string, error) {
-	secret, err := r.kubeClient.CoreV1().Secrets(namespace).Get(ctx, secretKeySelector.Name, metav1.GetOptions{})
+func secretFrom(ctx context.Context, cli coreclientv1.SecretInterface,
+	secretKeySelector *corev1.SecretKeySelector) (string, error) {
+
+	secret, err := cli.Get(ctx, secretKeySelector.Name, metav1.GetOptions{})
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("getting secret: %w", err)
 	}
 
 	secretVal, ok := secret.Data[secretKeySelector.Key]
@@ -292,11 +334,26 @@ func (r *Reconciler) secretFrom(ctx context.Context, namespace string, secretKey
 	return string(secretVal), nil
 }
 
+// zendeskClient returns an initialized Zendesk client.
+func zendeskClient(email, subdomain, apiToken string) (*zendesk.Client, error) {
+	cred := zendesk.NewAPITokenCredential(email, apiToken)
+	client, err := zendesk.NewClient(nil)
+	if err != nil {
+		return nil, fmt.Errorf("creating Zendesk client: %w", err)
+	}
+	if err := client.SetSubdomain(subdomain); err != nil {
+		return nil, fmt.Errorf("setting Zendesk subdomain: %w", err)
+	}
+	client.SetCredential(cred)
+
+	return client, nil
+}
+
 // isDenied returns whether the given error indicates that a request was denied
 // due to authentication issues.
 func isDenied(err error) bool {
-	if err, ok := err.(zendesk.Error); ok {
-		s := err.Status()
+	if zdErr := (zendesk.Error{}); errors.As(err, &zdErr) {
+		s := zdErr.Status()
 		return s == http.StatusUnauthorized || s == http.StatusForbidden
 	}
 	return false

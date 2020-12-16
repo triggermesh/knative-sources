@@ -20,7 +20,7 @@ import (
 	"context"
 	"fmt"
 
-	"k8s.io/client-go/kubernetes"
+	coreclientv1 "k8s.io/client-go/kubernetes/typed/core/v1"
 	"knative.dev/pkg/reconciler"
 
 	"github.com/triggermesh/knative-sources/pkg/apis/sources/v1alpha1"
@@ -30,9 +30,9 @@ import (
 
 // Reconciler implements controller.Reconciler for the event source type.
 type Reconciler struct {
-	base       common.GenericServiceReconciler
-	kubeClient kubernetes.Interface
-	adapterCfg *adapterConfig
+	base         common.GenericServiceReconciler
+	secretClient func(namespace string) coreclientv1.SecretInterface
+	adapterCfg   *adapterConfig
 }
 
 // Check that our Reconciler implements Interface

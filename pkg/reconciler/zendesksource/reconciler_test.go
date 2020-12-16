@@ -63,9 +63,9 @@ func reconcilerCtor(cfg *adapterConfig) Ctor {
 		}
 
 		r := &Reconciler{
-			base:       base,
-			kubeClient: fakek8sinjectionclient.Get(ctx),
-			adapterCfg: cfg,
+			base:         base,
+			secretClient: fakek8sinjectionclient.Get(ctx).CoreV1().Secrets,
+			adapterCfg:   cfg,
 		}
 
 		return reconcilerv1alpha1.NewReconciler(ctx, logging.FromContext(ctx),

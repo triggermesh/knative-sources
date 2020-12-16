@@ -23,12 +23,13 @@ import (
 
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 )
 
 func TestNewDeploymentWithDefaultContainer(t *testing.T) {
-	ksvc := NewDeployment(tNs, tName,
+	depl := NewDeployment(tNs, tName,
 		PodLabel("test.podlabel/2", "val2"),
 		Selector("test.selector/1", "val1"),
 		Port("h2c", 8080),
@@ -42,9 +43,11 @@ func TestNewDeploymentWithDefaultContainer(t *testing.T) {
 		EnvVars(makeEnvVars(2, "MULTI_ENV", "val")...),
 		EnvVar("TEST_ENV2", "val2"),
 		Label("test.label/2", "val2"),
+		Requests(resource.MustParse("250m"), resource.MustParse("100Mi")),
+		Limits(resource.MustParse("250m"), resource.MustParse("100Mi")),
 	)
 
-	expectKsvc := &appsv1.Deployment{
+	expectDepl := &appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace: tNs,
 			Name:      tName,
@@ -101,23 +104,33 @@ func TestNewDeploymentWithDefaultContainer(t *testing.T) {
 								},
 							},
 						},
+						Resources: corev1.ResourceRequirements{
+							Requests: corev1.ResourceList{
+								corev1.ResourceCPU:    *resource.NewMilliQuantity(250, resource.DecimalSI),
+								corev1.ResourceMemory: *resource.NewQuantity(1024*1024*100, resource.BinarySI),
+							},
+							Limits: corev1.ResourceList{
+								corev1.ResourceCPU:    *resource.NewMilliQuantity(250, resource.DecimalSI),
+								corev1.ResourceMemory: *resource.NewQuantity(1024*1024*100, resource.BinarySI),
+							},
+						},
 					}},
 				},
 			},
 		},
 	}
 
-	if d := cmp.Diff(expectKsvc, ksvc); d != "" {
+	if d := cmp.Diff(expectDepl, depl); d != "" {
 		t.Errorf("Unexpected diff: (-:expect, +:got) %s", d)
 	}
 }
 
 func TestNewDeploymentWithCustomContainer(t *testing.T) {
-	ksvc := NewDeployment(tNs, tName,
+	depl := NewDeployment(tNs, tName,
 		Container(&corev1.Container{Name: "foo"}),
 	)
 
-	expectKsvc := &appsv1.Deployment{
+	expectDepl := &appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace: tNs,
 			Name:      tName,
@@ -133,7 +146,7 @@ func TestNewDeploymentWithCustomContainer(t *testing.T) {
 		},
 	}
 
-	if d := cmp.Diff(expectKsvc, ksvc); d != "" {
+	if d := cmp.Diff(expectDepl, depl); d != "" {
 		t.Errorf("Unexpected diff: (-:expect, +:got) %s", d)
 	}
 }

@@ -17,6 +17,10 @@ limitations under the License.
 package zendesksource
 
 const (
+	// ReasonTargetCreated indicates the successful creation of a Zendesk Target/Trigger.
+	ReasonTargetCreated = "TargetCreated"
+	// ReasonTargetUpdated indicates the successful update of a Zendesk Target/Trigger.
+	ReasonTargetUpdated = "TargetUpdated"
 	// ReasonTargetDeleted indicates the successful deletion of a Zendesk Target/Trigger.
 	ReasonTargetDeleted = "TargetDeleted"
 	// ReasonFailedTargetDelete indicates a failure during the deletion of a Zendesk Target/Trigger.

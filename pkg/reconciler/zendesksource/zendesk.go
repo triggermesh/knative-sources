@@ -23,6 +23,8 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/google/go-cmp/cmp"
+
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -106,7 +108,7 @@ func (r *Reconciler) ensureZendeskTargetAndTrigger(ctx context.Context) error {
 func desiredTarget(title, url, webhookUsername, webhookPassword string) *zendesk.Target {
 	return &zendesk.Target{
 		Title:       title,
-		Type:        "http_target",
+		Type:        "url_target_v2",
 		TargetURL:   url,
 		Method:      "post",
 		Username:    webhookUsername,
@@ -120,7 +122,7 @@ func desiredTrigger(title, targetID string) *zendesk.Trigger {
 		Title: title,
 		Actions: []zendesk.TriggerAction{{
 			Field: "notification_target",
-			Value: []string{
+			Value: []interface{}{
 				targetID,
 				triggerPayloadJSON,
 			},
@@ -131,6 +133,7 @@ func desiredTrigger(title, targetID string) *zendesk.Trigger {
 		Operator: "is",
 		Value:    "Create",
 	}}
+	trg.Conditions.Any = make([]zendesk.TriggerCondition, 0)
 
 	return trg
 }
@@ -153,9 +156,11 @@ func ensureTarget(ctx context.Context, status *v1alpha1.ZendeskSourceStatus,
 
 	for _, t := range targets {
 		if t.Title == desired.Title {
-			// TODO: ensure the target's state didn't drift since
-			// its creation
-			return &t, nil
+			target, err := syncTarget(ctx, client, &t, desired) //nolint:scopelint,gosec
+			if err != nil {
+				status.MarkTargetNotSynced(v1alpha1.ZendeskReasonFailedSync, "Unable to update Target")
+			}
+			return target, err
 		}
 	}
 
@@ -165,6 +170,34 @@ func ensureTarget(ctx context.Context, status *v1alpha1.ZendeskSourceStatus,
 		return nil, fmt.Errorf("creating Zendesk Target: %w", err)
 	}
 
+	event.Normal(ctx, ReasonTargetCreated, "Zendesk Target %q was created", target.Title)
+	return &target, nil
+}
+
+func syncTarget(ctx context.Context, client *zendesk.Client, current, desired *zendesk.Target) (*zendesk.Target, error) {
+	// copy fields which are set by the API
+	desired.URL = current.URL
+	desired.ID = current.ID
+	desired.CreatedAt = current.CreatedAt
+	desired.Active = true
+
+	// GetTargets doesn't return the webhook password, so we exclude it
+	// from the comparison
+	desiredPw := desired.Password
+	desired.Password = ""
+
+	if *current == *desired {
+		return current, nil
+	}
+
+	desired.Password = desiredPw
+
+	target, err := client.UpdateTarget(ctx, current.ID, *desired)
+	if err != nil {
+		return nil, fmt.Errorf("updating Zendesk Target: %w", err)
+	}
+
+	event.Normal(ctx, ReasonTargetUpdated, "Zendesk Target %q was updated", current.Title)
 	return &target, nil
 }
 
@@ -182,17 +215,41 @@ func ensureTrigger(ctx context.Context, status *v1alpha1.ZendeskSourceStatus,
 
 	for _, t := range triggers {
 		if t.Title == desired.Title {
-			// TODO: ensure the trigger's state didn't drift since
-			// its creation
-			return nil
+			err := syncTrigger(ctx, client, &t, desired) //nolint:scopelint,gosec
+			if err != nil {
+				status.MarkTargetNotSynced(v1alpha1.ZendeskReasonFailedSync, "Unable to update Trigger")
+			}
+			return err
 		}
 	}
 
-	if _, err := client.CreateTrigger(ctx, *desired); err != nil {
+	trigger, err := client.CreateTrigger(ctx, *desired)
+	if err != nil {
 		status.MarkTargetNotSynced(v1alpha1.ZendeskReasonFailedSync, "Unable to create Trigger")
 		return fmt.Errorf("creating Zendesk Trigger: %w", err)
 	}
 
+	event.Normal(ctx, ReasonTargetCreated, "Zendesk Trigger %q was created", trigger.Title)
+	return nil
+}
+
+func syncTrigger(ctx context.Context, client *zendesk.Client, current, desired *zendesk.Trigger) error {
+	// copy fields which are set by the API
+	desired.ID = current.ID
+	desired.Position = current.Position
+	desired.CreatedAt = current.CreatedAt
+	desired.UpdatedAt = current.UpdatedAt
+	desired.Active = true
+
+	if cmp.Equal(current, desired) {
+		return nil
+	}
+
+	if _, err := client.UpdateTrigger(ctx, current.ID, *desired); err != nil {
+		return fmt.Errorf("updating Zendesk Trigger: %w", err)
+	}
+
+	event.Normal(ctx, ReasonTargetUpdated, "Zendesk Trigger %q was updated", current.Title)
 	return nil
 }
 

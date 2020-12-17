@@ -163,6 +163,11 @@ spec:
                   required:
                   - type
                   - status
+              address:
+                type: object
+                properties:
+                  url:
+                    type: string
     additionalPrinterColumns:
     - name: Ready
       type: string

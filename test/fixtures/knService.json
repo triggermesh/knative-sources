@@ -11,24 +11,24 @@
         "labels": {
             "app.kubernetes.io/component": "adapter",
             "app.kubernetes.io/instance": "sample",
-            "app.kubernetes.io/managed-by": "foo-target-controller",
-            "app.kubernetes.io/name": "footarget",
-            "app.kubernetes.io/part-of": "event-targets"
+            "app.kubernetes.io/managed-by": "foo-sources-controller",
+            "app.kubernetes.io/name": "foosource",
+            "app.kubernetes.io/part-of": "foo-sources"
         },
-        "name": "footarget-sample",
+        "name": "foosource-sample",
         "namespace": "dev",
         "ownerReferences": [
             {
-                "apiVersion": "targets.triggermesh.io/v1alpha1",
+                "apiVersion": "sources.triggermesh.io/v1alpha1",
                 "blockOwnerDeletion": true,
                 "controller": true,
-                "kind": "FooTarget",
+                "kind": "FooSource",
                 "name": "sample",
                 "uid": "429cbd19-06ef-4795-b78e-ffcbc30660a1"
             }
         ],
         "resourceVersion": "572071",
-        "selfLink": "/apis/serving.knative.dev/v1/namespaces/dev/services/footarget-sample",
+        "selfLink": "/apis/serving.knative.dev/v1/namespaces/dev/services/foosource-sample",
         "uid": "5470339e-86a7-46fe-bb66-4c49c4a8f22e"
     },
     "spec": {
@@ -38,9 +38,9 @@
                 "labels": {
                     "app.kubernetes.io/component": "adapter",
                     "app.kubernetes.io/instance": "sample",
-                    "app.kubernetes.io/managed-by": "foo-target-controller",
-                    "app.kubernetes.io/name": "footarget",
-                    "app.kubernetes.io/part-of": "event-targets"
+                    "app.kubernetes.io/managed-by": "foo-sources-controller",
+                    "app.kubernetes.io/name": "foosource",
+                    "app.kubernetes.io/part-of": "foo-sources"
                 }
             },
             "spec": {
@@ -50,14 +50,14 @@
                         "env": [
                             {
                                 "name": "K_LOGGING_CONFIG",
-                                "value": ""
+                                "value": "{\"zap-logger-config\":\"{\\n  \\\"level\\\": \\\"info\\\",\\n  \\\"development\\\": false,\\n  \\\"outputPaths\\\": [\\\"stdout\\\"],\\n  \\\"errorOutputPaths\\\": [\\\"stderr\\\"],\\n  \\\"encoding\\\": \\\"json\\\",\\n  \\\"encoderConfig\\\": {\\n    \\\"timeKey\\\": \\\"ts\\\",\\n    \\\"levelKey\\\": \\\"level\\\",\\n    \\\"nameKey\\\": \\\"logger\\\",\\n    \\\"callerKey\\\": \\\"caller\\\",\\n    \\\"messageKey\\\": \\\"msg\\\",\\n    \\\"stacktraceKey\\\": \\\"stacktrace\\\",\\n    \\\"lineEnding\\\": \\\"\\\",\\n    \\\"levelEncoder\\\": \\\"\\\",\\n    \\\"timeEncoder\\\": \\\"iso8601\\\",\\n    \\\"durationEncoder\\\": \\\"\\\",\\n    \\\"callerEncoder\\\": \\\"\\\"\\n  }\\n}\"}"
                             },
                             {
                                 "name": "K_METRICS_CONFIG",
-                                "value": ""
+                                "value": "{\"Domain\":\"triggermesh.io/sources\",\"Component\":\"foosource\",\"PrometheusPort\":0,\"ConfigMap\":{}}"
                             }
                         ],
-                        "image": "gcr.io/triggermesh/footarget",
+                        "image": "gcr.io/triggermesh/foosource",
                         "name": "adapter",
                         "readinessProbe": {
                             "successThreshold": 1,
@@ -82,28 +82,28 @@
         "conditions": [
             {
                 "lastTransitionTime": "2020-04-23T21:14:02Z",
-                "message": "Revision \"footarget-sample-6wfhj\" failed with message: Unable to fetch image \"gcr.io/triggermesh/footarget\": failed to resolve image to digest: failed to fetch image information: GET https://gcr.io/v2/triggermesh/footarget/manifests/latest: MANIFEST_UNKNOWN: Failed to fetch \"latest\" from request \"/v2/triggermesh/footarget/manifests/latest\"..",
+                "message": "Revision \"foosource-sample-6wfhj\" failed with message: Unable to fetch image \"gcr.io/triggermesh/foosource\": failed to resolve image to digest: failed to fetch image information: GET https://gcr.io/v2/triggermesh/foosource/manifests/latest: MANIFEST_UNKNOWN: Failed to fetch \"latest\" from request \"/v2/triggermesh/foosource/manifests/latest\"..",
                 "reason": "RevisionFailed",
                 "status": "False",
                 "type": "ConfigurationsReady"
             },
             {
                 "lastTransitionTime": "2020-04-23T21:14:02Z",
-                "message": "Configuration \"footarget-sample\" does not have any ready Revision.",
+                "message": "Configuration \"foosource-sample\" does not have any ready Revision.",
                 "reason": "RevisionMissing",
                 "status": "False",
                 "type": "Ready"
             },
             {
                 "lastTransitionTime": "2020-04-23T21:14:02Z",
-                "message": "Configuration \"footarget-sample\" does not have any ready Revision.",
+                "message": "Configuration \"foosource-sample\" does not have any ready Revision.",
                 "reason": "RevisionMissing",
                 "status": "False",
                 "type": "RoutesReady"
             }
         ],
-        "latestCreatedRevisionName": "footarget-sample-6wfhj",
+        "latestCreatedRevisionName": "foosource-sample-6wfhj",
         "observedGeneration": 1,
-        "url": "http://footarget-sample.dev.example.com"
+        "url": "http://foosource-sample.dev.example.com"
     }
 }

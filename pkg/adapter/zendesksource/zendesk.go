@@ -202,21 +202,17 @@ func (h *zendeskAPIHandler) handleError(err error, w http.ResponseWriter) {
 }
 
 func (h *zendeskAPIHandler) cloudEventFromWrapper(ze *ZendeskEvent) (*cloudevents.Event, error) {
-	data, err := json.Marshal(ze)
-	if err != nil {
-		return nil, err
-	}
 	event := cloudevents.NewEvent(cloudevents.VersionV1)
 
 	if ticketType := ze.Type(); ticketType != "" {
-		event.SetExtension("ticket_type", ticketType)
+		event.SetExtension("tickettype", ticketType)
 	}
 	event.SetID(ze.ID())
 	event.SetType(v1alpha1.ZendeskTicketCreatedEventType)
 	event.SetSource(h.eventsource)
 	event.SetSubject(ze.Title())
 
-	if err := event.SetData(cloudevents.ApplicationJSON, data); err != nil {
+	if err := event.SetData(cloudevents.ApplicationJSON, ze); err != nil {
 		return nil, fmt.Errorf("failed to set event data: %w", err)
 	}
 

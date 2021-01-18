@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2020 TriggerMesh Inc.
+Copyright (c) 2020-2021 TriggerMesh Inc.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ import (
 	"testing"
 	"time"
 
+	cloudevents "github.com/cloudevents/sdk-go/v2"
 	cloudeventst "github.com/cloudevents/sdk-go/v2/client/test"
 	"github.com/stretchr/testify/assert"
 	zapt "go.uber.org/zap/zaptest"
@@ -114,7 +115,9 @@ func TestHTTPEvent(t *testing.T) {
 
 	for name, c := range tc {
 		t.Run(name, func(t *testing.T) {
-			ceClient, chEvent := cloudeventst.NewMockSenderClient(t, 1)
+			ceClient, chEvent := cloudeventst.NewMockSenderClient(t, 1,
+				cloudevents.WithTimeNow(), cloudevents.WithUUIDs(),
+			)
 
 			handler := &httpHandler{
 				eventType:   tEventType,

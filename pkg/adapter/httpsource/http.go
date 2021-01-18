@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2020 TriggerMesh Inc.
+Copyright (c) 2020-2021 TriggerMesh Inc.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -24,15 +24,14 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/google/uuid"
-
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"go.uber.org/zap"
+	"knative.dev/pkg/logging"
 )
 
 const (
-	serverPort                = "8080"
-	serverShutdownGracePeriod = time.Second * 10
+	serverPort                uint16 = 8080
+	serverShutdownGracePeriod        = time.Second * 10
 )
 
 type httpHandler struct {
@@ -43,37 +42,57 @@ type httpHandler struct {
 	password string
 
 	ceClient cloudevents.Client
-	srv      *http.Server
 
 	logger *zap.SugaredLogger
 }
 
-// Start the server for receiving Http events. Will block until the stop channel closes.
+// Start implements adapter.Adapter.
+// Runs the server for receiving HTTP events until ctx gets cancelled.
 func (h *httpHandler) Start(ctx context.Context) error {
-	h.logger.Info("Starting Http event handler...")
-
 	m := http.NewServeMux()
 	m.HandleFunc("/", h.handleAll)
-	http.HandleFunc("/health", healthCheckHandler)
+	m.HandleFunc("/health", healthCheckHandler)
 
-	h.srv = &http.Server{
-		Addr:    ":" + serverPort,
+	s := &http.Server{
+		Addr:    fmt.Sprintf(":%d", serverPort),
 		Handler: m,
 	}
 
-	done := make(chan bool, 1)
-	go h.gracefulShutdown(ctx.Done(), done)
+	return runHandler(ctx, s)
+}
 
-	h.logger.Infof("Http Source is ready to handle requests at %s", h.srv.Addr)
-	if err := h.srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-		// if an error occurs listening we don't want a graceful shutdown, the
-		// server is not serving requests. Return and let the done channel die.
-		return fmt.Errorf("could not listen on %s: %w", h.srv.Addr, err)
+// runHandler runs the HTTP event handler until ctx get cancelled.
+func runHandler(ctx context.Context, s *http.Server) error {
+	logging.FromContext(ctx).Info("Starting HTTP event handler")
+
+	errCh := make(chan error)
+	go func() {
+		errCh <- s.ListenAndServe()
+	}()
+
+	handleServerError := func(err error) error {
+		if err != http.ErrServerClosed {
+			return fmt.Errorf("during server runtime: %w", err)
+		}
+		return nil
 	}
 
-	<-done
-	h.logger.Infof("Server stopped")
-	return nil
+	select {
+	case <-ctx.Done():
+		logging.FromContext(ctx).Info("HTTP event handler is shutting down")
+
+		ctx, cancel := context.WithTimeout(context.Background(), serverShutdownGracePeriod)
+		defer cancel()
+
+		if err := s.Shutdown(ctx); err != nil {
+			return fmt.Errorf("during server shutdown: %w", err)
+		}
+
+		return handleServerError(<-errCh)
+
+	case err := <-errCh:
+		return handleServerError(err)
+	}
 }
 
 // handleAll receives all Http events at a single resource, it
@@ -106,7 +125,6 @@ func (h *httpHandler) handleAll(w http.ResponseWriter, r *http.Request) {
 	event := cloudevents.NewEvent(cloudevents.VersionV1)
 	event.SetType(h.eventType)
 	event.SetSource(h.eventSource)
-	event.SetID(uuid.New().String())
 
 	if err := event.SetData(cloudevents.ApplicationJSON, body); err != nil {
 		h.handleError(fmt.Errorf("failed to set event data: %w", err), http.StatusInternalServerError, w)
@@ -129,18 +147,4 @@ func (h *httpHandler) handleError(err error, code int, w http.ResponseWriter) {
 func healthCheckHandler(w http.ResponseWriter, _ *http.Request) {
 	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 	w.WriteHeader(http.StatusOK)
-}
-
-func (h *httpHandler) gracefulShutdown(stopCh <-chan struct{}, done chan<- bool) {
-	<-stopCh
-	h.logger.Info("Server is shutting down...")
-
-	ctx, cancel := context.WithTimeout(context.Background(), serverShutdownGracePeriod)
-	defer cancel()
-
-	h.srv.SetKeepAlivesEnabled(false)
-	if err := h.srv.Shutdown(ctx); err != nil {
-		h.logger.Fatalf("Could not gracefully shutdown the server: %v", err)
-	}
-	close(done)
 }

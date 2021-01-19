@@ -1,4 +1,4 @@
-# Copyright (c) 2020 TriggerMesh Inc.
+# Copyright (c) 2020-2021 TriggerMesh Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -53,25 +53,28 @@ spec:
                 description: EventSource is an optional but recommended field for identifying the instance producing the events
                 type: string
               basicAuthUsername:
-                description: When informed will be used to configure Basic Authentication at the exposed endpoint
+                description: When supplied will be used to configure Basic Authentication at the exposed endpoint
                 type: string
               basicAuthPassword:
-                description: When informed will be used to configure Basic Authentication at the exposed endpoint
+                description: When supplied will be used to configure Basic Authentication at the exposed endpoint
+                type: object
                 properties:
-                  secretKeyRef:
-                    description: A reference to a Secret key containing the value.
+                  value:
+                    description: Password in plain text.
+                    type: string
+                  valueFromSecret:
+                    description: A reference to a Secret containing the password.
+                    type: object
                     properties:
-                      key:
-                        description: Key from the Secret object.
-                        type: string
                       name:
                         description: Name of the Secret object.
                         type: string
-                    required:
-                    - name
-                    - key
-                    type: object
-                type: object
+                      key:
+                        description: Key from the Secret object.
+                        type: string
+                oneOf:
+                - required: ['value']
+                - required: ['valueFromSecret']
               sink:
                 description: Reference to an event sink.
                 type: object

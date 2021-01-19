@@ -1,4 +1,4 @@
-# Copyright (c) 2020 TriggerMesh Inc.
+# Copyright (c) 2020-2021 TriggerMesh Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# Sample HTTPSource object.
+
 apiVersion: sources.triggermesh.io/v1alpha1
 kind: HTTPSource
 metadata:
@@ -21,24 +23,12 @@ spec:
   eventSource: instance-abc123
   basicAuthUsername: customuser
   basicAuthPassword:
-    secretKeyRef:
-      name: httpsource
-      key: password
+    value: abc123secret
   sink:
     ref:
       apiVersion: serving.knative.dev/v1
       kind: Service
       name: event-display
-
----
-
-apiVersion: v1
-kind: Secret
-metadata:
-  name: httpsource
-type: Opaque
-stringData:
-  password: abc123secret
 
 ---
 
@@ -50,5 +40,4 @@ spec:
   template:
     spec:
       containers:
-        - image: gcr.io/knative-releases/knative.dev/eventing-contrib/cmd/event_display
-
+      - image: gcr.io/knative-releases/knative.dev/eventing-contrib/cmd/event_display

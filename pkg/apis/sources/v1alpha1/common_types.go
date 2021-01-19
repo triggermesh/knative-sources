@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2020 TriggerMesh Inc.
+Copyright (c) 2020-2021 TriggerMesh Inc.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -38,10 +38,4 @@ type ValueFromField struct {
 	// Field value from a Kubernetes Secret.
 	// +optional
 	ValueFromSecret *corev1.SecretKeySelector `json:"valueFromSecret,omitempty"`
-}
-
-// SecretValueFromSource represents the source of a secret value
-type SecretValueFromSource struct {
-	// The Secret key to select from.
-	SecretKeyRef *corev1.SecretKeySelector `json:"secretKeyRef,omitempty"`
 }

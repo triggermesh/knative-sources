@@ -1,11 +1,11 @@
 /*
-Copyright (c) 2020 TriggerMesh Inc.
+Copyright (c) 2020-2021 TriggerMesh Inc.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-   http://www.apache.org/licenses/LICENSE-2.0
+    http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -82,9 +82,9 @@ func adapterServiceBuilder(src *v1alpha1.ZendeskSource, cfg *adapterConfig) comm
 			resource.EnvVar(common.EnvSink, sinkURIStr),
 			resource.EnvVar(envZdSubdomain, src.Spec.Subdomain),
 			resource.EnvVar(envZdWebhookUser, src.Spec.WebhookUsername),
-			resource.EnvVarFromSecret(envZdWebhookPwd,
-				src.Spec.WebhookPassword.SecretKeyRef.Name,
-				src.Spec.WebhookPassword.SecretKeyRef.Key),
+			resource.EnvVars(common.MaybeAppendValueFromEnvVar(nil,
+				envZdWebhookPwd, src.Spec.WebhookPassword)...,
+			),
 			resource.EnvVar(common.EnvMetricsPrometheusPort, strconv.Itoa(int(metricsPrometheusPort))),
 			resource.EnvVars(cfg.configs.ToEnvVars()...),
 		)

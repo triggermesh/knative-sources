@@ -1,11 +1,11 @@
 /*
-Copyright (c) 2020 TriggerMesh Inc.
+Copyright (c) 2020-2021 TriggerMesh Inc.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-   http://www.apache.org/licenses/LICENSE-2.0
+    http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -55,7 +55,7 @@ type ZendeskSourceSpec struct {
 
 	// Token identifies the API token used for creating the proper credentials to interface with Zendesk
 	// allowing the source to auto-register the webhook to authenticate callbacks.
-	Token SecretValueFromSource `json:"token,omitempty"`
+	Token ValueFromField `json:"token,omitempty"`
 
 	// Email identifies the email used for creating the proper credentials to interface with Zendesk
 	// allowing the source to auto-register the webhook to authenticate callbacks.
@@ -63,7 +63,7 @@ type ZendeskSourceSpec struct {
 
 	// WebhookPassword used for basic authentication for events sent from Zendesk
 	// to the adapter.
-	WebhookPassword SecretValueFromSource `json:"webhookPassword,omitempty"`
+	WebhookPassword ValueFromField `json:"webhookPassword,omitempty"`
 
 	// WebhookUsername used for basic authentication for events sent from Zendesk
 	// to the adapter.

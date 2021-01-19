@@ -1,11 +1,11 @@
 /*
-Copyright (c) 2020 TriggerMesh Inc.
+Copyright (c) 2020-2021 TriggerMesh Inc.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-   http://www.apache.org/licenses/LICENSE-2.0
+    http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -68,13 +68,13 @@ func (r *Reconciler) ensureZendeskTargetAndTrigger(ctx context.Context) error {
 
 	spec := src.(pkgapis.HasSpec).GetUntypedSpec().(v1alpha1.ZendeskSourceSpec)
 
-	apiToken, err := secretFrom(ctx, r.secretClient(src.GetNamespace()), spec.Token.SecretKeyRef)
+	apiToken, err := secretFrom(ctx, r.secretClient(src.GetNamespace()), spec.Token)
 	if err != nil {
 		status.MarkTargetNotSynced(v1alpha1.ZendeskReasonNoSecret, "Cannot obtain Zendesk API token")
 		return err
 	}
 
-	webhookPassword, err := secretFrom(ctx, r.secretClient(src.GetNamespace()), spec.WebhookPassword.SecretKeyRef)
+	webhookPassword, err := secretFrom(ctx, r.secretClient(src.GetNamespace()), spec.WebhookPassword)
 	if err != nil {
 		status.MarkTargetNotSynced(v1alpha1.ZendeskReasonNoSecret, "Cannot obtain webhook password")
 		return err
@@ -264,7 +264,7 @@ func (r *Reconciler) ensureNoZendeskTargetAndTrigger(ctx context.Context) error 
 
 	spec := src.(pkgapis.HasSpec).GetUntypedSpec().(v1alpha1.ZendeskSourceSpec)
 
-	apiToken, err := secretFrom(ctx, r.secretClient(src.GetNamespace()), spec.Token.SecretKeyRef)
+	apiToken, err := secretFrom(ctx, r.secretClient(src.GetNamespace()), spec.Token)
 	switch {
 	case apierrors.IsNotFound(err):
 		// the finalizer is unlikely to recover from a missing Secret,
@@ -375,20 +375,26 @@ func targetTitle(src metav1.Object) string {
 	return "io.triggermesh.zendesksource." + src.GetNamespace() + "." + src.GetName()
 }
 
-// secretFrom retrieves a value from a Secret.
+// secretFrom returns the value referenced by a ValueFromField, using the
+// provided Secret client if necessary.
 func secretFrom(ctx context.Context, cli coreclientv1.SecretInterface,
-	secretKeySelector *corev1.SecretKeySelector) (string, error) {
+	valueFrom v1alpha1.ValueFromField) (string, error) {
 
-	secret, err := cli.Get(ctx, secretKeySelector.Name, metav1.GetOptions{})
-	if err != nil {
-		return "", fmt.Errorf("getting secret: %w", err)
+	if vfs := valueFrom.ValueFromSecret; vfs != nil {
+		secret, err := cli.Get(ctx, vfs.Name, metav1.GetOptions{})
+		if err != nil {
+			return "", fmt.Errorf("getting Secret from cluster: %w", err)
+		}
+
+		secretVal, ok := secret.Data[vfs.Key]
+		if !ok {
+			return "", fmt.Errorf("key %q not found in Secret %q", vfs.Key, vfs.Name)
+		}
+
+		return string(secretVal), nil
 	}
 
-	secretVal, ok := secret.Data[secretKeySelector.Key]
-	if !ok {
-		return "", fmt.Errorf("key %q not found in secret %q", secretKeySelector.Key, secretKeySelector.Name)
-	}
-	return string(secretVal), nil
+	return valueFrom.Value, nil
 }
 
 // zendeskClient returns an initialized Zendesk client.

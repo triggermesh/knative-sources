@@ -1,11 +1,11 @@
 /*
-Copyright (c) 2020 TriggerMesh Inc.
+Copyright (c) 2020-2021 TriggerMesh Inc.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-   http://www.apache.org/licenses/LICENSE-2.0
+    http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -80,8 +80,8 @@ func newEventSource() *v1alpha1.ZendeskSource {
 		Spec: v1alpha1.ZendeskSourceSpec{
 			Subdomain: "test",
 			Email:     "test@example.com",
-			Token: v1alpha1.SecretValueFromSource{
-				SecretKeyRef: &corev1.SecretKeySelector{
+			Token: v1alpha1.ValueFromField{
+				ValueFromSecret: &corev1.SecretKeySelector{
 					LocalObjectReference: corev1.LocalObjectReference{
 						Name: "test-secret",
 					},
@@ -89,8 +89,8 @@ func newEventSource() *v1alpha1.ZendeskSource {
 				},
 			},
 			WebhookUsername: "test",
-			WebhookPassword: v1alpha1.SecretValueFromSource{
-				SecretKeyRef: &corev1.SecretKeySelector{
+			WebhookPassword: v1alpha1.ValueFromField{
+				ValueFromSecret: &corev1.SecretKeySelector{
 					LocalObjectReference: corev1.LocalObjectReference{
 						Name: "test-secret",
 					},

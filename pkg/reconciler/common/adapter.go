@@ -1,11 +1,11 @@
 /*
-Copyright (c) 2020 TriggerMesh Inc.
+Copyright (c) 2020-2021 TriggerMesh Inc.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-   http://www.apache.org/licenses/LICENSE-2.0
+    http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -19,10 +19,37 @@ package common
 import (
 	"strings"
 
+	corev1 "k8s.io/api/core/v1"
 	"knative.dev/pkg/kmeta"
+
+	"github.com/triggermesh/knative-sources/pkg/apis/sources/v1alpha1"
 )
 
 // AdapterName returns the adapter's name for the given source object.
 func AdapterName(o kmeta.OwnerRefable) string {
 	return strings.ToLower(o.GetGroupVersionKind().Kind)
+}
+
+// MaybeAppendValueFromEnvVar conditionally appends an EnvVar to env based on
+// the contents of valueFrom.
+// ValueFromSecret takes precedence over Value in case the API didn't reject
+// the object despite the CRD's schema validation
+func MaybeAppendValueFromEnvVar(envs []corev1.EnvVar, key string, valueFrom v1alpha1.ValueFromField) []corev1.EnvVar {
+	if vfs := valueFrom.ValueFromSecret; vfs != nil {
+		return append(envs, corev1.EnvVar{
+			Name: key,
+			ValueFrom: &corev1.EnvVarSource{
+				SecretKeyRef: vfs,
+			},
+		})
+	}
+
+	if v := valueFrom.Value; v != "" {
+		return append(envs, corev1.EnvVar{
+			Name:  key,
+			Value: v,
+		})
+	}
+
+	return envs
 }

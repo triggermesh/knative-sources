@@ -1,4 +1,4 @@
-# Copyright (c) 2020 TriggerMesh Inc.
+# Copyright (c) 2020-2021 TriggerMesh Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -22,30 +22,15 @@ spec:
   email: '<ZENDESK ACCOUNT USER EMAIL>'
   subdomain: '<ZENDESK TENANT SUBDOMAIN>'
   token:
-    secretKeyRef:
-      name: zendesksource
-      key: token
+    value: : '<API TOKEN FROM ZENDESK'
   webhookUsername: '<SOME ARBITRARY USERNAME>'
   webhookPassword:
-    secretKeyRef:
-      name: zendesksource
-      key: webhookPassword
+    value: '<ARBITRARY PASSWORD FOR WEBHOOK>'
   sink:
     ref:
       apiVersion: serving.knative.dev/v1
       kind: Service
       name: event-display
-
----
-
-apiVersion: v1
-kind: Secret
-metadata:
-  name: zendesksource
-type: Opaque
-stringData:
-  token: '<API TOKEN FROM ZENDESK>'
-  webhookPassword: '<ARBITRARY PASSWORD FOR WEBHOOK>'
 
 ---
 
@@ -55,9 +40,6 @@ metadata:
   name: event-display
 spec:
   template:
-    metadata:
-      annotations:
-        autoscaling.knative.dev/minScale: "1"
     spec:
       containers:
-        - image: gcr.io/knative-releases/knative.dev/eventing-contrib/cmd/event_display
+      - image: gcr.io/knative-releases/knative.dev/eventing-contrib/cmd/event_display

@@ -1,11 +1,11 @@
 /*
-Copyright (c) 2020 TriggerMesh Inc.
+Copyright (c) 2020-2021 TriggerMesh Inc.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-   http://www.apache.org/licenses/LICENSE-2.0
+    http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -99,16 +99,17 @@ func makeHTTPEnvs(src *v1alpha1.HTTPSource) []corev1.EnvVar {
 		Value: src.AsEventSource(),
 	}}
 
-	if user, passref := src.Spec.BasicAuthUsername, src.Spec.BasicAuthPassword.SecretKeyRef; user != nil && passref != nil {
+	if user := src.Spec.BasicAuthUsername; user != nil {
 		envs = append(envs, corev1.EnvVar{
 			Name:  envHTTPBasicAuthUsername,
 			Value: *user,
-		}, corev1.EnvVar{
-			Name: envHTTPBasicAuthPassword,
-			ValueFrom: &corev1.EnvVarSource{
-				SecretKeyRef: passref,
-			},
 		})
+	}
+
+	if passw := src.Spec.BasicAuthPassword; passw != nil {
+		envs = common.MaybeAppendValueFromEnvVar(envs,
+			envHTTPBasicAuthPassword, *passw,
+		)
 	}
 
 	return envs

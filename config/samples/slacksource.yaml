@@ -1,4 +1,4 @@
-# Copyright (c) 2020 TriggerMesh Inc.
+# Copyright (c) 2020-2021 TriggerMesh Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -21,9 +21,7 @@ metadata:
 spec:
   # optional, making sure we are receiving events on behalf of Slack
   signingSecret:
-    secretKeyRef:
-      name: slack
-      key: signingSecret
+    value: XXXXXXXXXXXXXXXXXX
   # optional, making sure the events are being sent for this integration
   appID: AXXXXXXXXX
   sink:
@@ -31,16 +29,6 @@ spec:
       apiVersion: serving.knative.dev/v1
       kind: Service
       name: event-display
-
----
-
-apiVersion: v1
-kind: Secret
-metadata:
-  name: slack
-type: Opaque
-stringData:
-  signingSecret: XXXXXXXXXXXXXXXXXX
 
 ---
 
@@ -52,4 +40,4 @@ spec:
   template:
     spec:
       containers:
-        - image: gcr.io/knative-releases/knative.dev/eventing-contrib/cmd/event_display
+      - image: gcr.io/knative-releases/knative.dev/eventing-contrib/cmd/event_display

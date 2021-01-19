@@ -1,4 +1,4 @@
-# Copyright (c) 2020 TriggerMesh Inc.
+# Copyright (c) 2020-2021 TriggerMesh Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -54,8 +54,11 @@ spec:
                 description: Signing secret to authenticate Slack callbacks.
                 type: object
                 properties:
-                  secretKeyRef:
-                    description: A reference to a Secret key containing the value.
+                  value:
+                    description: Signing secret in plain text.
+                    type: string
+                  valueFromSecret:
+                    description: A reference to a Secret containing the signing secret.
                     type: object
                     properties:
                       name:
@@ -64,9 +67,9 @@ spec:
                       key:
                         description: Key from the Secret object.
                         type: string
-                    required:
-                    - name
-                    - key
+                oneOf:
+                - required: ['value']
+                - required: ['valueFromSecret']
               appID:
                 description: ID which identifies the Slack application generating this
                   event. It helps identifying the App that sources events when multiple

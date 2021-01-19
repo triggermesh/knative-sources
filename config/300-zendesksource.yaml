@@ -1,4 +1,4 @@
-# Copyright (c) 2020 TriggerMesh Inc.
+# Copyright (c) 2020-2021 TriggerMesh Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -61,8 +61,11 @@ spec:
                 description: Zendesk API token.
                 type: object
                 properties:
-                  secretKeyRef:
-                    description: A reference to a Secret key containing the value.
+                  value:
+                    description: API token in plain text.
+                    type: string
+                  valueFromSecret:
+                    description: A reference to a Secret containing the API token.
                     type: object
                     properties:
                       name:
@@ -71,9 +74,9 @@ spec:
                       key:
                         description: Key from the Secret object.
                         type: string
-                    required:
-                    - name
-                    - key
+                oneOf:
+                - required: ['value']
+                - required: ['valueFromSecret']
               webhookUsername:
                 description: User name for the webhook's Basic Authentication.
                 type: string
@@ -81,8 +84,11 @@ spec:
                 description: Password for the webhook's Basic Authentication.
                 type: object
                 properties:
-                  secretKeyRef:
-                    description: A reference to a Secret key containing the value.
+                  value:
+                    description: Webhook password in plain text.
+                    type: string
+                  valueFromSecret:
+                    description: A reference to a Secret containing the webhook password.
                     type: object
                     properties:
                       name:
@@ -91,9 +97,9 @@ spec:
                       key:
                         description: Key from the Secret object.
                         type: string
-                    required:
-                    - name
-                    - key
+                oneOf:
+                - required: ['value']
+                - required: ['valueFromSecret']
               sink:
                 description: Reference to an event sink.
                 type: object

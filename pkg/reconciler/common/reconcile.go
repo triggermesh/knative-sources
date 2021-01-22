@@ -281,8 +281,8 @@ func findAdapter(genericReconciler interface{}, src v1alpha1.EventSource) (metav
 	// the combination of standard labels {name,instance} is unique and
 	// immutable
 	sel := labels.SelectorFromSet(labels.Set{
-		AppNameLabel:     AdapterName(src),
-		AppInstanceLabel: src.GetName(),
+		appNameLabel:     AdapterName(src),
+		appInstanceLabel: src.GetName(),
 	})
 
 	var objs []metav1.Object

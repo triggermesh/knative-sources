@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2020 TriggerMesh Inc.
+Copyright (c) 2020-2021 TriggerMesh Inc.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -39,6 +39,7 @@ func TestNewContainer(t *testing.T) {
 		EnvVarFromSecret("TEST_ENV3", "test-secret", "someKey"),
 		Requests(resource.MustParse("250m"), resource.MustParse("100Mi")),
 		Limits(resource.MustParse("250m"), resource.MustParse("100Mi")),
+		TerminationErrorToLogs,
 	)
 
 	expectCont := &corev1.Container{
@@ -102,6 +103,7 @@ func TestNewContainer(t *testing.T) {
 				corev1.ResourceMemory: *resource.NewQuantity(1024*1024*100, resource.BinarySI),
 			},
 		},
+		TerminationMessagePolicy: corev1.TerminationMessageFallbackToLogsOnError,
 	}
 
 	if d := cmp.Diff(expectCont, cont); d != "" {

@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2020 TriggerMesh Inc.
+Copyright (c) 2020-2021 TriggerMesh Inc.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -18,9 +18,9 @@ package common
 
 // Common environment variables propagated to adapters.
 const (
-	EnvName      = "NAME"
-	EnvNamespace = "NAMESPACE"
-	EnvSink      = "K_SINK"
+	envName      = "NAME"
+	envNamespace = "NAMESPACE"
+	envSink      = "K_SINK"
 
-	EnvMetricsPrometheusPort = "METRICS_PROMETHEUS_PORT"
+	envMetricsPrometheusPort = "METRICS_PROMETHEUS_PORT"
 )

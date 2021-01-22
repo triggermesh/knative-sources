@@ -17,11 +17,8 @@ limitations under the License.
 package zendesksource
 
 import (
-	"strconv"
-
 	"knative.dev/eventing/pkg/reconciler/source"
 	"knative.dev/pkg/apis"
-	"knative.dev/pkg/kmeta"
 	servingv1 "knative.dev/serving/pkg/apis/serving/v1"
 
 	"github.com/triggermesh/knative-sources/pkg/apis/sources/v1alpha1"
@@ -34,8 +31,6 @@ const (
 	envZdWebhookUser = "ZENDESK_WEBHOOK_USERNAME"
 	envZdWebhookPwd  = "ZENDESK_WEBHOOK_PASSWORD" //nolint:gosec
 )
-
-const metricsPrometheusPort uint16 = 9092
 
 // adapterConfig contains properties used to configure the source's adapter.
 // These are automatically populated by envconfig.
@@ -50,42 +45,15 @@ type adapterConfig struct {
 // adapterServiceBuilder returns an AdapterServiceBuilderFunc for the
 // given source object and adapter config.
 func adapterServiceBuilder(src *v1alpha1.ZendeskSource, cfg *adapterConfig) common.AdapterServiceBuilderFunc {
-	adapterName := common.AdapterName(src)
-
 	return func(sinkURI *apis.URL) *servingv1.Service {
-		name := kmeta.ChildName(adapterName+"-", src.Name)
-
-		var sinkURIStr string
-		if sinkURI != nil {
-			sinkURIStr = sinkURI.String()
-		}
-
-		return resource.NewKnService(src.Namespace, name,
-			resource.Controller(src),
-
-			resource.Label(common.AppNameLabel, adapterName),
-			resource.Label(common.AppInstanceLabel, src.Name),
-			resource.Label(common.AppComponentLabel, common.AdapterComponent),
-			resource.Label(common.AppPartOfLabel, common.PartOf),
-			resource.Label(common.AppManagedByLabel, common.ManagedBy),
-
-			resource.PodLabel(common.AppNameLabel, adapterName),
-			resource.PodLabel(common.AppInstanceLabel, src.Name),
-			resource.PodLabel(common.AppComponentLabel, common.AdapterComponent),
-			resource.PodLabel(common.AppPartOfLabel, common.PartOf),
-			resource.PodLabel(common.AppManagedByLabel, common.ManagedBy),
-
+		return common.NewAdapterKnService(src, sinkURI,
 			resource.Image(cfg.Image),
 
-			resource.EnvVar(common.EnvName, src.Name),
-			resource.EnvVar(common.EnvNamespace, src.Namespace),
-			resource.EnvVar(common.EnvSink, sinkURIStr),
 			resource.EnvVar(envZdSubdomain, src.Spec.Subdomain),
 			resource.EnvVar(envZdWebhookUser, src.Spec.WebhookUsername),
 			resource.EnvVars(common.MaybeAppendValueFromEnvVar(nil,
 				envZdWebhookPwd, src.Spec.WebhookPassword)...,
 			),
-			resource.EnvVar(common.EnvMetricsPrometheusPort, strconv.Itoa(int(metricsPrometheusPort))),
 			resource.EnvVars(cfg.configs.ToEnvVars()...),
 		)
 	}

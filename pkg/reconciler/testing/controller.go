@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2020 TriggerMesh Inc.
+Copyright (c) 2020-2021 TriggerMesh Inc.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -40,8 +40,8 @@ func TestControllerConstructor(t *testing.T, ctor injection.ControllerConstructo
 
 	ctx, informers := rt.SetupFakeContext(t)
 
-	// expected informers: Source, Deployment
-	if expect, got := 2, len(informers); got != expect {
+	// expected informers: Source, Deployment, ServiceAccount, RoleBinding
+	if expect, got := 4, len(informers); got != expect {
 		t.Errorf("Expected %d injected informers, got %d", expect, got)
 	}
 

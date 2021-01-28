@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2020 TriggerMesh Inc.
+Copyright (c) 2020-2021 TriggerMesh Inc.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -35,6 +35,9 @@ const (
 	// ReasonSinkEmpty is set on a SinkProvided condition when a sink URI is empty.
 	ReasonSinkEmpty = "EmptySinkURI"
 
+	// ReasonRBACNotBound is set on a Deployed condition when an adapter's
+	// ServiceAccount cannot be bound.
+	ReasonRBACNotBound = "RBACNotBound"
 	// ReasonUnavailable is set on a Deployed condition when an adapter in unavailable.
 	ReasonUnavailable = "AdapterUnavailable"
 )

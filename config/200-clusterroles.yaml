@@ -75,6 +75,41 @@ rules:
   verbs:
   - patch
 
+# Manage resource-specific ServiceAccounts and RoleBindings
+- apiGroups:
+  - ''
+  resources:
+  - serviceaccounts
+  verbs:
+  - list
+  - watch
+  - create
+- apiGroups:
+  - ''
+  resources:
+  - serviceaccounts
+  resourceNames: &rbac-objects
+  - slacksource-adapter
+  - zendesksource-adapter
+  - httpsource-adapter
+  verbs:
+  - update
+- apiGroups:
+  - rbac.authorization.k8s.io
+  resources:
+  - rolebindings
+  verbs:
+  - list
+  - watch
+  - create
+- apiGroups:
+  - rbac.authorization.k8s.io
+  resources:
+  - rolebindings
+  resourceNames: *rbac-objects
+  verbs:
+  - update
+
 # Read credentials
 - apiGroups:
   - ''

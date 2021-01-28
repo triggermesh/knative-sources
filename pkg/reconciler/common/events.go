@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2020 TriggerMesh Inc.
+Copyright (c) 2020-2021 TriggerMesh Inc.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -18,6 +18,15 @@ package common
 
 // Reasons for API Events
 const (
+	// ReasonRBACCreate indicates that an RBAC object was successfully created.
+	ReasonRBACCreate = "CreateRBAC"
+	// ReasonRBACUpdate indicates that an RBAC object was successfully updated.
+	ReasonRBACUpdate = "UpdateRBAC"
+	// ReasonFailedRBACCreate indicates that the creation of an RBAC object failed.
+	ReasonFailedRBACCreate = "FailedRBACCreate"
+	// ReasonFailedRBACUpdate indicates that the update of an RBAC object failed.
+	ReasonFailedRBACUpdate = "FailedRBACUpdate"
+
 	// ReasonAdapterCreate indicates that an adapter object was successfully created.
 	ReasonAdapterCreate = "CreateAdapter"
 	// ReasonAdapterUpdate indicates that an adapter object was successfully updated.

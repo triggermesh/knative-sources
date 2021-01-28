@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2020 TriggerMesh Inc.
+Copyright (c) 2020-2021 TriggerMesh Inc.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -32,6 +32,12 @@ import (
 
 	"github.com/triggermesh/knative-sources/pkg/status"
 )
+
+// EventType returns an event type in a format suitable for usage as a
+// CloudEvent type attribute.
+func EventType(service, eventType string) string {
+	return "io.triggermesh." + service + "." + eventType
+}
 
 // eventSourceConditionSet is a generic set of status conditions used by
 // default in all event sources.
@@ -77,6 +83,13 @@ func (m *EventSourceStatusManager) MarkNoSink() {
 	m.SinkURI = nil
 	m.ConditionSet.Manage(m).MarkFalse(ConditionSinkProvided,
 		ReasonSinkNotFound, "The sink does not exist or its URI is not set")
+}
+
+// MarkRBACNotBound sets the Deployed condition to False, indicating that the
+// adapter's ServiceAccount couldn't be bound.
+func (m *EventSourceStatusManager) MarkRBACNotBound() {
+	m.ConditionSet.Manage(m).MarkFalse(ConditionDeployed,
+		ReasonRBACNotBound, "The adapter's ServiceAccount can not be bound")
 }
 
 // PropagateDeploymentAvailability uses the readiness of the provided

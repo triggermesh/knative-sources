@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2020 TriggerMesh Inc.
+Copyright (c) 2020-2021 TriggerMesh Inc.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -33,13 +33,15 @@ import (
 	logtesting "knative.dev/pkg/logging/testing"
 	"knative.dev/pkg/reconciler"
 	rt "knative.dev/pkg/reconciler/testing"
+	"knative.dev/pkg/resolver"
 	fakeservinginjectionclient "knative.dev/serving/pkg/client/injection/client/fake"
 
+	"github.com/triggermesh/event-sources/pkg/reconciler/common"
 	fakeinjectionclient "github.com/triggermesh/knative-sources/pkg/client/generated/injection/client/fake"
 )
 
 // Ctor constructs a controller.Reconciler.
-type Ctor func(*testing.T, context.Context, *Listers) controller.Reconciler
+type Ctor func(*testing.T, context.Context, *rt.TableRow, *Listers) controller.Reconciler
 
 // MakeFactory creates a testing factory for our controller.Reconciler, and
 // initializes a Reconciler using the given Ctor as part of the process.
@@ -78,7 +80,7 @@ func MakeFactory(ctor Ctor) rt.Factory {
 		ctx = controller.WithEventRecorder(ctx, eventRecorder)
 
 		// set up Reconciler from fakes
-		r := ctor(t, ctx, &ls)
+		r := ctor(t, ctx, tr, &ls)
 
 		// promote the reconciler if it is leader aware
 		if la, ok := r.(reconciler.LeaderAware); ok {
@@ -106,6 +108,39 @@ func MakeFactory(ctor Ctor) rt.Factory {
 		}
 
 		return r, actionRecorderList, eventList
+	}
+}
+
+// NewTestDeploymentReconciler returns a GenericServiceReconciler initialized with
+// test clients.
+func NewTestDeploymentReconciler(ctx context.Context, ls *Listers) common.GenericDeploymentReconciler {
+	return common.GenericDeploymentReconciler{
+		SinkResolver:          resolver.NewURIResolver(ctx, func(types.NamespacedName) {}),
+		Lister:                ls.GetDeploymentLister().Deployments,
+		Client:                fakek8sinjectionclient.Get(ctx).AppsV1().Deployments,
+		PodClient:             fakek8sinjectionclient.Get(ctx).CoreV1().Pods,
+		GenericRBACReconciler: newTestRBACReconciler(ctx, ls),
+	}
+}
+
+// NewTestServiceReconciler returns a GenericServiceReconciler initialized with
+// test clients.
+func NewTestServiceReconciler(ctx context.Context, ls *Listers) common.GenericServiceReconciler {
+	return common.GenericServiceReconciler{
+		SinkResolver:          resolver.NewURIResolver(ctx, func(types.NamespacedName) {}),
+		Lister:                ls.GetServiceLister().Services,
+		Client:                fakeservinginjectionclient.Get(ctx).ServingV1().Services,
+		GenericRBACReconciler: newTestRBACReconciler(ctx, ls),
+	}
+}
+
+// newTestRBACReconciler returns a GenericRBACReconciler initialized with test clients.
+func newTestRBACReconciler(ctx context.Context, ls *Listers) *common.GenericRBACReconciler {
+	return &common.GenericRBACReconciler{
+		SALister: ls.GetServiceAccountLister().ServiceAccounts,
+		RBLister: ls.GetRoleBindingLister().RoleBindings,
+		SAClient: fakek8sinjectionclient.Get(ctx).CoreV1().ServiceAccounts,
+		RBClient: fakek8sinjectionclient.Get(ctx).RbacV1().RoleBindings,
 	}
 }
 

@@ -18,9 +18,9 @@ package common
 
 // Common environment variables propagated to adapters.
 const (
-	envName      = "NAME"
-	envNamespace = "NAMESPACE"
-	envSink      = "K_SINK"
+	EnvName      = "NAME"
+	EnvNamespace = "NAMESPACE"
 
+	envSink                  = "K_SINK"
 	envMetricsPrometheusPort = "METRICS_PROMETHEUS_PORT"
 )

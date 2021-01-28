@@ -36,8 +36,8 @@ import (
 	"knative.dev/pkg/resolver"
 	fakeservinginjectionclient "knative.dev/serving/pkg/client/injection/client/fake"
 
-	"github.com/triggermesh/event-sources/pkg/reconciler/common"
 	fakeinjectionclient "github.com/triggermesh/knative-sources/pkg/client/generated/injection/client/fake"
+	"github.com/triggermesh/knative-sources/pkg/reconciler/common"
 )
 
 // Ctor constructs a controller.Reconciler.

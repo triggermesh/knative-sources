@@ -21,14 +21,12 @@ import (
 	"testing"
 
 	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/types"
-	fakek8sinjectionclient "knative.dev/pkg/client/injection/kube/client/fake"
 
 	"knative.dev/eventing/pkg/reconciler/source"
+	fakek8sinjectionclient "knative.dev/pkg/client/injection/kube/client/fake"
 	"knative.dev/pkg/controller"
 	"knative.dev/pkg/logging"
-	"knative.dev/pkg/resolver"
-	fakeservinginjectionclient "knative.dev/serving/pkg/client/injection/client/fake"
+	rt "knative.dev/pkg/reconciler/testing"
 
 	"github.com/triggermesh/knative-sources/pkg/apis/sources"
 	"github.com/triggermesh/knative-sources/pkg/apis/sources/v1alpha1"
@@ -44,28 +42,21 @@ func TestReconcileSource(t *testing.T) {
 		configs: &source.EmptyVarsGenerator{},
 	}
 
-	var (
-		ctor      = reconcilerCtor(adapterCfg)
-		src       = newEventSource()
-		adapterFn = adapterServiceBuilder(src, adapterCfg)
-	)
+	ctor := reconcilerCtor(adapterCfg)
+	src := newEventSource()
+	ab := adapterBuilder(adapterCfg)
 
-	TestReconcile(t, ctor, src, adapterFn)
+	TestReconcileAdapter(t, ctor, src, ab)
 }
 
 // reconcilerCtor returns a Ctor for a source Reconciler.
 func reconcilerCtor(cfg *adapterConfig) Ctor {
-	return func(t *testing.T, ctx context.Context, ls *Listers) controller.Reconciler {
-		base := common.GenericServiceReconciler{
-			SinkResolver: resolver.NewURIResolver(ctx, func(types.NamespacedName) {}),
-			Lister:       ls.GetServiceLister().Services,
-			Client:       fakeservinginjectionclient.Get(ctx).ServingV1().Services,
-		}
-
+	return func(t *testing.T, ctx context.Context, _ *rt.TableRow, ls *Listers) controller.Reconciler {
 		r := &Reconciler{
-			base:         base,
+			base:         NewTestServiceReconciler(ctx, ls),
 			secretClient: fakek8sinjectionclient.Get(ctx).CoreV1().Secrets,
 			adapterCfg:   cfg,
+			srcLister:    ls.GetZendeskSourceLister().ZendeskSources,
 		}
 
 		return reconcilerv1alpha1.NewReconciler(ctx, logging.FromContext(ctx),
@@ -107,4 +98,12 @@ func newEventSource() *v1alpha1.ZendeskSource {
 	Populate(src)
 
 	return src
+}
+
+// adapterBuilder returns a slim Reconciler containing only the fields accessed
+// by r.BuildAdapter().
+func adapterBuilder(cfg *adapterConfig) common.AdapterServiceBuilder {
+	return &Reconciler{
+		adapterCfg: cfg,
+	}
 }

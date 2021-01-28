@@ -17,10 +17,14 @@ limitations under the License.
 package slacksource
 
 import (
+	"fmt"
+
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/labels"
 
 	"knative.dev/eventing/pkg/reconciler/source"
 	"knative.dev/pkg/apis"
+	"knative.dev/pkg/kmeta"
 	servingv1 "knative.dev/serving/pkg/apis/serving/v1"
 
 	"github.com/triggermesh/knative-sources/pkg/apis/sources/v1alpha1"
@@ -43,17 +47,34 @@ type adapterConfig struct {
 	configs source.ConfigAccessor
 }
 
-// adapterServiceBuilder returns an AdapterServiceBuilderFunc for the
-// given source object and adapter config.
-func adapterServiceBuilder(src *v1alpha1.SlackSource, cfg *adapterConfig) common.AdapterServiceBuilderFunc {
-	return func(sinkURI *apis.URL) *servingv1.Service {
-		return common.NewAdapterKnService(src, sinkURI,
-			resource.Image(cfg.Image),
+// Verify that Reconciler implements common.AdapterServiceBuilder.
+var _ common.AdapterServiceBuilder = (*Reconciler)(nil)
 
-			resource.EnvVars(makeSlackEnvs(src)...),
-			resource.EnvVars(cfg.configs.ToEnvVars()...),
-		)
+// BuildAdapter implements common.AdapterDeploymentBuilder.
+func (r *Reconciler) BuildAdapter(src v1alpha1.EventSource, sinkURI *apis.URL) *servingv1.Service {
+	typedSrc := src.(*v1alpha1.SlackSource)
+
+	return common.NewAdapterKnService(src, sinkURI,
+		resource.Image(r.adapterCfg.Image),
+
+		resource.EnvVars(makeSlackEnvs(typedSrc)...),
+		resource.EnvVars(r.adapterCfg.configs.ToEnvVars()...),
+	)
+}
+
+// RBACOwners implements common.AdapterDeploymentBuilder.
+func (r *Reconciler) RBACOwners(namespace string) ([]kmeta.OwnerRefable, error) {
+	srcs, err := r.srcLister(namespace).List(labels.Everything())
+	if err != nil {
+		return nil, fmt.Errorf("listing objects from cache: %w", err)
 	}
+
+	ownerRefables := make([]kmeta.OwnerRefable, len(srcs))
+	for i := range srcs {
+		ownerRefables[i] = srcs[i]
+	}
+
+	return ownerRefables, nil
 }
 
 func makeSlackEnvs(src *v1alpha1.SlackSource) []corev1.EnvVar {

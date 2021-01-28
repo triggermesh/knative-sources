@@ -1,11 +1,11 @@
 /*
-Copyright (c) 2020 TriggerMesh Inc.
+Copyright (c) 2020-2021 TriggerMesh Inc.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-   http://www.apache.org/licenses/LICENSE-2.0
+    http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -23,6 +23,7 @@ import (
 
 	"github.com/triggermesh/knative-sources/pkg/apis/sources/v1alpha1"
 	reconcilerv1alpha1 "github.com/triggermesh/knative-sources/pkg/client/generated/injection/reconciler/sources/v1alpha1/slacksource"
+	listersv1alpha1 "github.com/triggermesh/knative-sources/pkg/client/generated/listers/sources/v1alpha1"
 	"github.com/triggermesh/knative-sources/pkg/reconciler/common"
 )
 
@@ -30,6 +31,8 @@ import (
 type Reconciler struct {
 	base       common.GenericServiceReconciler
 	adapterCfg *adapterConfig
+
+	srcLister func(namespace string) listersv1alpha1.SlackSourceNamespaceLister
 }
 
 // Check that our Reconciler implements Interface
@@ -40,5 +43,5 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, src *v1alpha1.SlackSourc
 	// inject source into context for usage in reconciliation logic
 	ctx = v1alpha1.WithSource(ctx, src)
 
-	return r.base.ReconcileSource(ctx, adapterServiceBuilder(src, r.adapterCfg))
+	return r.base.ReconcileSource(ctx, r)
 }

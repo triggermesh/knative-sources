@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2020-2021 TriggerMesh Inc.
+Copyright (c) 2021 TriggerMesh Inc.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,14 +14,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package common
+package routing
 
-// Common environment variables propagated to adapters.
-const (
-	EnvName      = "NAME"
-	EnvNamespace = "NAMESPACE"
+import metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	envSink                  = "K_SINK"
-	envComponent             = "K_COMPONENT"
-	envMetricsPrometheusPort = "METRICS_PROMETHEUS_PORT"
-)
+// URLPath returns a URL path to route requests for the given source object.
+func URLPath(src metav1.Object) string {
+	return "/" + src.GetNamespace() + "/" + src.GetName()
+}

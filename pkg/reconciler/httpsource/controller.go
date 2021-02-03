@@ -39,7 +39,7 @@ func NewController(
 ) *controller.Impl {
 
 	typ := (*v1alpha1.HTTPSource)(nil)
-	app := common.AdapterName(typ)
+	app := common.ComponentName(typ)
 
 	adapterCfg := &adapterConfig{
 		configs: source.WatchConfigurations(ctx, app, cmw, source.WithLogging, source.WithMetrics),

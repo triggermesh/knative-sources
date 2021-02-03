@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2020-2021 TriggerMesh Inc.
+Copyright (c) 2021 TriggerMesh Inc.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,14 +14,24 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package common
+package routing
 
-// Common environment variables propagated to adapters.
-const (
-	EnvName      = "NAME"
-	EnvNamespace = "NAMESPACE"
+import (
+	"testing"
 
-	envSink                  = "K_SINK"
-	envComponent             = "K_COMPONENT"
-	envMetricsPrometheusPort = "METRICS_PROMETHEUS_PORT"
+	"github.com/stretchr/testify/assert"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
+
+func TestURLPath(t *testing.T) {
+	obj := &struct {
+		metav1.ObjectMeta
+	}{
+		ObjectMeta: metav1.ObjectMeta{
+			Namespace: "testns",
+			Name:      "testname",
+		},
+	}
+
+	assert.Equal(t, URLPath(obj), "/testns/testname")
+}

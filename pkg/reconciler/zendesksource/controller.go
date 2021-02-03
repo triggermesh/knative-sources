@@ -44,7 +44,7 @@ func NewController(
 ) *controller.Impl {
 
 	typ := (*v1alpha1.ZendeskSource)(nil)
-	app := common.AdapterName(typ)
+	app := common.ComponentName(typ)
 
 	// Calling envconfig.Process() with a prefix appends that prefix
 	// (uppercased) to the Go field name, e.g. MYSOURCE_IMAGE.

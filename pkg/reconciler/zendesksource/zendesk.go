@@ -49,20 +49,12 @@ func (r *Reconciler) ensureZendeskTargetAndTrigger(ctx context.Context) error {
 	src := v1alpha1.SourceFromContext(ctx)
 	status := &src.(*v1alpha1.ZendeskSource).Status
 
-	adapter, err := r.base.FindAdapter(src)
-	switch {
-	case apierrors.IsNotFound(err):
-		return nil
-	case err != nil:
-		return fmt.Errorf("finding receive adapter: %w", err)
-	}
+	isDeployed := status.GetCondition(v1alpha1.ConditionDeployed).IsTrue()
+	url := status.Address.URL
 
-	url := adapter.Status.URL
-
-	// skip this cycle if the adapter URL wasn't yet determined
-	if !adapter.IsReady() || url == nil {
-		status.MarkTargetNotSynced(v1alpha1.ZendeskReasonNoURL,
-			"The receive adapter did not report its public URL yet")
+	// skip this cycle if the URL couldn't yet be determined
+	if !isDeployed || url == nil {
+		status.MarkTargetNotSynced(v1alpha1.ZendeskReasonNoURL, "The receive adapter isn't ready yet")
 		return nil
 	}
 

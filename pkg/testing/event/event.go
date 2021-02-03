@@ -14,14 +14,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package common
+// Package event contains test helpers for Kubernetes API events.
+package event
 
-// Common environment variables propagated to adapters.
-const (
-	EnvName      = "NAME"
-	EnvNamespace = "NAMESPACE"
+import "fmt"
 
-	envSink                  = "K_SINK"
-	envComponent             = "K_COMPONENT"
-	envMetricsPrometheusPort = "METRICS_PROMETHEUS_PORT"
-)
+// Eventf returns the attributes of an API event in the format returned by
+// Kubernetes' FakeRecorder.
+func Eventf(eventtype, reason, messageFmt string, args ...interface{}) string {
+	return fmt.Sprintf(eventtype+" "+reason+" "+messageFmt, args...)
+}

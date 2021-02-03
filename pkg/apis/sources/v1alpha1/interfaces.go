@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2020 TriggerMesh Inc.
+Copyright (c) 2020-2021 TriggerMesh Inc.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -45,6 +45,17 @@ type EventSource interface {
 	// AsEventSource returns a unique reference to the source suitable for
 	// use as a CloudEvent source attribute.
 	AsEventSource() string
+}
+
+// multiTenant is implemented by all multi-tenant source types.
+type multiTenant interface {
+	IsMultiTenant() bool
+}
+
+// IsMultiTenant returns whether the given source type is multi-tenant.
+func IsMultiTenant(src EventSource) bool {
+	mt, ok := src.(multiTenant)
+	return ok && mt.IsMultiTenant()
 }
 
 type sourceKey struct{}

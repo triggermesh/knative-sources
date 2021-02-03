@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2020 TriggerMesh Inc.
+Copyright (c) 2020-2021 TriggerMesh Inc.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -29,7 +29,7 @@ import (
 	"knative.dev/pkg/controller"
 
 	"github.com/triggermesh/knative-sources/pkg/apis/sources/v1alpha1"
-	eventtesting "github.com/triggermesh/knative-sources/pkg/reconciler/common/event/testing"
+	eventtesting "github.com/triggermesh/knative-sources/pkg/testing/event"
 )
 
 func TestEvents(t *testing.T) {

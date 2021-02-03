@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2020 TriggerMesh Inc.
+Copyright (c) 2021 TriggerMesh Inc.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,12 +14,19 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package testing
+// Package controller contains helpers shared between controllers embedded in
+// source adapters.
+package controller
 
-import "fmt"
+import "knative.dev/pkg/controller"
 
-// Eventf returns the attributes of an API event in the format returned by
-// Kubernetes' FakeRecorder.
-func Eventf(eventtype, reason, messageFmt string, args ...interface{}) string {
-	return fmt.Sprintf(eventtype+" "+reason+" "+messageFmt, args...)
+// Opts returns a callback function that sets the controller's agent name and
+// configures the reconciler to skip status updates.
+func Opts(component string) controller.OptionsFn {
+	return func(impl *controller.Impl) controller.Options {
+		return controller.Options{
+			AgentName:         component,
+			SkipStatusUpdates: true,
+		}
+	}
 }

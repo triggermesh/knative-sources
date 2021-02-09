@@ -61,6 +61,11 @@ func (s *ZendeskSource) AsEventSource() string {
 	return ZendeskSourceName(s.Spec.Subdomain, s.Name)
 }
 
+// IsMultiTenant implements MultiTenant.
+func (*ZendeskSource) IsMultiTenant() bool {
+	return true
+}
+
 // ZendeskSourceName returns a unique reference to the source suitable for use
 // as as a CloudEvent source.
 func ZendeskSourceName(subdomain, name string) string {

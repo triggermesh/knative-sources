@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2020 TriggerMesh Inc.
+Copyright (c) 2021 TriggerMesh Inc.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,21 +14,5 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package zendesksource
-
-import (
-	"knative.dev/eventing/pkg/adapter/v2"
-)
-
-// EnvAccessor for configuration parameters
-func EnvAccessor() adapter.EnvConfigAccessor {
-	return &envAccessor{}
-}
-
-type envAccessor struct {
-	adapter.EnvConfig
-
-	WebhookUsername string `envconfig:"ZENDESK_WEBHOOK_USERNAME"`
-	WebhookPassword string `envconfig:"ZENDESK_WEBHOOK_PASSWORD"`
-	Subdomain       string `envconfig:"ZENDESK_SUBDOMAIN"`
-}
+// Package testing contains test helpers for adapters.
+package testing

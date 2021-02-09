@@ -30,12 +30,6 @@ import (
 	"github.com/triggermesh/knative-sources/pkg/reconciler/common/resource"
 )
 
-const (
-	envZdSubdomain   = "ZENDESK_SUBDOMAIN"
-	envZdWebhookUser = "ZENDESK_WEBHOOK_USERNAME"
-	envZdWebhookPwd  = "ZENDESK_WEBHOOK_PASSWORD" //nolint:gosec
-)
-
 // adapterConfig contains properties used to configure the source's adapter.
 // These are automatically populated by envconfig.
 type adapterConfig struct {

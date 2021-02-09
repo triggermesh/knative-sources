@@ -178,7 +178,51 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   name: zendesksource-adapter
-rules: []
+rules:
+
+# Record Kubernetes events
+- apiGroups:
+  - ''
+  resources:
+  - events
+  verbs:
+  - create
+  - patch
+  - update
+
+# Read Source resources
+- apiGroups:
+  - sources.triggermesh.io
+  resources:
+  - zendesksources
+  verbs:
+  - list
+  - watch
+
+# Read credentials
+- apiGroups:
+  - ''
+  resources:
+  - secrets
+  verbs:
+  - get
+
+# Acquire leases for leader election
+- apiGroups:
+  - coordination.k8s.io
+  resources:
+  - leases
+  verbs:
+  - create
+- apiGroups:
+  - coordination.k8s.io
+  resourceNames:
+  - zendesksource.github.com-triggermesh-knative-sources-pkg-adapter-zendesksource.reconciler.00-of-01
+  resources:
+  - leases
+  verbs:
+  - get
+  - update
 
 ---
 

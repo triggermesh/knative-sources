@@ -50,17 +50,9 @@ type adapterConfig struct {
 var _ common.AdapterServiceBuilder = (*Reconciler)(nil)
 
 // BuildAdapter implements common.AdapterDeploymentBuilder.
-func (r *Reconciler) BuildAdapter(src v1alpha1.EventSource, sinkURI *apis.URL) *servingv1.Service {
-	typedSrc := src.(*v1alpha1.ZendeskSource)
-
-	return common.NewAdapterKnService(src, sinkURI,
+func (r *Reconciler) BuildAdapter(src v1alpha1.EventSource, _ *apis.URL) *servingv1.Service {
+	return common.NewMTAdapterKnService(src,
 		resource.Image(r.adapterCfg.Image),
-
-		resource.EnvVar(envZdSubdomain, typedSrc.Spec.Subdomain),
-		resource.EnvVar(envZdWebhookUser, typedSrc.Spec.WebhookUsername),
-		resource.EnvVars(common.MaybeAppendValueFromEnvVar(nil,
-			envZdWebhookPwd, typedSrc.Spec.WebhookPassword)...,
-		),
 		resource.EnvVars(r.adapterCfg.configs.ToEnvVars()...),
 	)
 }

@@ -25,6 +25,7 @@ import (
 	"knative.dev/eventing/pkg/reconciler/source"
 	"knative.dev/pkg/configmap"
 	"knative.dev/pkg/controller"
+	"knative.dev/pkg/logging"
 
 	kubeclient "knative.dev/pkg/client/injection/kube/client"
 
@@ -62,11 +63,13 @@ func NewController(
 	}
 	impl := reconcilerv1alpha1.NewImpl(ctx, r)
 
-	r.base = common.NewGenericServiceReconciler(
+	logger := logging.FromContext(ctx)
+
+	r.base = common.NewMTGenericServiceReconciler(
 		ctx,
-		typ.GetGroupVersionKind(),
+		typ,
 		impl.EnqueueKey,
-		impl.EnqueueControllerOf,
+		common.EnqueueObjectsInNamespaceOf(informer.Informer(), impl.FilteredGlobalResync, logger),
 	)
 
 	informer.Informer().AddEventHandlerWithResyncPeriod(controller.HandleAll(impl.Enqueue), informerResyncPeriod)

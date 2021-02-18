@@ -18,8 +18,10 @@ package zendesksource
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"strconv"
 
@@ -138,11 +140,11 @@ func ensureTarget(ctx context.Context, status *v1alpha1.ZendeskSourceStatus,
 	targets, _, err := client.GetTargets(ctx)
 	switch {
 	case isDenied(err):
-		return nil, controller.NewPermanentError(err)
+		return nil, controller.NewPermanentError(formatError(err))
 
 	case err != nil:
 		status.MarkTargetNotSynced(v1alpha1.ZendeskReasonFailedSync, "Unable to list Targets")
-		return nil, fmt.Errorf("retrieving Zendesk Targets: %w", err)
+		return nil, fmt.Errorf("retrieving Zendesk Targets: %w", formatError(err))
 	}
 
 	for _, t := range targets {
@@ -158,7 +160,7 @@ func ensureTarget(ctx context.Context, status *v1alpha1.ZendeskSourceStatus,
 	target, err := client.CreateTarget(ctx, *desired)
 	if err != nil {
 		status.MarkTargetNotSynced(v1alpha1.ZendeskReasonFailedSync, "Unable to create Target")
-		return nil, fmt.Errorf("creating Zendesk Target: %w", err)
+		return nil, fmt.Errorf("creating Zendesk Target: %w", formatError(err))
 	}
 
 	event.Normal(ctx, ReasonTargetCreated, "Zendesk Target %q was created", target.Title)
@@ -185,7 +187,7 @@ func syncTarget(ctx context.Context, client *zendesk.Client, current, desired *z
 
 	target, err := client.UpdateTarget(ctx, current.ID, *desired)
 	if err != nil {
-		return nil, fmt.Errorf("updating Zendesk Target: %w", err)
+		return nil, fmt.Errorf("updating Zendesk Target: %w", formatError(err))
 	}
 
 	event.Normal(ctx, ReasonTargetUpdated, "Zendesk Target %q was updated", current.Title)
@@ -201,7 +203,7 @@ func ensureTrigger(ctx context.Context, status *v1alpha1.ZendeskSourceStatus,
 	triggers, _, err := client.GetTriggers(ctx, &zendesk.TriggerListOptions{})
 	if err != nil {
 		status.MarkTargetNotSynced(v1alpha1.ZendeskReasonFailedSync, "Unable to list Triggers")
-		return fmt.Errorf("retrieving Zendesk Triggers: %w", err)
+		return fmt.Errorf("retrieving Zendesk Triggers: %w", formatError(err))
 	}
 
 	for _, t := range triggers {
@@ -217,7 +219,7 @@ func ensureTrigger(ctx context.Context, status *v1alpha1.ZendeskSourceStatus,
 	trigger, err := client.CreateTrigger(ctx, *desired)
 	if err != nil {
 		status.MarkTargetNotSynced(v1alpha1.ZendeskReasonFailedSync, "Unable to create Trigger")
-		return fmt.Errorf("creating Zendesk Trigger: %w", err)
+		return fmt.Errorf("creating Zendesk Trigger: %w", formatError(err))
 	}
 
 	event.Normal(ctx, ReasonTargetCreated, "Zendesk Trigger %q was created", trigger.Title)
@@ -237,7 +239,7 @@ func syncTrigger(ctx context.Context, client *zendesk.Client, current, desired *
 	}
 
 	if _, err := client.UpdateTrigger(ctx, current.ID, *desired); err != nil {
-		return fmt.Errorf("updating Zendesk Trigger: %w", err)
+		return fmt.Errorf("updating Zendesk Trigger: %w", formatError(err))
 	}
 
 	event.Normal(ctx, ReasonTargetUpdated, "Zendesk Trigger %q was updated", current.Title)
@@ -292,14 +294,17 @@ func ensureNoTrigger(ctx context.Context, client *zendesk.Client, title string) 
 		// finalizer, so we simply record a warning event and return to
 		// allow the reconciler to remove the finalizer
 		event.Warn(ctx, ReasonFailedTargetDelete, "Authorization error finalizing Zendesk Trigger %q. "+
-			"Ignoring: %s", title, err)
+			"Ignoring: %s", title, formatError(err))
+		return nil
+
+	case isNotFound(err):
+		event.Warn(ctx, ReasonFailedTargetDelete, "Resource not found while finalizing Zendesk Trigger %q. "+
+			"Ignoring: %s", title, formatError(err))
 		return nil
 
 	case err != nil:
-		// wrap any other error to fail the finalization
-		event := reconciler.NewEvent(corev1.EventTypeWarning, ReasonFailedTargetDelete,
-			"Error retrieving Zendesk Triggers: %s", err)
-		return fmt.Errorf("%w", event)
+		return reconciler.NewEvent(corev1.EventTypeWarning, ReasonFailedTargetDelete,
+			"Error retrieving Zendesk Triggers: %s", formatError(err))
 	}
 
 	var currentTrigger *zendesk.Trigger
@@ -314,10 +319,8 @@ func ensureNoTrigger(ctx context.Context, client *zendesk.Client, title string) 
 	}
 
 	if err := client.DeleteTrigger(ctx, currentTrigger.ID); err != nil {
-		// wrap the error event to fail the finalization
-		event := reconciler.NewEvent(corev1.EventTypeWarning, ReasonFailedTargetDelete,
-			"Error finalizing Zendesk Trigger %q: %s", title, err)
-		return fmt.Errorf("%w", event)
+		return reconciler.NewEvent(corev1.EventTypeWarning, ReasonFailedTargetDelete,
+			"Error finalizing Zendesk Trigger %q: %s", title, formatError(err))
 	}
 	event.Normal(ctx, ReasonTargetDeleted, "Zendesk Trigger %q was deleted", title)
 
@@ -332,14 +335,17 @@ func ensureNoTarget(ctx context.Context, client *zendesk.Client, title string) e
 		// finalizer, so we simply record a warning event and return to
 		// allow the reconciler to remove the finalizer
 		event.Warn(ctx, ReasonFailedTargetDelete, "Authorization error finalizing Zendesk Target %q. "+
-			"Ignoring: %s", title, err)
+			"Ignoring: %s", title, formatError(err))
+		return nil
+
+	case isNotFound(err):
+		event.Warn(ctx, ReasonFailedTargetDelete, "Resource not found while finalizing Zendesk Target %q. "+
+			"Ignoring: %s", title, formatError(err))
 		return nil
 
 	case err != nil:
-		// wrap any other error to fail the finalization
-		event := reconciler.NewEvent(corev1.EventTypeWarning, ReasonFailedTargetDelete,
-			"Error retrieving Zendesk Targets: %s", err)
-		return fmt.Errorf("%w", event)
+		return reconciler.NewEvent(corev1.EventTypeWarning, ReasonFailedTargetDelete,
+			"Error retrieving Zendesk Targets: %s", formatError(err))
 	}
 
 	var currentTarget *zendesk.Target
@@ -354,10 +360,8 @@ func ensureNoTarget(ctx context.Context, client *zendesk.Client, title string) e
 	}
 
 	if err := client.DeleteTarget(ctx, currentTarget.ID); err != nil {
-		// wrap the error event to fail the finalization
-		event := reconciler.NewEvent(corev1.EventTypeWarning, ReasonFailedTargetDelete,
-			"Error finalizing Zendesk Target %q: %s", title, err)
-		return fmt.Errorf("%w", event)
+		return reconciler.NewEvent(corev1.EventTypeWarning, ReasonFailedTargetDelete,
+			"Error finalizing Zendesk Target %q: %s", title, formatError(err))
 	}
 	event.Normal(ctx, ReasonTargetDeleted, "Zendesk Target %q was deleted", title)
 
@@ -393,6 +397,48 @@ func isDenied(err error) bool {
 		return s == http.StatusUnauthorized || s == http.StatusForbidden
 	}
 	return false
+}
+
+// isNotFound returns whether the given error indicates that a Zendesk resource
+// (account, target, trigger) does not exist.
+func isNotFound(err error) bool {
+	if zdErr := (zendesk.Error{}); errors.As(err, &zdErr) {
+		return zdErr.Status() == http.StatusNotFound
+	}
+	return false
+}
+
+// formatError formats Zendesk errors.
+func formatError(origErr error) error {
+	if zdErr := (zendesk.Error{}); errors.As(origErr, &zdErr) {
+		rawErrBody, err := ioutil.ReadAll(zdErr.Body())
+		if err != nil {
+			return origErr
+		}
+
+		fmtErr := &zendeskError{}
+		if err := json.Unmarshal(rawErrBody, fmtErr); err != nil {
+			return origErr
+		}
+
+		return fmtErr
+	}
+
+	return origErr
+}
+
+// zendeskError represents the payload returned with Zendesk API errors.
+type zendeskError struct {
+	Err struct {
+		Title   string `json:"title"`
+		Message string `json:"message"`
+	} `json:"error"`
+}
+
+// Error implements the error interface.
+// Returns the Zendesk error body in a human-readable format.
+func (b *zendeskError) Error() string {
+	return b.Err.Title + ": " + b.Err.Message
 }
 
 const triggerPayloadJSON = `{

@@ -42,6 +42,7 @@ var (
 	_ runtime.Object  = (*ZendeskSource)(nil)
 	_ pkgapis.HasSpec = (*ZendeskSource)(nil)
 	_ EventSource     = (*ZendeskSource)(nil)
+	_ multiTenant     = (*ZendeskSource)(nil)
 )
 
 // ZendeskSourceSpec defines the desired state of the event source.

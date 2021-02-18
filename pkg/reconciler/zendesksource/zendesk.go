@@ -28,7 +28,6 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	coreclientv1 "k8s.io/client-go/kubernetes/typed/core/v1"
 
 	pkgapis "knative.dev/pkg/apis"
 	"knative.dev/pkg/controller"
@@ -39,6 +38,7 @@ import (
 	"github.com/triggermesh/knative-sources/pkg/apis/sources/v1alpha1"
 	"github.com/triggermesh/knative-sources/pkg/reconciler/common/event"
 	"github.com/triggermesh/knative-sources/pkg/reconciler/common/skip"
+	"github.com/triggermesh/knative-sources/pkg/secret"
 )
 
 func (r *Reconciler) ensureZendeskTargetAndTrigger(ctx context.Context) error {
@@ -60,17 +60,16 @@ func (r *Reconciler) ensureZendeskTargetAndTrigger(ctx context.Context) error {
 
 	spec := src.(pkgapis.HasSpec).GetUntypedSpec().(v1alpha1.ZendeskSourceSpec)
 
-	apiToken, err := secretFrom(ctx, r.secretClient(src.GetNamespace()), spec.Token)
+	sg := secret.NewGetter(r.secretClient(src.GetNamespace()))
+
+	secrets, err := sg.Get(spec.Token, spec.WebhookPassword)
 	if err != nil {
-		status.MarkTargetNotSynced(v1alpha1.ZendeskReasonNoSecret, "Cannot obtain Zendesk API token")
-		return err
+		status.MarkTargetNotSynced(v1alpha1.ZendeskReasonNoSecret, "Cannot obtain Zendesk secrets")
+		return fmt.Errorf("obtaining secrets: %w", err)
 	}
 
-	webhookPassword, err := secretFrom(ctx, r.secretClient(src.GetNamespace()), spec.WebhookPassword)
-	if err != nil {
-		status.MarkTargetNotSynced(v1alpha1.ZendeskReasonNoSecret, "Cannot obtain webhook password")
-		return err
-	}
+	apiToken := secrets[0]
+	webhookPassword := secrets[1]
 
 	client, err := zendeskClient(spec.Email, spec.Subdomain, apiToken)
 	if err != nil {
@@ -256,7 +255,9 @@ func (r *Reconciler) ensureNoZendeskTargetAndTrigger(ctx context.Context) error 
 
 	spec := src.(pkgapis.HasSpec).GetUntypedSpec().(v1alpha1.ZendeskSourceSpec)
 
-	apiToken, err := secretFrom(ctx, r.secretClient(src.GetNamespace()), spec.Token)
+	sg := secret.NewGetter(r.secretClient(src.GetNamespace()))
+
+	secrets, err := sg.Get(spec.Token)
 	switch {
 	case apierrors.IsNotFound(err):
 		// the finalizer is unlikely to recover from a missing Secret,
@@ -268,6 +269,8 @@ func (r *Reconciler) ensureNoZendeskTargetAndTrigger(ctx context.Context) error 
 	case err != nil:
 		return fmt.Errorf("reading Zendesk API token: %w", err)
 	}
+
+	apiToken := secrets[0]
 
 	client, err := zendeskClient(spec.Email, spec.Subdomain, apiToken)
 	if err != nil {
@@ -365,28 +368,6 @@ func ensureNoTarget(ctx context.Context, client *zendesk.Client, title string) e
 // source object.
 func targetTitle(src metav1.Object) string {
 	return "io.triggermesh.zendesksource." + src.GetNamespace() + "." + src.GetName()
-}
-
-// secretFrom returns the value referenced by a ValueFromField, using the
-// provided Secret client if necessary.
-func secretFrom(ctx context.Context, cli coreclientv1.SecretInterface,
-	valueFrom v1alpha1.ValueFromField) (string, error) {
-
-	if vfs := valueFrom.ValueFromSecret; vfs != nil {
-		secret, err := cli.Get(ctx, vfs.Name, metav1.GetOptions{})
-		if err != nil {
-			return "", fmt.Errorf("getting Secret from cluster: %w", err)
-		}
-
-		secretVal, ok := secret.Data[vfs.Key]
-		if !ok {
-			return "", fmt.Errorf("key %q not found in Secret %q", vfs.Key, vfs.Name)
-		}
-
-		return string(secretVal), nil
-	}
-
-	return valueFrom.Value, nil
 }
 
 // zendeskClient returns an initialized Zendesk client.

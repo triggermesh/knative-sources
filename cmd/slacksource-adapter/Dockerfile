@@ -32,12 +32,12 @@ RUN BIN_OUTPUT_DIR=/bin make slacksource-adapter && \
 
 FROM registry.access.redhat.com/ubi8/ubi-minimal
 
-LABEL name "Triggermesh event source adapter for Slack"
-LABEL vendor "Triggermesh"
+LABEL name "TriggerMesh event source adapter for Slack"
+LABEL vendor "TriggerMesh"
 LABEL version "v0.1.0"
 LABEL release "1"
-LABEL summary "The Triggermesh event source adapter for Slack"
-LABEL description "This is the Triggermesh Slack event source adapter for Knative"
+LABEL summary "The TriggerMesh event source adapter for Slack"
+LABEL description "This is the TriggerMesh Slack event source adapter for Knative"
 
 # Emulate ko builds
 # https://github.com/google/ko/blob/v0.5.0/README.md#including-static-assets

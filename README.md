@@ -1,6 +1,6 @@
-# Triggermesh Sources for Knative
+# TriggerMesh Sources for Knative
 
-These are the set of open Knative Sources that Triggermesh maintains.
+These are the set of open Knative Sources that TriggerMesh maintains.
 Along with this repository you will find some other Knative Sources we provide semantically grouped at:
 
 - [Knative AWS Sources](https://github.com/triggermesh/aws-event-sources)
@@ -17,7 +17,7 @@ Instructions on installing and usage can be found at each individual event sourc
 
 ## TriggerMesh Cloud Early Access
 
-Triggermesh Knative Sources can be used as is from this repo. You can also use them along with other components from our Cloud [https://cloud.triggermesh.io](https://cloud.triggermesh.io) where we have developed an enjoyable UI to configure them.
+TriggerMesh Knative Sources can be used as is from this repo. You can also use them along with other components from our Cloud [https://cloud.triggermesh.io](https://cloud.triggermesh.io) where we have developed an enjoyable UI to configure them.
 
 ## Support
 

@@ -45,7 +45,7 @@ ${NOTABLE_CHANGES}
 
 ## Installation
 
-Download Triggermesh event sources for Knative ${RELEASE}
+Download TriggerMesh event sources for Knative ${RELEASE}
 
 ${RELEASE_ASSETS_TABLE}
 

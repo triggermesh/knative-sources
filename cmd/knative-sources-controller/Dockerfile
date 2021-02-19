@@ -32,12 +32,12 @@ RUN BIN_OUTPUT_DIR=/bin make knative-sources-controller && \
 
 FROM registry.access.redhat.com/ubi8/ubi-minimal
 
-LABEL name "Triggermesh controller for Knative event sources"
-LABEL vendor "Triggermesh"
+LABEL name "TriggerMesh controller for Knative event sources"
+LABEL vendor "TriggerMesh"
 LABEL version "v0.1.0"
 LABEL release "1"
-LABEL summary "The Triggermesh controller for Knative event sources"
-LABEL description "This is the Triggermesh controller for Knative event sources"
+LABEL summary "The TriggerMesh controller for Knative event sources"
+LABEL description "This is the TriggerMesh controller for Knative event sources"
 
 # Emulate ko builds
 # https://github.com/google/ko/blob/v0.5.0/README.md#including-static-assets

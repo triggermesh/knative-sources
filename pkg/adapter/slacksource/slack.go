@@ -124,12 +124,6 @@ func (h *slackEventAPIHandler) handleAll(w http.ResponseWriter, r *http.Request)
 	// Otherwise the message will be retried.
 	// See: https://api.slack.com/events-api#receiving_events (Responding to Events)
 
-	if h.appID != "" && event.APIAppID != h.appID {
-		// silently ignore, some other integration should take
-		// care of this event.
-		return
-	}
-
 	// There are only 2 documented types to be received from the Events API
 	// - `event_callback`, See: https://api.slack.com/events-api#receiving_events
 	// - `event_callback`, See: https://api.slack.com/events-api#subscriptions

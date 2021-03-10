@@ -19,13 +19,13 @@ kind: ZendeskSource
 metadata:
   name: zendesksource
 spec:
-  email: '<ZENDESK ACCOUNT USER EMAIL>'
-  subdomain: '<ZENDESK TENANT SUBDOMAIN>'
+  email: johndoe@example.com
+  subdomain: example-corp
   token:
-    value: : '<API TOKEN FROM ZENDESK'
-  webhookUsername: '<SOME ARBITRARY USERNAME>'
+    value: XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+  webhookUsername: foo
   webhookPassword:
-    value: '<ARBITRARY PASSWORD FOR WEBHOOK>'
+    value: secret1234
   sink:
     ref:
       apiVersion: serving.knative.dev/v1

@@ -39,4 +39,10 @@ var (
 		Group:    GroupName,
 		Resource: "httpsources",
 	}
+
+	// WebhookSourceResource represents an event source for HTTP webhooks.
+	WebhookSourceResource = schema.GroupResource{
+		Group:    GroupName,
+		Resource: "webhooksources",
+	}
 )

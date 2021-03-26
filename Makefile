@@ -1,6 +1,6 @@
 KREPO              = knative-sources
 KREPO_DESC         = TriggerMesh event sources for Knative
-COMMANDS           = knative-sources-controller slacksource-adapter zendesksource-adapter httpsource-adapter
+COMMANDS           = knative-sources-controller slacksource-adapter zendesksource-adapter httpsource-adapter webhooksource-adapter
 
 TARGETS           ?= linux/amd64
 

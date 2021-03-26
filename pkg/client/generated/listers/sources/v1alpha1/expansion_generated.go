@@ -34,6 +34,14 @@ type SlackSourceListerExpansion interface{}
 // SlackSourceNamespaceLister.
 type SlackSourceNamespaceListerExpansion interface{}
 
+// WebhookSourceListerExpansion allows custom methods to be added to
+// WebhookSourceLister.
+type WebhookSourceListerExpansion interface{}
+
+// WebhookSourceNamespaceListerExpansion allows custom methods to be added to
+// WebhookSourceNamespaceLister.
+type WebhookSourceNamespaceListerExpansion interface{}
+
 // ZendeskSourceListerExpansion allows custom methods to be added to
 // ZendeskSourceLister.
 type ZendeskSourceListerExpansion interface{}

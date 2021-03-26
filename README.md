@@ -13,7 +13,8 @@ The following event sources are provided by this controller:
 
 | Source                    | Support level |
 |---------------------------|---------------|
-| [HTTP webhook][docs-http] | alpha         |
+| [HTTP][docs-http]         | DEPRECATED    |
+| [Webhook][docs-webhook]   | alpha         |
 | [Slack][docs-slack]       | alpha         |
 | [Zendesk][docs-zd]        | alpha         |
 
@@ -41,6 +42,7 @@ Although this project is not part of the [CNCF][cncf], we abide by its [code of 
 [knsrc-gitlab]: https://github.com/knative-sandbox/eventing-gitlab
 
 [docs-http]: https://docs.triggermesh.io/sources/http/
+[docs-webhook]: https://docs.triggermesh.io/sources/webhook/
 [docs-slack]: https://docs.triggermesh.io/sources/slack/
 [docs-zd]: https://docs.triggermesh.io/sources/zendesk/
 

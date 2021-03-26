@@ -113,6 +113,11 @@ func (l *Listers) GetHTTPSourceLister() listersv1alpha1.HTTPSourceLister {
 	return listersv1alpha1.NewHTTPSourceLister(l.IndexerFor(&v1alpha1.HTTPSource{}))
 }
 
+// GetWebhookSourceLister returns a Lister for WebhookSource objects.
+func (l *Listers) GetWebhookSourceLister() listersv1alpha1.WebhookSourceLister {
+	return listersv1alpha1.NewWebhookSourceLister(l.IndexerFor(&v1alpha1.WebhookSource{}))
+}
+
 // GetDeploymentLister returns a lister for Deployment objects.
 func (l *Listers) GetDeploymentLister() appslistersv1.DeploymentLister {
 	return appslistersv1.NewDeploymentLister(l.IndexerFor(&appsv1.Deployment{}))

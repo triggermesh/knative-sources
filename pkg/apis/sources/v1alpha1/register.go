@@ -39,6 +39,7 @@ func addKnownTypes(scheme *runtime.Scheme) error {
 		&SlackSource{}, &SlackSourceList{},
 		&ZendeskSource{}, &ZendeskSourceList{},
 		&HTTPSource{}, &HTTPSourceList{},
+		&WebhookSource{}, &WebhookSourceList{},
 	)
 	metav1.AddToGroupVersion(scheme, SchemeGroupVersion)
 	return nil

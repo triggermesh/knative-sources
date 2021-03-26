@@ -61,6 +61,8 @@ spec:
           value: ko://github.com/triggermesh/knative-sources/cmd/zendesksource-adapter
         - name: HTTPSOURCE_IMAGE
           value: ko://github.com/triggermesh/knative-sources/cmd/httpsource-adapter
+        - name: WEBHOOKSOURCE_IMAGE
+          value: ko://github.com/triggermesh/knative-sources/cmd/webhooksource-adapter
 
         securityContext:
           allowPrivilegeEscalation: false

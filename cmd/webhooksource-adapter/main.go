@@ -17,19 +17,11 @@ limitations under the License.
 package main
 
 import (
-	"knative.dev/pkg/injection/sharedmain"
+	"knative.dev/eventing/pkg/adapter/v2"
 
-	"github.com/triggermesh/knative-sources/pkg/reconciler/httpsource"
-	"github.com/triggermesh/knative-sources/pkg/reconciler/slacksource"
-	"github.com/triggermesh/knative-sources/pkg/reconciler/webhooksource"
-	"github.com/triggermesh/knative-sources/pkg/reconciler/zendesksource"
+	"github.com/triggermesh/knative-sources/pkg/adapter/webhooksource"
 )
 
 func main() {
-	sharedmain.Main("knative-sources-controller",
-		slacksource.NewController,
-		zendesksource.NewController,
-		httpsource.NewController,
-		webhooksource.NewController,
-	)
+	adapter.Main("webhook", webhooksource.EnvAccessor, webhooksource.NewAdapter)
 }

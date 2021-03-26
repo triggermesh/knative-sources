@@ -14,22 +14,22 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package main
+package webhooksource
 
 import (
-	"knative.dev/pkg/injection/sharedmain"
-
-	"github.com/triggermesh/knative-sources/pkg/reconciler/httpsource"
-	"github.com/triggermesh/knative-sources/pkg/reconciler/slacksource"
-	"github.com/triggermesh/knative-sources/pkg/reconciler/webhooksource"
-	"github.com/triggermesh/knative-sources/pkg/reconciler/zendesksource"
+	"knative.dev/eventing/pkg/adapter/v2"
 )
 
-func main() {
-	sharedmain.Main("knative-sources-controller",
-		slacksource.NewController,
-		zendesksource.NewController,
-		httpsource.NewController,
-		webhooksource.NewController,
-	)
+// EnvAccessor for configuration parameters
+func EnvAccessor() adapter.EnvConfigAccessor {
+	return &envAccessor{}
+}
+
+type envAccessor struct {
+	adapter.EnvConfig
+
+	EventType         string `envconfig:"WEBHOOK_EVENT_TYPE" required:"true"`
+	EventSource       string `envconfig:"WEBHOOK_EVENT_SOURCE" required:"true"`
+	BasicAuthUsername string `envconfig:"WEBHOOK_BASICAUTH_USERNAME"`
+	BasicAuthPassword string `envconfig:"WEBHOOK_BASICAUTH_PASSWORD"`
 }

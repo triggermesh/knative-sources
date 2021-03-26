@@ -54,6 +54,7 @@ rules:
   - slacksources
   - zendesksources
   - httpsources
+  - webhooksources
   verbs:
   - list
   - watch
@@ -64,6 +65,7 @@ rules:
   - slacksources/status
   - zendesksources/status
   - httpsources/status
+  - webhooksources/status
   verbs:
   - update
 
@@ -92,6 +94,7 @@ rules:
   - slacksource-adapter
   - zendesksource-adapter
   - httpsource-adapter
+  - webhooksource-adapter
   verbs:
   - update
 - apiGroups:
@@ -150,6 +153,7 @@ rules:
   - knative-sources-controller.github.com-triggermesh-knative-sources-pkg-reconciler-slacksource.reconciler.00-of-01
   - knative-sources-controller.github.com-triggermesh-knative-sources-pkg-reconciler-zendesksource.reconciler.00-of-01
   - knative-sources-controller.github.com-triggermesh-knative-sources-pkg-reconciler-httpsource.reconciler.00-of-01
+  - knative-sources-controller.github.com-triggermesh-knative-sources-pkg-reconciler-webhooksource.reconciler.00-of-01
   resources:
   - leases
   verbs:
@@ -234,6 +238,14 @@ rules: []
 
 ---
 
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: webhooksource-adapter
+rules: []
+
+---
+
 # The role is needed for the aggregated role source-observer in knative-eventing to provide readonly access to "Sources".
 # see https://github.com/knative/eventing/blob/release-0.14/docs/spec/sources.md#source-rbac
 apiVersion: rbac.authorization.k8s.io/v1
@@ -249,6 +261,7 @@ rules:
   - slacksources
   - zendesksources
   - httpsources
+  - webhooksources
   verbs:
   - get
   - list

@@ -36,6 +36,10 @@ func (c *FakeSourcesV1alpha1) SlackSources(namespace string) v1alpha1.SlackSourc
 	return &FakeSlackSources{c, namespace}
 }
 
+func (c *FakeSourcesV1alpha1) WebhookSources(namespace string) v1alpha1.WebhookSourceInterface {
+	return &FakeWebhookSources{c, namespace}
+}
+
 func (c *FakeSourcesV1alpha1) ZendeskSources(namespace string) v1alpha1.ZendeskSourceInterface {
 	return &FakeZendeskSources{c, namespace}
 }

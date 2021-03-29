@@ -93,7 +93,7 @@ spec:
                 additionalProperties:
                   type: string
               frequency:
-                description: Polling frequency expresed in Go duration.
+                description: Polling frequency duration.
                 type: string
               sink:
                 description: Reference to an event sink.

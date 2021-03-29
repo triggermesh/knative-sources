@@ -34,10 +34,6 @@ func NewAdapter(ctx context.Context, aEnv adapter.EnvConfigAccessor, ceClient cl
 	env := aEnv.(*envAccessor)
 	logger := logging.FromContext(ctx)
 
-	if env.FrequencySeconds == 0 {
-		logger.Panic("Frequency must not be 0.")
-	}
-
 	t := &http.Transport{
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: env.SkipVerify},
 	}
@@ -69,9 +65,9 @@ func NewAdapter(ctx context.Context, aEnv adapter.EnvConfigAccessor, ceClient cl
 	}
 
 	return &httpPoller{
-		eventType:        env.EventType,
-		eventSource:      env.EventSource,
-		frequencySeconds: env.FrequencySeconds,
+		eventType:   env.EventType,
+		eventSource: env.EventSource,
+		frequency:   env.Frequency,
 
 		httpClient:  httpClient,
 		httpRequest: httpRequest,
@@ -80,5 +76,3 @@ func NewAdapter(ctx context.Context, aEnv adapter.EnvConfigAccessor, ceClient cl
 		logger:   logging.FromContext(ctx),
 	}
 }
-
-var _ adapter.Adapter = (*httpPoller)(nil)

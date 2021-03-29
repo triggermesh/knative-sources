@@ -44,7 +44,7 @@ const (
 	envHTTPPollerBasicAuthUsername = "HTTPPOLLER_BASICAUTH_USERNAME"
 	envHTTPPollerBasicAuthPassword = "HTTPPOLLER_BASICAUTH_PASSWORD"
 	envHTTPPollerHeaders           = "HTTPPOLLER_HEADERS"
-	envHTTPPollerFrequencySeconds  = "HTTPPOLLER_FREQUENCY_SECONDS"
+	envHTTPPollerFrequency         = "HTTPPOLLER_FREQUENCY"
 )
 
 // adapterConfig contains properties used to configure the source's adapter.
@@ -106,23 +106,17 @@ func makeHTTPPollerEnvs(src *v1alpha1.HTTPPollerSource) []corev1.EnvVar {
 		Name:  envHTTPPollerSkipVerify,
 		Value: strconv.FormatBool(skipVerify),
 	}, {
-		Name:  envHTTPPollerSkipVerify,
-		Value: strconv.FormatBool(skipVerify),
-	}, {
-		Name:  envHTTPPollerFrequencySeconds,
-		Value: strconv.Itoa(src.Spec.FrequencySeconds),
+		Name:  envHTTPPollerFrequency,
+		Value: src.Spec.Frequency.String(),
 	}}
 
 	if src.Spec.Headers != nil {
 		headers := make([]string, 0, len(src.Spec.Headers))
-		for k := range src.Spec.Headers {
-			headers = append(headers, k)
+		for k, v := range src.Spec.Headers {
+			headers = append(headers, k+":"+v)
 		}
 		sort.Strings(headers)
 
-		for i, k := range headers {
-			headers[i] = headers[i] + ":" + src.Spec.Headers[k]
-		}
 		envs = append(envs, corev1.EnvVar{
 			Name:  envHTTPPollerHeaders,
 			Value: strings.Join(headers, ","),

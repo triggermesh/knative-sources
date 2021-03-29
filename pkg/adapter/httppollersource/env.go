@@ -17,6 +17,8 @@ limitations under the License.
 package httppollersource
 
 import (
+	"time"
+
 	"knative.dev/eventing/pkg/adapter/v2"
 )
 
@@ -37,5 +39,5 @@ type envAccessor struct {
 	BasicAuthUsername string            `envconfig:"HTTPPOLLER_BASICAUTH_USERNAME"`
 	BasicAuthPassword string            `envconfig:"HTTPPOLLER_BASICAUTH_PASSWORD"`
 	Headers           map[string]string `envconfig:"HTTPPOLLER_HEADERS"`
-	FrequencySeconds  int               `envconfig:"HTTPPOLLER_FREQUENCY_SECONDS" required:"true"`
+	Frequency         time.Duration     `envconfig:"HTTPPOLLER_FREQUENCY" required:"true"`
 }

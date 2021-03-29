@@ -22,6 +22,8 @@ import (
 
 	"knative.dev/pkg/apis"
 	duckv1 "knative.dev/pkg/apis/duck/v1"
+
+	tmapis "github.com/triggermesh/knative-sources/pkg/apis"
 )
 
 // +genclient
@@ -85,8 +87,8 @@ type HTTPPollerSourceSpec struct {
 	// +optional
 	Headers map[string]string `json:"headers,omitempty"`
 
-	// FrequencySeconds polling the endpoint
-	FrequencySeconds int `json:"frequencySeconds,omitempty"`
+	// Frequency polling the endpoint
+	Frequency tmapis.Duration `json:"frequency"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object

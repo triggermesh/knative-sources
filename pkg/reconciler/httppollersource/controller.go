@@ -18,7 +18,6 @@ package httppollersource
 
 import (
 	"context"
-	"time"
 
 	"github.com/kelseyhightower/envconfig"
 
@@ -31,8 +30,6 @@ import (
 	reconcilerv1alpha1 "github.com/triggermesh/knative-sources/pkg/client/generated/injection/reconciler/sources/v1alpha1/httppollersource"
 	"github.com/triggermesh/knative-sources/pkg/reconciler/common"
 )
-
-const informerResyncPeriod = time.Minute * 5
 
 // NewController creates a Reconciler for the event source and returns the result of NewImpl.
 func NewController(
@@ -63,7 +60,7 @@ func NewController(
 		impl.EnqueueControllerOf,
 	)
 
-	informer.Informer().AddEventHandlerWithResyncPeriod(controller.HandleAll(impl.Enqueue), informerResyncPeriod)
+	informer.Informer().AddEventHandler(controller.HandleAll(impl.Enqueue))
 
 	return impl
 }

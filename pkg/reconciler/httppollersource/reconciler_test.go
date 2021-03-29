@@ -19,6 +19,7 @@ package httppollersource
 import (
 	"context"
 	"testing"
+	"time"
 
 	v1 "k8s.io/api/core/v1"
 	"knative.dev/eventing/pkg/reconciler/source"
@@ -27,6 +28,7 @@ import (
 	"knative.dev/pkg/logging"
 	rt "knative.dev/pkg/reconciler/testing"
 
+	tmapis "github.com/triggermesh/knative-sources/pkg/apis"
 	"github.com/triggermesh/knative-sources/pkg/apis/sources/v1alpha1"
 	fakeinjectionclient "github.com/triggermesh/knative-sources/pkg/client/generated/injection/client/fake"
 	reconcilerv1alpha1 "github.com/triggermesh/knative-sources/pkg/client/generated/injection/reconciler/sources/v1alpha1/httppollersource"
@@ -75,11 +77,11 @@ func newEventSource() *v1alpha1.HTTPPollerSource {
 
 	src := &v1alpha1.HTTPPollerSource{
 		Spec: v1alpha1.HTTPPollerSourceSpec{
-			EventType:        "test-type",
-			Endpoint:         *endpoint,
-			Method:           "GET",
-			FrequencySeconds: 5,
-			SkipVerify:       &skipVerify,
+			EventType:  "test-type",
+			Endpoint:   *endpoint,
+			Method:     "GET",
+			Frequency:  tmapis.Duration(time.Second * 5),
+			SkipVerify: &skipVerify,
 			Headers: map[string]string{
 				"h1": "v1",
 			},

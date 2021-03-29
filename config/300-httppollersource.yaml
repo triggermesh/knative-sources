@@ -59,17 +59,16 @@ spec:
               method:
                 type: string
                 enum: [GET, POST, PUT, PATCH, DELETE]
-                default: GET
               skipVerify:
                 type: boolean
                 default: false
               caCertificate:
                 type: string
               basicAuthUsername:
-                description: When supplied will be used to configure Basic Authentication at the exposed endpoint
+                description: When supplied will be used to configure Basic Authentication at requests.
                 type: string
               basicAuthPassword:
-                description: When supplied will be used to configure Basic Authentication at the exposed endpoint
+                description: When supplied will be used to configure Basic Authentication at requests
                 type: object
                 properties:
                   value:
@@ -93,9 +92,9 @@ spec:
                 type: object
                 additionalProperties:
                   type: string
-              frequencySeconds:
-                description: Polling frequency expresed in seconds.
-                type: integer
+              frequency:
+                description: Polling frequency expresed in Go duration.
+                type: string
               sink:
                 description: Reference to an event sink.
                 type: object
@@ -142,8 +141,9 @@ spec:
                 - extensions
             required:
             - eventType
+            - method
             - endpoint
-            - frequencySeconds
+            - frequency
             - sink
           status:
             description: Status of the event source.
@@ -190,11 +190,6 @@ spec:
                   required:
                   - type
                   - status
-              address:
-                type: object
-                properties:
-                  url:
-                    type: string
     additionalPrinterColumns:
     - name: Ready
       type: string
@@ -202,13 +197,9 @@ spec:
     - name: Reason
       type: string
       jsonPath: .status.conditions[?(@.type=='Ready')].reason
-    - name: URL
-      type: string
-      jsonPath: .status.address.url
     - name: Sink
       type: string
       jsonPath: .status.sinkUri
     - name: Age
       type: date
       jsonPath: .metadata.creationTimestamp
-

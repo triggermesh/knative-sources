@@ -23,14 +23,17 @@ import (
 	"net/http"
 	"time"
 
-	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"go.uber.org/zap"
+
+	cloudevents "github.com/cloudevents/sdk-go/v2"
+
+	"knative.dev/eventing/pkg/adapter/v2"
 )
 
 type httpPoller struct {
-	eventType        string
-	eventSource      string
-	frequencySeconds int
+	eventType   string
+	eventSource string
+	frequency   time.Duration
 
 	ceClient cloudevents.Client
 
@@ -39,6 +42,8 @@ type httpPoller struct {
 	logger      *zap.SugaredLogger
 }
 
+var _ adapter.Adapter = (*httpPoller)(nil)
+
 // Start implements adapter.Adapter.
 // Runs the server for receiving HTTP events until ctx gets cancelled.
 func (h *httpPoller) Start(ctx context.Context) error {
@@ -46,7 +51,10 @@ func (h *httpPoller) Start(ctx context.Context) error {
 	// initial request to avoid waiting for the first tick.
 	h.dispatch()
 
-	t := time.NewTicker(time.Duration(h.frequencySeconds) * time.Second)
+	// setup context for the request object.
+	h.httpRequest = h.httpRequest.Clone(ctx)
+
+	t := time.NewTicker(h.frequency)
 
 	for {
 		select {
@@ -73,12 +81,12 @@ func (h *httpPoller) dispatch() {
 	defer res.Body.Close()
 	resb, err := ioutil.ReadAll(res.Body)
 	if err != nil {
-		h.logger.Errorw("failed reading response body", zap.Error(err))
+		h.logger.Errorw("Failed reading response body", zap.Error(err))
 		return
 	}
 
-	if res.StatusCode >= 400 {
-		h.logger.Errorw("Received error HTTP code from remote endpoint",
+	if res.StatusCode >= 300 {
+		h.logger.Errorw("Received non supported HTTP code from remote endpoint",
 			zap.Int("code", res.StatusCode),
 			zap.String("response", string(resb)),
 		)
@@ -90,11 +98,11 @@ func (h *httpPoller) dispatch() {
 	event.SetSource(h.eventSource)
 
 	if err := event.SetData(cloudevents.ApplicationJSON, resb); err != nil {
-		h.logger.Errorw("failed to set event data", zap.Error(err))
+		h.logger.Errorw("Failed to set event data", zap.Error(err))
 		return
 	}
 
 	if result := h.ceClient.Send(context.Background(), event); !cloudevents.IsACK(result) {
-		h.logger.Errorw("could not send Cloud Event", zap.Error(result))
+		h.logger.Errorw("Could not send Cloud Event", zap.Error(result))
 	}
 }

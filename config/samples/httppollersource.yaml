@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Sample HTTPSource object.
+# Sample HTTPPollerSource object.
 
 apiVersion: sources.triggermesh.io/v1alpha1
 kind: HTTPPollerSource
@@ -22,7 +22,8 @@ spec:
   eventType: weather.alerts/kansas
   eventSource: gov.weather
   endpoint: https://api.weather.gov/alerts/active?area=KS
-  frequencySeconds: 20
+  method: GET
+  frequency: 20s
   sink:
     ref:
       apiVersion: serving.knative.dev/v1

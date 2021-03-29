@@ -132,3 +132,8 @@ func (l *Listers) GetServiceAccountLister() corelistersv1.ServiceAccountLister {
 func (l *Listers) GetRoleBindingLister() rbaclistersv1.RoleBindingLister {
 	return rbaclistersv1.NewRoleBindingLister(l.IndexerFor(&rbacv1.RoleBinding{}))
 }
+
+// GetHTTPPollerSourceLister returns a Lister for HTTPPollerSource objects.
+func (l *Listers) GetHTTPPollerSourceLister() listersv1alpha1.HTTPPollerSourceLister {
+	return listersv1alpha1.NewHTTPPollerSourceLister(l.IndexerFor(&v1alpha1.HTTPPollerSource{}))
+}

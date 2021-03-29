@@ -19,6 +19,7 @@ package main
 import (
 	"knative.dev/pkg/injection/sharedmain"
 
+	"github.com/triggermesh/knative-sources/pkg/reconciler/httppollersource"
 	"github.com/triggermesh/knative-sources/pkg/reconciler/httpsource"
 	"github.com/triggermesh/knative-sources/pkg/reconciler/slacksource"
 	"github.com/triggermesh/knative-sources/pkg/reconciler/zendesksource"
@@ -29,5 +30,6 @@ func main() {
 		slacksource.NewController,
 		zendesksource.NewController,
 		httpsource.NewController,
+		httppollersource.NewController,
 	)
 }

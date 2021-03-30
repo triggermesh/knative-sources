@@ -18,13 +18,13 @@ ENV CGO_ENABLED 0
 ENV GOOS linux
 ENV GOARCH amd64
 
-WORKDIR /go/src/knative-sources-controller
+WORKDIR /go/src/httppollersource-adapter
 
 COPY go.mod go.sum ./
 RUN go mod download
 
 COPY . .
-RUN BIN_OUTPUT_DIR=/bin make knative-sources-controller && \
+RUN BIN_OUTPUT_DIR=/bin make httppollersource-adapter && \
     mkdir /kodata && \
     mv .git/* /kodata/ && \
     rm -rf ${GOPATH} && \
@@ -32,19 +32,19 @@ RUN BIN_OUTPUT_DIR=/bin make knative-sources-controller && \
 
 FROM registry.access.redhat.com/ubi8/ubi-minimal
 
-LABEL name "TriggerMesh controller for Knative event sources"
+LABEL name "TriggerMesh event source adapter for HTTP polling"
 LABEL vendor "TriggerMesh"
 LABEL version "v0.1.0"
 LABEL release "1"
-LABEL summary "The TriggerMesh controller for Knative event sources"
-LABEL description "This is the TriggerMesh controller for Knative event sources"
+LABEL summary "The TriggerMesh event source adapter for HTTP polling"
+LABEL description "This is the TriggerMesh HTTP polling event source adapter for Knative"
 
 # Emulate ko builds
 # https://github.com/google/ko/blob/v0.5.0/README.md#including-static-assets
 ENV KO_DATA_PATH /kodata
 
 COPY --from=builder /kodata/ ${KO_DATA_PATH}/
-COPY --from=builder /bin/knative-sources-controller /
+COPY --from=builder /bin/httppollersource-adapter /
 COPY licenses/ /licenses/
 
-ENTRYPOINT ["/knative-sources-controller"]
+ENTRYPOINT ["/httppollersource-adapter"]

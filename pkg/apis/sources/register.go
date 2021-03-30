@@ -39,4 +39,10 @@ var (
 		Group:    GroupName,
 		Resource: "httpsources",
 	}
+
+	// HTTPPollerSourceResource represents an event source for polling HTTP endpoints.
+	HTTPPollerSourceResource = schema.GroupResource{
+		Group:    GroupName,
+		Resource: "httppollersources",
+	}
 )

@@ -160,7 +160,6 @@ rules:
   - get
   - update
 
-
 # Determine the exact reason why Deployments fail
 - apiGroups:
   - ''

@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2020 TriggerMesh Inc.
+Copyright (c) 2021 TriggerMesh Inc.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -19,9 +19,9 @@ package main
 import (
 	"knative.dev/eventing/pkg/adapter/v2"
 
-	"github.com/triggermesh/knative-sources/pkg/adapter/httpsource"
+	"github.com/triggermesh/knative-sources/pkg/adapter/httppollersource"
 )
 
 func main() {
-	adapter.Main("http", httpsource.EnvAccessor, httpsource.NewAdapter)
+	adapter.Main("httppoller", httppollersource.EnvAccessor, httppollersource.NewAdapter)
 }

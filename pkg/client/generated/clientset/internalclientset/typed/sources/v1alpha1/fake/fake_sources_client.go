@@ -28,8 +28,8 @@ type FakeSourcesV1alpha1 struct {
 	*testing.Fake
 }
 
-func (c *FakeSourcesV1alpha1) HTTPSources(namespace string) v1alpha1.HTTPSourceInterface {
-	return &FakeHTTPSources{c, namespace}
+func (c *FakeSourcesV1alpha1) HTTPPollerSources(namespace string) v1alpha1.HTTPPollerSourceInterface {
+	return &FakeHTTPPollerSources{c, namespace}
 }
 
 func (c *FakeSourcesV1alpha1) SlackSources(namespace string) v1alpha1.SlackSourceInterface {

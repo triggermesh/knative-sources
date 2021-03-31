@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2020-2021 TriggerMesh Inc.
+Copyright (c) 2021 TriggerMesh Inc.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package httpsource
+package httppollersource
 
 import (
 	"context"
@@ -26,19 +26,18 @@ import (
 	"knative.dev/pkg/controller"
 
 	"github.com/triggermesh/knative-sources/pkg/apis/sources/v1alpha1"
-	informerv1alpha1 "github.com/triggermesh/knative-sources/pkg/client/generated/injection/informers/sources/v1alpha1/httpsource"
-	reconcilerv1alpha1 "github.com/triggermesh/knative-sources/pkg/client/generated/injection/reconciler/sources/v1alpha1/httpsource"
+	informerv1alpha1 "github.com/triggermesh/knative-sources/pkg/client/generated/injection/informers/sources/v1alpha1/httppollersource"
+	reconcilerv1alpha1 "github.com/triggermesh/knative-sources/pkg/client/generated/injection/reconciler/sources/v1alpha1/httppollersource"
 	"github.com/triggermesh/knative-sources/pkg/reconciler/common"
 )
 
-// NewController initializes the controller and is called by the generated code
-// Registers event handlers to enqueue events
+// NewController creates a Reconciler for the event source and returns the result of NewImpl.
 func NewController(
 	ctx context.Context,
 	cmw configmap.Watcher,
 ) *controller.Impl {
 
-	typ := (*v1alpha1.HTTPSource)(nil)
+	typ := (*v1alpha1.HTTPPollerSource)(nil)
 	app := common.ComponentName(typ)
 
 	adapterCfg := &adapterConfig{
@@ -50,11 +49,11 @@ func NewController(
 
 	r := &Reconciler{
 		adapterCfg: adapterCfg,
-		srcLister:  informer.Lister().HTTPSources,
+		srcLister:  informer.Lister().HTTPPollerSources,
 	}
 	impl := reconcilerv1alpha1.NewImpl(ctx, r)
 
-	r.base = common.NewGenericServiceReconciler(
+	r.base = common.NewGenericDeploymentReconciler(
 		ctx,
 		typ.GetGroupVersionKind(),
 		impl.EnqueueKey,

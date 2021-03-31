@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2020 TriggerMesh Inc.
+Copyright (c) 2021 TriggerMesh Inc.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -24,27 +24,27 @@ import (
 )
 
 // GetGroupVersionKind implements kmeta.OwnerRefable.
-func (*HTTPSource) GetGroupVersionKind() schema.GroupVersionKind {
-	return SchemeGroupVersion.WithKind("HttpSource")
+func (*HTTPPollerSource) GetGroupVersionKind() schema.GroupVersionKind {
+	return SchemeGroupVersion.WithKind("HttpPollerSource")
 }
 
 // GetConditionSet implements duckv1.KRShaped.
-func (s *HTTPSource) GetConditionSet() pkgapis.ConditionSet {
+func (s *HTTPPollerSource) GetConditionSet() pkgapis.ConditionSet {
 	return eventSourceConditionSet
 }
 
 // GetStatus implements duckv1.KRShaped.
-func (s *HTTPSource) GetStatus() *duckv1.Status {
+func (s *HTTPPollerSource) GetStatus() *duckv1.Status {
 	return &s.Status.Status
 }
 
 // GetSink implements EventSource.
-func (s *HTTPSource) GetSink() *duckv1.Destination {
+func (s *HTTPPollerSource) GetSink() *duckv1.Destination {
 	return &s.Spec.Sink
 }
 
 // GetStatusManager implements EventSource.
-func (s *HTTPSource) GetStatusManager() *EventSourceStatusManager {
+func (s *HTTPPollerSource) GetStatusManager() *EventSourceStatusManager {
 	return &EventSourceStatusManager{
 		ConditionSet:      s.GetConditionSet(),
 		EventSourceStatus: &s.Status,
@@ -52,7 +52,7 @@ func (s *HTTPSource) GetStatusManager() *EventSourceStatusManager {
 }
 
 // AsEventSource implements EventSource.
-func (s *HTTPSource) AsEventSource() string {
+func (s *HTTPPollerSource) AsEventSource() string {
 	if s.Spec.EventSource != nil {
 		return *s.Spec.EventSource
 	}
@@ -66,7 +66,7 @@ func (s *HTTPSource) AsEventSource() string {
 }
 
 // GetEventTypes implements EventSource.
-func (s *HTTPSource) GetEventTypes() []string {
+func (s *HTTPPollerSource) GetEventTypes() []string {
 	return []string{
 		s.Spec.EventType,
 	}

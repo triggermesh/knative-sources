@@ -18,13 +18,13 @@ limitations under the License.
 
 package v1alpha1
 
-// HTTPSourceListerExpansion allows custom methods to be added to
-// HTTPSourceLister.
-type HTTPSourceListerExpansion interface{}
+// HTTPPollerSourceListerExpansion allows custom methods to be added to
+// HTTPPollerSourceLister.
+type HTTPPollerSourceListerExpansion interface{}
 
-// HTTPSourceNamespaceListerExpansion allows custom methods to be added to
-// HTTPSourceNamespaceLister.
-type HTTPSourceNamespaceListerExpansion interface{}
+// HTTPPollerSourceNamespaceListerExpansion allows custom methods to be added to
+// HTTPPollerSourceNamespaceLister.
+type HTTPPollerSourceNamespaceListerExpansion interface{}
 
 // SlackSourceListerExpansion allows custom methods to be added to
 // SlackSourceLister.

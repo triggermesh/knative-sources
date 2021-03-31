@@ -1,4 +1,4 @@
-# Copyright (c) 2020-2021 TriggerMesh Inc.
+# Copyright (c) 2021 TriggerMesh Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,18 +12,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Sample HTTPSource object.
+# Sample HTTPPollerSource object.
 
 apiVersion: sources.triggermesh.io/v1alpha1
-kind: HTTPSource
+kind: HTTPPollerSource
 metadata:
-  name: httpsource-test
+  name: httppoller-test
 spec:
-  eventType: com.example.mysample.event
-  eventSource: instance-abc123
-  basicAuthUsername: customuser
-  basicAuthPassword:
-    value: abc123secret
+  eventType: weather.alerts/kansas
+  eventSource: gov.weather
+  endpoint: https://api.weather.gov/alerts/active?area=KS
+  method: GET
+  frequency: 20s
   sink:
     ref:
       apiVersion: serving.knative.dev/v1

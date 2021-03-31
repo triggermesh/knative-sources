@@ -1,4 +1,4 @@
-# Copyright (c) 2020-2021 TriggerMesh Inc.
+# Copyright (c) 2021 TriggerMesh Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
-  name: httpsources.sources.triggermesh.io
+  name: httppollersources.sources.triggermesh.io
   labels:
     eventing.knative.dev/source: "true"
     duck.knative.dev/source: "true"
@@ -24,8 +24,8 @@ spec:
   group: sources.triggermesh.io
   scope: Namespaced
   names:
-    kind: HTTPSource
-    plural: httpsources
+    kind: HTTPPollerSource
+    plural: httppollersources
     categories:
     - all
     - knative
@@ -52,11 +52,23 @@ spec:
               eventSource:
                 description: EventSource is an optional but recommended field for identifying the instance producing the events
                 type: string
+              endpoint:
+                type: string
+                format: url
+                pattern: ^https?:\/\/.+$
+              method:
+                type: string
+                enum: [GET, POST, PUT, PATCH, DELETE]
+              skipVerify:
+                type: boolean
+                default: false
+              caCertificate:
+                type: string
               basicAuthUsername:
-                description: When supplied will be used to configure Basic Authentication at the exposed endpoint
+                description: When supplied will be used to configure Basic Authentication at requests.
                 type: string
               basicAuthPassword:
-                description: When supplied will be used to configure Basic Authentication at the exposed endpoint
+                description: When supplied will be used to configure Basic Authentication at requests
                 type: object
                 properties:
                   value:
@@ -75,6 +87,14 @@ spec:
                 oneOf:
                 - required: ['value']
                 - required: ['valueFromSecret']
+              headers:
+                description: HTTP headers.
+                type: object
+                additionalProperties:
+                  type: string
+              frequency:
+                description: Polling frequency duration.
+                type: string
               sink:
                 description: Reference to an event sink.
                 type: object
@@ -120,8 +140,11 @@ spec:
                 required:
                 - extensions
             required:
-            - sink
             - eventType
+            - method
+            - endpoint
+            - frequency
+            - sink
           status:
             description: Status of the event source.
             type: object
@@ -167,11 +190,6 @@ spec:
                   required:
                   - type
                   - status
-              address:
-                type: object
-                properties:
-                  url:
-                    type: string
     additionalPrinterColumns:
     - name: Ready
       type: string
@@ -179,13 +197,9 @@ spec:
     - name: Reason
       type: string
       jsonPath: .status.conditions[?(@.type=='Ready')].reason
-    - name: URL
-      type: string
-      jsonPath: .status.address.url
     - name: Sink
       type: string
       jsonPath: .status.sinkUri
     - name: Age
       type: date
       jsonPath: .metadata.creationTimestamp
-

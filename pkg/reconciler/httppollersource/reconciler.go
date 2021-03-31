@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2020-2021 TriggerMesh Inc.
+Copyright (c) 2021 TriggerMesh Inc.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package httpsource
+package httppollersource
 
 import (
 	"context"
@@ -22,24 +22,24 @@ import (
 	"knative.dev/pkg/reconciler"
 
 	"github.com/triggermesh/knative-sources/pkg/apis/sources/v1alpha1"
-	reconcilerv1alpha1 "github.com/triggermesh/knative-sources/pkg/client/generated/injection/reconciler/sources/v1alpha1/httpsource"
+	reconcilerv1alpha1 "github.com/triggermesh/knative-sources/pkg/client/generated/injection/reconciler/sources/v1alpha1/httppollersource"
 	listersv1alpha1 "github.com/triggermesh/knative-sources/pkg/client/generated/listers/sources/v1alpha1"
 	"github.com/triggermesh/knative-sources/pkg/reconciler/common"
 )
 
 // Reconciler implements controller.Reconciler for the event source type.
 type Reconciler struct {
-	base       common.GenericServiceReconciler
+	base       common.GenericDeploymentReconciler
 	adapterCfg *adapterConfig
 
-	srcLister func(namespace string) listersv1alpha1.HTTPSourceNamespaceLister
+	srcLister func(namespace string) listersv1alpha1.HTTPPollerSourceNamespaceLister
 }
 
 // Check that our Reconciler implements Interface
 var _ reconcilerv1alpha1.Interface = (*Reconciler)(nil)
 
 // ReconcileKind implements Interface.ReconcileKind.
-func (r *Reconciler) ReconcileKind(ctx context.Context, src *v1alpha1.HTTPSource) reconciler.Event {
+func (r *Reconciler) ReconcileKind(ctx context.Context, src *v1alpha1.HTTPPollerSource) reconciler.Event {
 	// inject source into context for usage in reconciliation logic
 	ctx = v1alpha1.WithSource(ctx, src)
 

@@ -53,8 +53,8 @@ rules:
   resources:
   - slacksources
   - zendesksources
-  - httpsources
   - webhooksources
+  - httppollersources
   verbs:
   - list
   - watch
@@ -64,8 +64,8 @@ rules:
   resources:
   - slacksources/status
   - zendesksources/status
-  - httpsources/status
   - webhooksources/status
+  - httppollersources/status
   verbs:
   - update
 
@@ -93,8 +93,8 @@ rules:
   resourceNames: &rbac-objects
   - slacksource-adapter
   - zendesksource-adapter
-  - httpsource-adapter
   - webhooksource-adapter
+  - httppollersources-adapter
   verbs:
   - update
 - apiGroups:
@@ -152,8 +152,8 @@ rules:
   resourceNames:
   - knative-sources-controller.github.com-triggermesh-knative-sources-pkg-reconciler-slacksource.reconciler.00-of-01
   - knative-sources-controller.github.com-triggermesh-knative-sources-pkg-reconciler-zendesksource.reconciler.00-of-01
-  - knative-sources-controller.github.com-triggermesh-knative-sources-pkg-reconciler-httpsource.reconciler.00-of-01
   - knative-sources-controller.github.com-triggermesh-knative-sources-pkg-reconciler-webhooksource.reconciler.00-of-01
+  - knative-sources-controller.github.com-triggermesh-knative-sources-pkg-reconciler-httppollersource.reconciler.00-of-01
   resources:
   - leases
   verbs:
@@ -233,7 +233,7 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: httpsource-adapter
+  name: webhooksource-adapter
 rules: []
 
 ---
@@ -241,7 +241,7 @@ rules: []
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: webhooksource-adapter
+  name: httppollersource-adapter
 rules: []
 
 ---
@@ -260,8 +260,8 @@ rules:
   resources:
   - slacksources
   - zendesksources
-  - httpsources
   - webhooksources
+  - httppollersources
   verbs:
   - get
   - list

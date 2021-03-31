@@ -32,59 +32,59 @@ import (
 	cache "k8s.io/client-go/tools/cache"
 )
 
-// HTTPSourceInformer provides access to a shared informer and lister for
-// HTTPSources.
-type HTTPSourceInformer interface {
+// HTTPPollerSourceInformer provides access to a shared informer and lister for
+// HTTPPollerSources.
+type HTTPPollerSourceInformer interface {
 	Informer() cache.SharedIndexInformer
-	Lister() v1alpha1.HTTPSourceLister
+	Lister() v1alpha1.HTTPPollerSourceLister
 }
 
-type hTTPSourceInformer struct {
+type hTTPPollerSourceInformer struct {
 	factory          internalinterfaces.SharedInformerFactory
 	tweakListOptions internalinterfaces.TweakListOptionsFunc
 	namespace        string
 }
 
-// NewHTTPSourceInformer constructs a new informer for HTTPSource type.
+// NewHTTPPollerSourceInformer constructs a new informer for HTTPPollerSource type.
 // Always prefer using an informer factory to get a shared informer instead of getting an independent
 // one. This reduces memory footprint and number of connections to the server.
-func NewHTTPSourceInformer(client internalclientset.Interface, namespace string, resyncPeriod time.Duration, indexers cache.Indexers) cache.SharedIndexInformer {
-	return NewFilteredHTTPSourceInformer(client, namespace, resyncPeriod, indexers, nil)
+func NewHTTPPollerSourceInformer(client internalclientset.Interface, namespace string, resyncPeriod time.Duration, indexers cache.Indexers) cache.SharedIndexInformer {
+	return NewFilteredHTTPPollerSourceInformer(client, namespace, resyncPeriod, indexers, nil)
 }
 
-// NewFilteredHTTPSourceInformer constructs a new informer for HTTPSource type.
+// NewFilteredHTTPPollerSourceInformer constructs a new informer for HTTPPollerSource type.
 // Always prefer using an informer factory to get a shared informer instead of getting an independent
 // one. This reduces memory footprint and number of connections to the server.
-func NewFilteredHTTPSourceInformer(client internalclientset.Interface, namespace string, resyncPeriod time.Duration, indexers cache.Indexers, tweakListOptions internalinterfaces.TweakListOptionsFunc) cache.SharedIndexInformer {
+func NewFilteredHTTPPollerSourceInformer(client internalclientset.Interface, namespace string, resyncPeriod time.Duration, indexers cache.Indexers, tweakListOptions internalinterfaces.TweakListOptionsFunc) cache.SharedIndexInformer {
 	return cache.NewSharedIndexInformer(
 		&cache.ListWatch{
 			ListFunc: func(options v1.ListOptions) (runtime.Object, error) {
 				if tweakListOptions != nil {
 					tweakListOptions(&options)
 				}
-				return client.SourcesV1alpha1().HTTPSources(namespace).List(context.TODO(), options)
+				return client.SourcesV1alpha1().HTTPPollerSources(namespace).List(context.TODO(), options)
 			},
 			WatchFunc: func(options v1.ListOptions) (watch.Interface, error) {
 				if tweakListOptions != nil {
 					tweakListOptions(&options)
 				}
-				return client.SourcesV1alpha1().HTTPSources(namespace).Watch(context.TODO(), options)
+				return client.SourcesV1alpha1().HTTPPollerSources(namespace).Watch(context.TODO(), options)
 			},
 		},
-		&sourcesv1alpha1.HTTPSource{},
+		&sourcesv1alpha1.HTTPPollerSource{},
 		resyncPeriod,
 		indexers,
 	)
 }
 
-func (f *hTTPSourceInformer) defaultInformer(client internalclientset.Interface, resyncPeriod time.Duration) cache.SharedIndexInformer {
-	return NewFilteredHTTPSourceInformer(client, f.namespace, resyncPeriod, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc}, f.tweakListOptions)
+func (f *hTTPPollerSourceInformer) defaultInformer(client internalclientset.Interface, resyncPeriod time.Duration) cache.SharedIndexInformer {
+	return NewFilteredHTTPPollerSourceInformer(client, f.namespace, resyncPeriod, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc}, f.tweakListOptions)
 }
 
-func (f *hTTPSourceInformer) Informer() cache.SharedIndexInformer {
-	return f.factory.InformerFor(&sourcesv1alpha1.HTTPSource{}, f.defaultInformer)
+func (f *hTTPPollerSourceInformer) Informer() cache.SharedIndexInformer {
+	return f.factory.InformerFor(&sourcesv1alpha1.HTTPPollerSource{}, f.defaultInformer)
 }
 
-func (f *hTTPSourceInformer) Lister() v1alpha1.HTTPSourceLister {
-	return v1alpha1.NewHTTPSourceLister(f.Informer().GetIndexer())
+func (f *hTTPPollerSourceInformer) Lister() v1alpha1.HTTPPollerSourceLister {
+	return v1alpha1.NewHTTPPollerSourceLister(f.Informer().GetIndexer())
 }

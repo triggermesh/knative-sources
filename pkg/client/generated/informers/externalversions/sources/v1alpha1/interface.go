@@ -24,8 +24,8 @@ import (
 
 // Interface provides access to all the informers in this group version.
 type Interface interface {
-	// HTTPSources returns a HTTPSourceInformer.
-	HTTPSources() HTTPSourceInformer
+	// HTTPPollerSources returns a HTTPPollerSourceInformer.
+	HTTPPollerSources() HTTPPollerSourceInformer
 	// SlackSources returns a SlackSourceInformer.
 	SlackSources() SlackSourceInformer
 	// WebhookSources returns a WebhookSourceInformer.
@@ -45,9 +45,9 @@ func New(f internalinterfaces.SharedInformerFactory, namespace string, tweakList
 	return &version{factory: f, namespace: namespace, tweakListOptions: tweakListOptions}
 }
 
-// HTTPSources returns a HTTPSourceInformer.
-func (v *version) HTTPSources() HTTPSourceInformer {
-	return &hTTPSourceInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
+// HTTPPollerSources returns a HTTPPollerSourceInformer.
+func (v *version) HTTPPollerSources() HTTPPollerSourceInformer {
+	return &hTTPPollerSourceInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
 }
 
 // SlackSources returns a SlackSourceInformer.

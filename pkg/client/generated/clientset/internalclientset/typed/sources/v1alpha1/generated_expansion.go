@@ -18,7 +18,7 @@ limitations under the License.
 
 package v1alpha1
 
-type HTTPSourceExpansion interface{}
+type HTTPPollerSourceExpansion interface{}
 
 type SlackSourceExpansion interface{}
 

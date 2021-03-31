@@ -108,11 +108,6 @@ func (l *Listers) GetZendeskSourceLister() listersv1alpha1.ZendeskSourceLister {
 	return listersv1alpha1.NewZendeskSourceLister(l.IndexerFor(&v1alpha1.ZendeskSource{}))
 }
 
-// GetHTTPSourceLister returns a Lister for HTTPSource objects.
-func (l *Listers) GetHTTPSourceLister() listersv1alpha1.HTTPSourceLister {
-	return listersv1alpha1.NewHTTPSourceLister(l.IndexerFor(&v1alpha1.HTTPSource{}))
-}
-
 // GetWebhookSourceLister returns a Lister for WebhookSource objects.
 func (l *Listers) GetWebhookSourceLister() listersv1alpha1.WebhookSourceLister {
 	return listersv1alpha1.NewWebhookSourceLister(l.IndexerFor(&v1alpha1.WebhookSource{}))
@@ -136,4 +131,9 @@ func (l *Listers) GetServiceAccountLister() corelistersv1.ServiceAccountLister {
 // GetRoleBindingLister returns a lister for RoleBinding objects
 func (l *Listers) GetRoleBindingLister() rbaclistersv1.RoleBindingLister {
 	return rbaclistersv1.NewRoleBindingLister(l.IndexerFor(&rbacv1.RoleBinding{}))
+}
+
+// GetHTTPPollerSourceLister returns a Lister for HTTPPollerSource objects.
+func (l *Listers) GetHTTPPollerSourceLister() listersv1alpha1.HTTPPollerSourceLister {
+	return listersv1alpha1.NewHTTPPollerSourceLister(l.IndexerFor(&v1alpha1.HTTPPollerSource{}))
 }

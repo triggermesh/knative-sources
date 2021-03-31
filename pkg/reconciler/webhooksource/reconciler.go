@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package httpsource
+package webhooksource
 
 import (
 	"context"
@@ -22,7 +22,7 @@ import (
 	"knative.dev/pkg/reconciler"
 
 	"github.com/triggermesh/knative-sources/pkg/apis/sources/v1alpha1"
-	reconcilerv1alpha1 "github.com/triggermesh/knative-sources/pkg/client/generated/injection/reconciler/sources/v1alpha1/httpsource"
+	reconcilerv1alpha1 "github.com/triggermesh/knative-sources/pkg/client/generated/injection/reconciler/sources/v1alpha1/webhooksource"
 	listersv1alpha1 "github.com/triggermesh/knative-sources/pkg/client/generated/listers/sources/v1alpha1"
 	"github.com/triggermesh/knative-sources/pkg/reconciler/common"
 )
@@ -32,14 +32,14 @@ type Reconciler struct {
 	base       common.GenericServiceReconciler
 	adapterCfg *adapterConfig
 
-	srcLister func(namespace string) listersv1alpha1.HTTPSourceNamespaceLister
+	srcLister func(namespace string) listersv1alpha1.WebhookSourceNamespaceLister
 }
 
 // Check that our Reconciler implements Interface
 var _ reconcilerv1alpha1.Interface = (*Reconciler)(nil)
 
 // ReconcileKind implements Interface.ReconcileKind.
-func (r *Reconciler) ReconcileKind(ctx context.Context, src *v1alpha1.HTTPSource) reconciler.Event {
+func (r *Reconciler) ReconcileKind(ctx context.Context, src *v1alpha1.WebhookSource) reconciler.Event {
 	// inject source into context for usage in reconciliation logic
 	ctx = v1alpha1.WithSource(ctx, src)
 

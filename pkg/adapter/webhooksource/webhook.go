@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package httpsource
+package webhooksource
 
 import (
 	"context"
@@ -34,7 +34,7 @@ const (
 	serverShutdownGracePeriod        = time.Second * 10
 )
 
-type httpHandler struct {
+type webhookHandler struct {
 	eventType   string
 	eventSource string
 
@@ -48,7 +48,7 @@ type httpHandler struct {
 
 // Start implements adapter.Adapter.
 // Runs the server for receiving HTTP events until ctx gets cancelled.
-func (h *httpHandler) Start(ctx context.Context) error {
+func (h *webhookHandler) Start(ctx context.Context) error {
 	m := http.NewServeMux()
 	m.HandleFunc("/", h.handleAll)
 	m.HandleFunc("/health", healthCheckHandler)
@@ -63,7 +63,7 @@ func (h *httpHandler) Start(ctx context.Context) error {
 
 // runHandler runs the HTTP event handler until ctx get cancelled.
 func runHandler(ctx context.Context, s *http.Server) error {
-	logging.FromContext(ctx).Info("Starting HTTP event handler")
+	logging.FromContext(ctx).Info("Starting webhook event handler")
 
 	errCh := make(chan error)
 	go func() {
@@ -95,9 +95,9 @@ func runHandler(ctx context.Context, s *http.Server) error {
 	}
 }
 
-// handleAll receives all Http events at a single resource, it
+// handleAll receives all webhook events at a single resource, it
 // is up to this function to parse event wrapper and dispatch.
-func (h *httpHandler) handleAll(w http.ResponseWriter, r *http.Request) {
+func (h *webhookHandler) handleAll(w http.ResponseWriter, r *http.Request) {
 	if r.Body == nil {
 		h.handleError(errors.New("request without body not supported"), http.StatusBadRequest, w)
 		return
@@ -139,7 +139,7 @@ func (h *httpHandler) handleAll(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-func (h *httpHandler) handleError(err error, code int, w http.ResponseWriter) {
+func (h *webhookHandler) handleError(err error, code int, w http.ResponseWriter) {
 	h.logger.Error("An error ocurred", zap.Error(err))
 	http.Error(w, err.Error(), code)
 }

@@ -32,12 +32,12 @@ func (c *FakeSourcesV1alpha1) HTTPPollerSources(namespace string) v1alpha1.HTTPP
 	return &FakeHTTPPollerSources{c, namespace}
 }
 
-func (c *FakeSourcesV1alpha1) HTTPSources(namespace string) v1alpha1.HTTPSourceInterface {
-	return &FakeHTTPSources{c, namespace}
-}
-
 func (c *FakeSourcesV1alpha1) SlackSources(namespace string) v1alpha1.SlackSourceInterface {
 	return &FakeSlackSources{c, namespace}
+}
+
+func (c *FakeSourcesV1alpha1) WebhookSources(namespace string) v1alpha1.WebhookSourceInterface {
+	return &FakeWebhookSources{c, namespace}
 }
 
 func (c *FakeSourcesV1alpha1) ZendeskSources(namespace string) v1alpha1.ZendeskSourceInterface {

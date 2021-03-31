@@ -26,14 +26,6 @@ type HTTPPollerSourceListerExpansion interface{}
 // HTTPPollerSourceNamespaceLister.
 type HTTPPollerSourceNamespaceListerExpansion interface{}
 
-// HTTPSourceListerExpansion allows custom methods to be added to
-// HTTPSourceLister.
-type HTTPSourceListerExpansion interface{}
-
-// HTTPSourceNamespaceListerExpansion allows custom methods to be added to
-// HTTPSourceNamespaceLister.
-type HTTPSourceNamespaceListerExpansion interface{}
-
 // SlackSourceListerExpansion allows custom methods to be added to
 // SlackSourceLister.
 type SlackSourceListerExpansion interface{}
@@ -41,6 +33,14 @@ type SlackSourceListerExpansion interface{}
 // SlackSourceNamespaceListerExpansion allows custom methods to be added to
 // SlackSourceNamespaceLister.
 type SlackSourceNamespaceListerExpansion interface{}
+
+// WebhookSourceListerExpansion allows custom methods to be added to
+// WebhookSourceLister.
+type WebhookSourceListerExpansion interface{}
+
+// WebhookSourceNamespaceListerExpansion allows custom methods to be added to
+// WebhookSourceNamespaceLister.
+type WebhookSourceNamespaceListerExpansion interface{}
 
 // ZendeskSourceListerExpansion allows custom methods to be added to
 // ZendeskSourceLister.

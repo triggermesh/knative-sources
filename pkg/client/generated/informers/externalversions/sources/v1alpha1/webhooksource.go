@@ -32,59 +32,59 @@ import (
 	cache "k8s.io/client-go/tools/cache"
 )
 
-// HTTPSourceInformer provides access to a shared informer and lister for
-// HTTPSources.
-type HTTPSourceInformer interface {
+// WebhookSourceInformer provides access to a shared informer and lister for
+// WebhookSources.
+type WebhookSourceInformer interface {
 	Informer() cache.SharedIndexInformer
-	Lister() v1alpha1.HTTPSourceLister
+	Lister() v1alpha1.WebhookSourceLister
 }
 
-type hTTPSourceInformer struct {
+type webhookSourceInformer struct {
 	factory          internalinterfaces.SharedInformerFactory
 	tweakListOptions internalinterfaces.TweakListOptionsFunc
 	namespace        string
 }
 
-// NewHTTPSourceInformer constructs a new informer for HTTPSource type.
+// NewWebhookSourceInformer constructs a new informer for WebhookSource type.
 // Always prefer using an informer factory to get a shared informer instead of getting an independent
 // one. This reduces memory footprint and number of connections to the server.
-func NewHTTPSourceInformer(client internalclientset.Interface, namespace string, resyncPeriod time.Duration, indexers cache.Indexers) cache.SharedIndexInformer {
-	return NewFilteredHTTPSourceInformer(client, namespace, resyncPeriod, indexers, nil)
+func NewWebhookSourceInformer(client internalclientset.Interface, namespace string, resyncPeriod time.Duration, indexers cache.Indexers) cache.SharedIndexInformer {
+	return NewFilteredWebhookSourceInformer(client, namespace, resyncPeriod, indexers, nil)
 }
 
-// NewFilteredHTTPSourceInformer constructs a new informer for HTTPSource type.
+// NewFilteredWebhookSourceInformer constructs a new informer for WebhookSource type.
 // Always prefer using an informer factory to get a shared informer instead of getting an independent
 // one. This reduces memory footprint and number of connections to the server.
-func NewFilteredHTTPSourceInformer(client internalclientset.Interface, namespace string, resyncPeriod time.Duration, indexers cache.Indexers, tweakListOptions internalinterfaces.TweakListOptionsFunc) cache.SharedIndexInformer {
+func NewFilteredWebhookSourceInformer(client internalclientset.Interface, namespace string, resyncPeriod time.Duration, indexers cache.Indexers, tweakListOptions internalinterfaces.TweakListOptionsFunc) cache.SharedIndexInformer {
 	return cache.NewSharedIndexInformer(
 		&cache.ListWatch{
 			ListFunc: func(options v1.ListOptions) (runtime.Object, error) {
 				if tweakListOptions != nil {
 					tweakListOptions(&options)
 				}
-				return client.SourcesV1alpha1().HTTPSources(namespace).List(context.TODO(), options)
+				return client.SourcesV1alpha1().WebhookSources(namespace).List(context.TODO(), options)
 			},
 			WatchFunc: func(options v1.ListOptions) (watch.Interface, error) {
 				if tweakListOptions != nil {
 					tweakListOptions(&options)
 				}
-				return client.SourcesV1alpha1().HTTPSources(namespace).Watch(context.TODO(), options)
+				return client.SourcesV1alpha1().WebhookSources(namespace).Watch(context.TODO(), options)
 			},
 		},
-		&sourcesv1alpha1.HTTPSource{},
+		&sourcesv1alpha1.WebhookSource{},
 		resyncPeriod,
 		indexers,
 	)
 }
 
-func (f *hTTPSourceInformer) defaultInformer(client internalclientset.Interface, resyncPeriod time.Duration) cache.SharedIndexInformer {
-	return NewFilteredHTTPSourceInformer(client, f.namespace, resyncPeriod, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc}, f.tweakListOptions)
+func (f *webhookSourceInformer) defaultInformer(client internalclientset.Interface, resyncPeriod time.Duration) cache.SharedIndexInformer {
+	return NewFilteredWebhookSourceInformer(client, f.namespace, resyncPeriod, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc}, f.tweakListOptions)
 }
 
-func (f *hTTPSourceInformer) Informer() cache.SharedIndexInformer {
-	return f.factory.InformerFor(&sourcesv1alpha1.HTTPSource{}, f.defaultInformer)
+func (f *webhookSourceInformer) Informer() cache.SharedIndexInformer {
+	return f.factory.InformerFor(&sourcesv1alpha1.WebhookSource{}, f.defaultInformer)
 }
 
-func (f *hTTPSourceInformer) Lister() v1alpha1.HTTPSourceLister {
-	return v1alpha1.NewHTTPSourceLister(f.Informer().GetIndexer())
+func (f *webhookSourceInformer) Lister() v1alpha1.WebhookSourceLister {
+	return v1alpha1.NewWebhookSourceLister(f.Informer().GetIndexer())
 }

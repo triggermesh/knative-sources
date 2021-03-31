@@ -26,10 +26,10 @@ import (
 type Interface interface {
 	// HTTPPollerSources returns a HTTPPollerSourceInformer.
 	HTTPPollerSources() HTTPPollerSourceInformer
-	// HTTPSources returns a HTTPSourceInformer.
-	HTTPSources() HTTPSourceInformer
 	// SlackSources returns a SlackSourceInformer.
 	SlackSources() SlackSourceInformer
+	// WebhookSources returns a WebhookSourceInformer.
+	WebhookSources() WebhookSourceInformer
 	// ZendeskSources returns a ZendeskSourceInformer.
 	ZendeskSources() ZendeskSourceInformer
 }
@@ -50,14 +50,14 @@ func (v *version) HTTPPollerSources() HTTPPollerSourceInformer {
 	return &hTTPPollerSourceInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
 }
 
-// HTTPSources returns a HTTPSourceInformer.
-func (v *version) HTTPSources() HTTPSourceInformer {
-	return &hTTPSourceInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
-}
-
 // SlackSources returns a SlackSourceInformer.
 func (v *version) SlackSources() SlackSourceInformer {
 	return &slackSourceInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
+}
+
+// WebhookSources returns a WebhookSourceInformer.
+func (v *version) WebhookSources() WebhookSourceInformer {
+	return &webhookSourceInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
 }
 
 // ZendeskSources returns a ZendeskSourceInformer.

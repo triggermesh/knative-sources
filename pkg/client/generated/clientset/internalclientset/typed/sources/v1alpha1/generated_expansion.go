@@ -20,8 +20,8 @@ package v1alpha1
 
 type HTTPPollerSourceExpansion interface{}
 
-type HTTPSourceExpansion interface{}
-
 type SlackSourceExpansion interface{}
+
+type WebhookSourceExpansion interface{}
 
 type ZendeskSourceExpansion interface{}

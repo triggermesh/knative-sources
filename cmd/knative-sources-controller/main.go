@@ -20,8 +20,8 @@ import (
 	"knative.dev/pkg/injection/sharedmain"
 
 	"github.com/triggermesh/knative-sources/pkg/reconciler/httppollersource"
-	"github.com/triggermesh/knative-sources/pkg/reconciler/httpsource"
 	"github.com/triggermesh/knative-sources/pkg/reconciler/slacksource"
+	"github.com/triggermesh/knative-sources/pkg/reconciler/webhooksource"
 	"github.com/triggermesh/knative-sources/pkg/reconciler/zendesksource"
 )
 
@@ -29,7 +29,7 @@ func main() {
 	sharedmain.Main("knative-sources-controller",
 		slacksource.NewController,
 		zendesksource.NewController,
-		httpsource.NewController,
+		webhooksource.NewController,
 		httppollersource.NewController,
 	)
 }

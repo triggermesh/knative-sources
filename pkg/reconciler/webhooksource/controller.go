@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package httpsource
+package webhooksource
 
 import (
 	"context"
@@ -26,8 +26,8 @@ import (
 	"knative.dev/pkg/controller"
 
 	"github.com/triggermesh/knative-sources/pkg/apis/sources/v1alpha1"
-	informerv1alpha1 "github.com/triggermesh/knative-sources/pkg/client/generated/injection/informers/sources/v1alpha1/httpsource"
-	reconcilerv1alpha1 "github.com/triggermesh/knative-sources/pkg/client/generated/injection/reconciler/sources/v1alpha1/httpsource"
+	informerv1alpha1 "github.com/triggermesh/knative-sources/pkg/client/generated/injection/informers/sources/v1alpha1/webhooksource"
+	reconcilerv1alpha1 "github.com/triggermesh/knative-sources/pkg/client/generated/injection/reconciler/sources/v1alpha1/webhooksource"
 	"github.com/triggermesh/knative-sources/pkg/reconciler/common"
 )
 
@@ -38,7 +38,7 @@ func NewController(
 	cmw configmap.Watcher,
 ) *controller.Impl {
 
-	typ := (*v1alpha1.HTTPSource)(nil)
+	typ := (*v1alpha1.WebhookSource)(nil)
 	app := common.ComponentName(typ)
 
 	adapterCfg := &adapterConfig{
@@ -50,7 +50,7 @@ func NewController(
 
 	r := &Reconciler{
 		adapterCfg: adapterCfg,
-		srcLister:  informer.Lister().HTTPSources,
+		srcLister:  informer.Lister().WebhookSources,
 	}
 	impl := reconcilerv1alpha1.NewImpl(ctx, r)
 

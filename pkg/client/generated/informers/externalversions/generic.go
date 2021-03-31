@@ -55,10 +55,10 @@ func (f *sharedInformerFactory) ForResource(resource schema.GroupVersionResource
 	// Group=sources.triggermesh.io, Version=v1alpha1
 	case v1alpha1.SchemeGroupVersion.WithResource("httppollersources"):
 		return &genericInformer{resource: resource.GroupResource(), informer: f.Sources().V1alpha1().HTTPPollerSources().Informer()}, nil
-	case v1alpha1.SchemeGroupVersion.WithResource("httpsources"):
-		return &genericInformer{resource: resource.GroupResource(), informer: f.Sources().V1alpha1().HTTPSources().Informer()}, nil
 	case v1alpha1.SchemeGroupVersion.WithResource("slacksources"):
 		return &genericInformer{resource: resource.GroupResource(), informer: f.Sources().V1alpha1().SlackSources().Informer()}, nil
+	case v1alpha1.SchemeGroupVersion.WithResource("webhooksources"):
+		return &genericInformer{resource: resource.GroupResource(), informer: f.Sources().V1alpha1().WebhookSources().Informer()}, nil
 	case v1alpha1.SchemeGroupVersion.WithResource("zendesksources"):
 		return &genericInformer{resource: resource.GroupResource(), informer: f.Sources().V1alpha1().ZendeskSources().Informer()}, nil
 

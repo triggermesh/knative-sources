@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package httpsource
+package webhooksource
 
 import (
 	"context"
@@ -29,7 +29,7 @@ import (
 func NewAdapter(ctx context.Context, aEnv adapter.EnvConfigAccessor, ceClient cloudevents.Client) adapter.Adapter {
 	env := aEnv.(*envAccessor)
 
-	return &httpHandler{
+	return &webhookHandler{
 		eventType:   env.EventType,
 		eventSource: env.EventSource,
 
@@ -40,4 +40,4 @@ func NewAdapter(ctx context.Context, aEnv adapter.EnvConfigAccessor, ceClient cl
 	}
 }
 
-var _ adapter.Adapter = (*httpHandler)(nil)
+var _ adapter.Adapter = (*webhookHandler)(nil)

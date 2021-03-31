@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package httpsource
+package webhooksource
 
 import (
 	"encoding/base64"
@@ -36,7 +36,7 @@ const (
 	tEventSource = "testSource"
 )
 
-func TestHTTPEvent(t *testing.T) {
+func TestWebhookEvent(t *testing.T) {
 
 	logger := zapt.NewLogger(t).Sugar()
 
@@ -119,7 +119,7 @@ func TestHTTPEvent(t *testing.T) {
 				cloudevents.WithTimeNow(), cloudevents.WithUUIDs(),
 			)
 
-			handler := &httpHandler{
+			handler := &webhookHandler{
 				eventType:   tEventType,
 				eventSource: tEventSource,
 				username:    c.username,

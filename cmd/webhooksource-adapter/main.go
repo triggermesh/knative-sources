@@ -14,22 +14,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package httpsource
+package main
 
 import (
 	"knative.dev/eventing/pkg/adapter/v2"
+
+	"github.com/triggermesh/knative-sources/pkg/adapter/webhooksource"
 )
 
-// EnvAccessor for configuration parameters
-func EnvAccessor() adapter.EnvConfigAccessor {
-	return &envAccessor{}
-}
-
-type envAccessor struct {
-	adapter.EnvConfig
-
-	EventType         string `envconfig:"HTTP_EVENT_TYPE" required:"true"`
-	EventSource       string `envconfig:"HTTP_EVENT_SOURCE" required:"true"`
-	BasicAuthUsername string `envconfig:"HTTP_BASICAUTH_USERNAME"`
-	BasicAuthPassword string `envconfig:"HTTP_BASICAUTH_PASSWORD"`
+func main() {
+	adapter.Main("webhook", webhooksource.EnvAccessor, webhooksource.NewAdapter)
 }

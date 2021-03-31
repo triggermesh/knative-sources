@@ -27,8 +27,8 @@ import (
 type SourcesV1alpha1Interface interface {
 	RESTClient() rest.Interface
 	HTTPPollerSourcesGetter
-	HTTPSourcesGetter
 	SlackSourcesGetter
+	WebhookSourcesGetter
 	ZendeskSourcesGetter
 }
 
@@ -41,12 +41,12 @@ func (c *SourcesV1alpha1Client) HTTPPollerSources(namespace string) HTTPPollerSo
 	return newHTTPPollerSources(c, namespace)
 }
 
-func (c *SourcesV1alpha1Client) HTTPSources(namespace string) HTTPSourceInterface {
-	return newHTTPSources(c, namespace)
-}
-
 func (c *SourcesV1alpha1Client) SlackSources(namespace string) SlackSourceInterface {
 	return newSlackSources(c, namespace)
+}
+
+func (c *SourcesV1alpha1Client) WebhookSources(namespace string) WebhookSourceInterface {
+	return newWebhookSources(c, namespace)
 }
 
 func (c *SourcesV1alpha1Client) ZendeskSources(namespace string) ZendeskSourceInterface {

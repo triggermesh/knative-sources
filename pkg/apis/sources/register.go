@@ -34,10 +34,10 @@ var (
 		Resource: "zendesksources",
 	}
 
-	// HTTPSourceResource represents an event source for generic HTTP events.
-	HTTPSourceResource = schema.GroupResource{
+	// WebhookSourceResource represents an event source for HTTP webhooks.
+	WebhookSourceResource = schema.GroupResource{
 		Group:    GroupName,
-		Resource: "httpsources",
+		Resource: "webhooksources",
 	}
 
 	// HTTPPollerSourceResource represents an event source for polling HTTP endpoints.

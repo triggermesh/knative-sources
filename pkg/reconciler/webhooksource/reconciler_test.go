@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package httpsource
+package webhooksource
 
 import (
 	"context"
@@ -27,7 +27,7 @@ import (
 
 	"github.com/triggermesh/knative-sources/pkg/apis/sources/v1alpha1"
 	fakeinjectionclient "github.com/triggermesh/knative-sources/pkg/client/generated/injection/client/fake"
-	reconcilerv1alpha1 "github.com/triggermesh/knative-sources/pkg/client/generated/injection/reconciler/sources/v1alpha1/httpsource"
+	reconcilerv1alpha1 "github.com/triggermesh/knative-sources/pkg/client/generated/injection/reconciler/sources/v1alpha1/webhooksource"
 	"github.com/triggermesh/knative-sources/pkg/reconciler/common"
 	. "github.com/triggermesh/knative-sources/pkg/reconciler/testing"
 )
@@ -51,19 +51,19 @@ func reconcilerCtor(cfg *adapterConfig) Ctor {
 		r := &Reconciler{
 			base:       NewTestServiceReconciler(ctx, ls),
 			adapterCfg: cfg,
-			srcLister:  ls.GetHTTPSourceLister().HTTPSources,
+			srcLister:  ls.GetWebhookSourceLister().WebhookSources,
 		}
 
 		return reconcilerv1alpha1.NewReconciler(ctx, logging.FromContext(ctx),
-			fakeinjectionclient.Get(ctx), ls.GetHTTPSourceLister(),
+			fakeinjectionclient.Get(ctx), ls.GetWebhookSourceLister(),
 			controller.GetEventRecorder(ctx), r)
 	}
 }
 
 // newEventSource returns a test source object with a minimal set of pre-filled attributes.
-func newEventSource() *v1alpha1.HTTPSource {
-	src := &v1alpha1.HTTPSource{
-		Spec: v1alpha1.HTTPSourceSpec{
+func newEventSource() *v1alpha1.WebhookSource {
+	src := &v1alpha1.WebhookSource{
+		Spec: v1alpha1.WebhookSourceSpec{
 			EventType: "my.event",
 		},
 	}

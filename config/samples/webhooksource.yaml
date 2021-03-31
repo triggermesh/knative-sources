@@ -12,12 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Sample HTTPSource object.
+# Sample WebhookSource object.
 
 apiVersion: sources.triggermesh.io/v1alpha1
-kind: HTTPSource
+kind: WebhookSource
 metadata:
-  name: httpsource-test
+  name: webhooksource-test
 spec:
   eventType: com.example.mysample.event
   eventSource: instance-abc123

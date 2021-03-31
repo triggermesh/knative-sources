@@ -108,9 +108,9 @@ func (l *Listers) GetZendeskSourceLister() listersv1alpha1.ZendeskSourceLister {
 	return listersv1alpha1.NewZendeskSourceLister(l.IndexerFor(&v1alpha1.ZendeskSource{}))
 }
 
-// GetHTTPSourceLister returns a Lister for HTTPSource objects.
-func (l *Listers) GetHTTPSourceLister() listersv1alpha1.HTTPSourceLister {
-	return listersv1alpha1.NewHTTPSourceLister(l.IndexerFor(&v1alpha1.HTTPSource{}))
+// GetWebhookSourceLister returns a Lister for WebhookSource objects.
+func (l *Listers) GetWebhookSourceLister() listersv1alpha1.WebhookSourceLister {
+	return listersv1alpha1.NewWebhookSourceLister(l.IndexerFor(&v1alpha1.WebhookSource{}))
 }
 
 // GetDeploymentLister returns a lister for Deployment objects.

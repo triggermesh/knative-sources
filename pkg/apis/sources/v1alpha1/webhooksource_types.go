@@ -27,23 +27,23 @@ import (
 // +genreconciler
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
-// HTTPSource is the schema for the event source.
-type HTTPSource struct {
+// WebhookSource is the schema for the event source.
+type WebhookSource struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   HTTPSourceSpec    `json:"spec,omitempty"`
+	Spec   WebhookSourceSpec `json:"spec,omitempty"`
 	Status EventSourceStatus `json:"status,omitempty"`
 }
 
 // Check the interfaces the event source should be implementing.
 var (
-	_ runtime.Object = (*HTTPSource)(nil)
-	_ EventSource    = (*HTTPSource)(nil)
+	_ runtime.Object = (*WebhookSource)(nil)
+	_ EventSource    = (*WebhookSource)(nil)
 )
 
-// HTTPSourceSpec defines the desired state of the event source.
-type HTTPSourceSpec struct {
+// WebhookSourceSpec defines the desired state of the event source.
+type WebhookSourceSpec struct {
 	// inherits duck/v1 SourceSpec, which currently provides:
 	// * Sink - a reference to an object that will resolve to a domain name or
 	//   a URI directly to use as the sink.
@@ -68,9 +68,9 @@ type HTTPSourceSpec struct {
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
-// HTTPSourceList contains a list of event sources.
-type HTTPSourceList struct {
+// WebhookSourceList contains a list of event sources.
+type WebhookSourceList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
-	Items           []HTTPSource `json:"items"`
+	Items           []WebhookSource `json:"items"`
 }

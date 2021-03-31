@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package httpsource
+package webhooksource
 
 import (
 	"fmt"
@@ -33,17 +33,17 @@ import (
 )
 
 const (
-	envHTTPEventType         = "HTTP_EVENT_TYPE"
-	envHTTPEventSource       = "HTTP_EVENT_SOURCE"
-	envHTTPBasicAuthUsername = "HTTP_BASICAUTH_USERNAME"
-	envHTTPBasicAuthPassword = "HTTP_BASICAUTH_PASSWORD"
+	envWebhookEventType         = "WEBHOOK_EVENT_TYPE"
+	envWebhookEventSource       = "WEBHOOK_EVENT_SOURCE"
+	envWebhookBasicAuthUsername = "WEBHOOK_BASICAUTH_USERNAME"
+	envWebhookBasicAuthPassword = "WEBHOOK_BASICAUTH_PASSWORD"
 )
 
 // adapterConfig contains properties used to configure the adapter.
 // These are automatically populated by envconfig.
 type adapterConfig struct {
 	// Container image
-	Image string `default:"gcr.io/triggermesh/httpsource-adapter"`
+	Image string `default:"gcr.io/triggermesh/webhook-adapter"`
 
 	// Configuration accessor for logging/metrics/tracing
 	configs source.ConfigAccessor
@@ -54,12 +54,12 @@ var _ common.AdapterServiceBuilder = (*Reconciler)(nil)
 
 // BuildAdapter implements common.AdapterDeploymentBuilder.
 func (r *Reconciler) BuildAdapter(src v1alpha1.EventSource, sinkURI *apis.URL) *servingv1.Service {
-	typedSrc := src.(*v1alpha1.HTTPSource)
+	typedSrc := src.(*v1alpha1.WebhookSource)
 
 	return common.NewAdapterKnService(src, sinkURI,
 		resource.Image(r.adapterCfg.Image),
 
-		resource.EnvVars(makeHTTPEnvs(typedSrc)...),
+		resource.EnvVars(makeWebhookEnvs(typedSrc)...),
 		resource.EnvVars(r.adapterCfg.configs.ToEnvVars()...),
 	)
 }
@@ -79,25 +79,25 @@ func (r *Reconciler) RBACOwners(namespace string) ([]kmeta.OwnerRefable, error) 
 	return ownerRefables, nil
 }
 
-func makeHTTPEnvs(src *v1alpha1.HTTPSource) []corev1.EnvVar {
+func makeWebhookEnvs(src *v1alpha1.WebhookSource) []corev1.EnvVar {
 	envs := []corev1.EnvVar{{
-		Name:  envHTTPEventType,
+		Name:  envWebhookEventType,
 		Value: src.Spec.EventType,
 	}, {
-		Name:  envHTTPEventSource,
+		Name:  envWebhookEventSource,
 		Value: src.AsEventSource(),
 	}}
 
 	if user := src.Spec.BasicAuthUsername; user != nil {
 		envs = append(envs, corev1.EnvVar{
-			Name:  envHTTPBasicAuthUsername,
+			Name:  envWebhookBasicAuthUsername,
 			Value: *user,
 		})
 	}
 
 	if passw := src.Spec.BasicAuthPassword; passw != nil {
 		envs = common.MaybeAppendValueFromEnvVar(envs,
-			envHTTPBasicAuthPassword, *passw,
+			envWebhookBasicAuthPassword, *passw,
 		)
 	}
 

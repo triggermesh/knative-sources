@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package httpsource
+package webhooksource
 
 import (
 	"testing"
@@ -22,7 +22,7 @@ import (
 	. "github.com/triggermesh/knative-sources/pkg/reconciler/testing"
 
 	// Link fake informers accessed by our controller
-	_ "github.com/triggermesh/knative-sources/pkg/client/generated/injection/informers/sources/v1alpha1/httpsource/fake"
+	_ "github.com/triggermesh/knative-sources/pkg/client/generated/injection/informers/sources/v1alpha1/webhooksource/fake"
 	_ "knative.dev/pkg/client/injection/ducks/duck/v1/addressable/fake"
 	_ "knative.dev/pkg/client/injection/kube/informers/core/v1/serviceaccount/fake"
 	_ "knative.dev/pkg/client/injection/kube/informers/rbac/v1/rolebinding/fake"

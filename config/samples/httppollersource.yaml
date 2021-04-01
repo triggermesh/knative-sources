@@ -23,7 +23,7 @@ spec:
   eventSource: gov.weather
   endpoint: https://api.weather.gov/alerts/active?area=KS
   method: GET
-  frequency: 20s
+  interval: 20s
   sink:
     ref:
       apiVersion: serving.knative.dev/v1

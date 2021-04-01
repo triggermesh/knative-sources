@@ -44,7 +44,7 @@ const (
 	envHTTPPollerBasicAuthUsername = "HTTPPOLLER_BASICAUTH_USERNAME"
 	envHTTPPollerBasicAuthPassword = "HTTPPOLLER_BASICAUTH_PASSWORD"
 	envHTTPPollerHeaders           = "HTTPPOLLER_HEADERS"
-	envHTTPPollerFrequency         = "HTTPPOLLER_FREQUENCY"
+	envHTTPPollerInterval          = "HTTPPOLLER_INTERVAL"
 )
 
 // adapterConfig contains properties used to configure the source's adapter.
@@ -106,8 +106,8 @@ func makeHTTPPollerEnvs(src *v1alpha1.HTTPPollerSource) []corev1.EnvVar {
 		Name:  envHTTPPollerSkipVerify,
 		Value: strconv.FormatBool(skipVerify),
 	}, {
-		Name:  envHTTPPollerFrequency,
-		Value: src.Spec.Frequency.String(),
+		Name:  envHTTPPollerInterval,
+		Value: src.Spec.Interval.String(),
 	}}
 
 	if src.Spec.Headers != nil {

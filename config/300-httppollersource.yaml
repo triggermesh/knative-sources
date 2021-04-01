@@ -92,8 +92,8 @@ spec:
                 type: object
                 additionalProperties:
                   type: string
-              frequency:
-                description: Polling frequency duration.
+              interval:
+                description: Polling interval.
                 type: string
               sink:
                 description: Reference to an event sink.
@@ -143,7 +143,7 @@ spec:
             - eventType
             - method
             - endpoint
-            - frequency
+            - interval
             - sink
           status:
             description: Status of the event source.

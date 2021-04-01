@@ -67,7 +67,7 @@ func NewAdapter(ctx context.Context, aEnv adapter.EnvConfigAccessor, ceClient cl
 	return &httpPoller{
 		eventType:   env.EventType,
 		eventSource: env.EventSource,
-		frequency:   env.Frequency,
+		interval:    env.Interval,
 
 		httpClient:  httpClient,
 		httpRequest: httpRequest,

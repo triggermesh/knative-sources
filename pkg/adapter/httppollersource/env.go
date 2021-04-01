@@ -39,5 +39,5 @@ type envAccessor struct {
 	BasicAuthUsername string            `envconfig:"HTTPPOLLER_BASICAUTH_USERNAME"`
 	BasicAuthPassword string            `envconfig:"HTTPPOLLER_BASICAUTH_PASSWORD"`
 	Headers           map[string]string `envconfig:"HTTPPOLLER_HEADERS"`
-	Frequency         time.Duration     `envconfig:"HTTPPOLLER_FREQUENCY" required:"true"`
+	Interval          time.Duration     `envconfig:"HTTPPOLLER_INTERVAL" required:"true"`
 }

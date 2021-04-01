@@ -151,7 +151,7 @@ func TestHTTPPollerRequests(t *testing.T) {
 			p := httpPoller{
 				eventType:   tEventType,
 				eventSource: tEventSource,
-				frequency:   5 * time.Second,
+				interval:    5 * time.Second,
 
 				ceClient:    ceClient,
 				httpRequest: httpRequest,

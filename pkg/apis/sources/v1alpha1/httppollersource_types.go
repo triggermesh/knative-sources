@@ -83,12 +83,12 @@ type HTTPPollerSourceSpec struct {
 	// +optional
 	BasicAuthPassword *ValueFromField `json:"basicAuthPassword,omitempty"`
 
-	// Headers to be included at HTTP requests
+	// Headers to be included at HTTP requests.
 	// +optional
 	Headers map[string]string `json:"headers,omitempty"`
 
-	// Frequency polling the endpoint
-	Frequency tmapis.Duration `json:"frequency"`
+	// Interval between polling requests.
+	Interval tmapis.Duration `json:"interval"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object

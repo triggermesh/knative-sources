@@ -80,7 +80,7 @@ func newEventSource() *v1alpha1.HTTPPollerSource {
 			EventType:  "test-type",
 			Endpoint:   *endpoint,
 			Method:     "GET",
-			Frequency:  tmapis.Duration(time.Second * 5),
+			Interval:   tmapis.Duration(time.Second * 5),
 			SkipVerify: &skipVerify,
 			Headers: map[string]string{
 				"h1": "v1",

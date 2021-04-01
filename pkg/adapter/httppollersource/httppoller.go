@@ -33,7 +33,7 @@ import (
 type httpPoller struct {
 	eventType   string
 	eventSource string
-	frequency   time.Duration
+	interval    time.Duration
 
 	ceClient cloudevents.Client
 
@@ -54,7 +54,7 @@ func (h *httpPoller) Start(ctx context.Context) error {
 	// setup context for the request object.
 	h.httpRequest = h.httpRequest.Clone(ctx)
 
-	t := time.NewTicker(h.frequency)
+	t := time.NewTicker(h.interval)
 
 	for {
 		select {

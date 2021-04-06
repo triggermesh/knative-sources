@@ -74,6 +74,9 @@ spec:
                       key:
                         description: Key from the Secret object.
                         type: string
+                    required:
+                    - name
+                    - key
                 oneOf:
                 - required: ['value']
                 - required: ['valueFromSecret']
@@ -97,6 +100,9 @@ spec:
                       key:
                         description: Key from the Secret object.
                         type: string
+                    required:
+                    - name
+                    - key
                 oneOf:
                 - required: ['value']
                 - required: ['valueFromSecret']

@@ -51,10 +51,10 @@ rules:
 - apiGroups:
   - sources.triggermesh.io
   resources:
-  - slacksources
-  - zendesksources
-  - webhooksources
   - httppollersources
+  - slacksources
+  - webhooksources
+  - zendesksources
   verbs:
   - list
   - watch
@@ -62,10 +62,10 @@ rules:
 - apiGroups:
   - sources.triggermesh.io
   resources:
-  - slacksources/status
-  - zendesksources/status
-  - webhooksources/status
   - httppollersources/status
+  - slacksources/status
+  - webhooksources/status
+  - zendesksources/status
   verbs:
   - update
 
@@ -91,10 +91,10 @@ rules:
   resources:
   - serviceaccounts
   resourceNames: &rbac-objects
+  - httppollersource-adapter
   - slacksource-adapter
-  - zendesksource-adapter
   - webhooksource-adapter
-  - httppollersources-adapter
+  - zendesksource-adapter
   verbs:
   - update
 - apiGroups:
@@ -150,10 +150,10 @@ rules:
 - apiGroups:
   - coordination.k8s.io
   resourceNames:
-  - knative-sources-controller.github.com-triggermesh-knative-sources-pkg-reconciler-slacksource.reconciler.00-of-01
-  - knative-sources-controller.github.com-triggermesh-knative-sources-pkg-reconciler-zendesksource.reconciler.00-of-01
-  - knative-sources-controller.github.com-triggermesh-knative-sources-pkg-reconciler-webhooksource.reconciler.00-of-01
   - knative-sources-controller.github.com-triggermesh-knative-sources-pkg-reconciler-httppollersource.reconciler.00-of-01
+  - knative-sources-controller.github.com-triggermesh-knative-sources-pkg-reconciler-slacksource.reconciler.00-of-01
+  - knative-sources-controller.github.com-triggermesh-knative-sources-pkg-reconciler-webhooksource.reconciler.00-of-01
+  - knative-sources-controller.github.com-triggermesh-knative-sources-pkg-reconciler-zendesksource.reconciler.00-of-01
   resources:
   - leases
   verbs:
@@ -173,7 +173,23 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
+  name: httppollersource-adapter
+rules: []
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
   name: slacksource-adapter
+rules: []
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: webhooksource-adapter
 rules: []
 
 ---
@@ -227,22 +243,6 @@ rules:
   verbs:
   - get
   - update
-
----
-
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRole
-metadata:
-  name: webhooksource-adapter
-rules: []
-
----
-
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRole
-metadata:
-  name: httppollersource-adapter
-rules: []
 
 ---
 

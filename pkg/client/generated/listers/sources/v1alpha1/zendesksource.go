@@ -26,8 +26,10 @@ import (
 )
 
 // ZendeskSourceLister helps list ZendeskSources.
+// All objects returned here must be treated as read-only.
 type ZendeskSourceLister interface {
 	// List lists all ZendeskSources in the indexer.
+	// Objects returned here must be treated as read-only.
 	List(selector labels.Selector) (ret []*v1alpha1.ZendeskSource, err error)
 	// ZendeskSources returns an object that can list and get ZendeskSources.
 	ZendeskSources(namespace string) ZendeskSourceNamespaceLister
@@ -58,10 +60,13 @@ func (s *zendeskSourceLister) ZendeskSources(namespace string) ZendeskSourceName
 }
 
 // ZendeskSourceNamespaceLister helps list and get ZendeskSources.
+// All objects returned here must be treated as read-only.
 type ZendeskSourceNamespaceLister interface {
 	// List lists all ZendeskSources in the indexer for a given namespace.
+	// Objects returned here must be treated as read-only.
 	List(selector labels.Selector) (ret []*v1alpha1.ZendeskSource, err error)
 	// Get retrieves the ZendeskSource from the indexer for a given namespace and name.
+	// Objects returned here must be treated as read-only.
 	Get(name string) (*v1alpha1.ZendeskSource, error)
 	ZendeskSourceNamespaceListerExpansion
 }

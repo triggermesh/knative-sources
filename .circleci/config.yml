@@ -28,11 +28,6 @@ jobs:
       - run:
           name: Building package
           command: make build
-      - gcp-cli/install
-      - gcp-cli/initialize
-      - run:
-          name: Building docker image
-          command: make -j4 cloudbuild-test
 
   test:
     executor:

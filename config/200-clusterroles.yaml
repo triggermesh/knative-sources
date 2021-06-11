@@ -1,4 +1,4 @@
-# Copyright (c) 2020-2021 TriggerMesh Inc.
+# Copyright 2020-2021 TriggerMesh Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -33,7 +33,7 @@ rules:
   - apps
   resources:
   - deployments
-  verbs: &all
+  verbs:
   - get
   - list
   - watch
@@ -45,7 +45,14 @@ rules:
   - serving.knative.dev
   resources:
   - services
-  verbs: *all
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+  - update
+  - delete
+  - patch
 
 # Read Source resources and update their statuses
 - apiGroups:
@@ -90,7 +97,7 @@ rules:
   - ''
   resources:
   - serviceaccounts
-  resourceNames: &rbac-objects
+  resourceNames:
   - httppollersource-adapter
   - slacksource-adapter
   - webhooksource-adapter
@@ -109,7 +116,11 @@ rules:
   - rbac.authorization.k8s.io
   resources:
   - rolebindings
-  resourceNames: *rbac-objects
+  resourceNames:
+  - httppollersource-adapter
+  - slacksource-adapter
+  - webhooksource-adapter
+  - zendesksource-adapter
   verbs:
   - update
 

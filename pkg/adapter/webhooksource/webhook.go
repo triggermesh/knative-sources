@@ -126,7 +126,7 @@ func (h *webhookHandler) handleAll(w http.ResponseWriter, r *http.Request) {
 	event.SetType(h.eventType)
 	event.SetSource(h.eventSource)
 
-	if err := event.SetData(cloudevents.ApplicationJSON, body); err != nil {
+	if err := event.SetData(r.Header.Get("Content-Type"), body); err != nil {
 		h.handleError(fmt.Errorf("failed to set event data: %w", err), http.StatusInternalServerError, w)
 		return
 	}
@@ -135,7 +135,6 @@ func (h *webhookHandler) handleAll(w http.ResponseWriter, r *http.Request) {
 		h.handleError(fmt.Errorf("could not send Cloud Event: %w", result), http.StatusInternalServerError, w)
 	}
 
-	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 }
 

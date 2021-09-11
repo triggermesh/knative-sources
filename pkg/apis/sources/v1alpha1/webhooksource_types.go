@@ -51,17 +51,20 @@ type WebhookSourceSpec struct {
 	//   and modifications of the event sent to the sink.
 	duckv1.SourceSpec `json:",inline"`
 
-	// EventType for the event that will be generated.
+	// Value of the CloudEvents 'type' attribute to set on ingested events.
+	// https://github.com/cloudevents/spec/blob/v1.0.1/spec.md#type
 	EventType string `json:"eventType"`
 
-	// EventSource for the event that will be generated.
+	// Value of the CloudEvents 'source' attribute to set on ingested events.
+	// https://github.com/cloudevents/spec/blob/v1.0.1/spec.md#source-1
+	// +optional
 	EventSource *string `json:"eventSource,omitempty"`
 
-	// BasicAuthUsername used for basic authentication.
+	// User name HTTP clients must set to authenticate with the webhook using HTTP Basic authentication.
 	// +optional
 	BasicAuthUsername *string `json:"basicAuthUsername,omitempty"`
 
-	// BasicAuthPassword used for basic authentication.
+	// Password HTTP clients must set to authenticate with the webhook using HTTP Basic authentication.
 	// +optional
 	BasicAuthPassword *ValueFromField `json:"basicAuthPassword,omitempty"`
 }

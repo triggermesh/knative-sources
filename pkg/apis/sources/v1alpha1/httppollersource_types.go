@@ -54,40 +54,46 @@ type HTTPPollerSourceSpec struct {
 	//   and modifications of the event sent to the sink.
 	duckv1.SourceSpec `json:",inline"`
 
-	// EventType for the event that will be generated.
+	// Value of the CloudEvents 'type' attribute to set on ingested events.
+	// https://github.com/cloudevents/spec/blob/v1.0.1/spec.md#type
 	EventType string `json:"eventType"`
 
-	// EventSource for the event that will be generated.
+	// Value of the CloudEvents 'source' attribute to set on ingested events.
+	// https://github.com/cloudevents/spec/blob/v1.0.1/spec.md#source-1
 	// +optional
 	EventSource *string `json:"eventSource,omitempty"`
 
-	// Endpoint to connect to.
+	// HTTP/S URL of the endpoint to poll data from.
 	Endpoint apis.URL `json:"endpoint"`
 
-	// Method to use at requests.
+	// HTTP request method to use in requests to the specified 'endpoint'.
+	// https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods
 	Method string `json:"method"`
 
-	// SkipVerify disables server certificate validation.
+	// Controls whether the HTTP client verifies the server's certificate
+	// chain and host name when communicating over TLS.
 	// +optional
 	SkipVerify *bool `json:"skipVerify,omitempty"`
 
-	// CACertificate uses the CA certificate to verify the remote server certificate.
+	// CA certificate in X.509 format the HTTP client should use to verify
+	// the identity of remote servers when communicating over TLS.
 	// +optional
 	CACertificate *string `json:"caCertificate,omitempty"`
 
-	// BasicAuthUsername used for basic authentication.
+	// User name to set in HTTP requests that require HTTP Basic authentication.
 	// +optional
 	BasicAuthUsername *string `json:"basicAuthUsername,omitempty"`
 
-	// BasicAuthPassword used for basic authentication.
+	// Password to set in HTTP requests that require HTTP Basic authentication.
 	// +optional
 	BasicAuthPassword *ValueFromField `json:"basicAuthPassword,omitempty"`
 
-	// Headers to be included at HTTP requests.
+	// HTTP headers to include in HTTP requests.
 	// +optional
 	Headers map[string]string `json:"headers,omitempty"`
 
-	// Interval between polling requests.
+	// Duration which defines how often the HTTP/S endpoint should be polled.
+	// Expressed as a duration string, which format is documented at https://pkg.go.dev/time#ParseDuration.
 	Interval tmapis.Duration `json:"interval"`
 }
 

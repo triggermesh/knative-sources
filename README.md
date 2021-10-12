@@ -1,4 +1,4 @@
-**This project is now archived, please go to [triggermesh/triggermesh](https://github.com/triggermesh/triggermesh) repository where development continues.**
+**This project is now archived, please go to the [triggermesh/triggermesh](https://github.com/triggermesh/triggermesh) repository where development continues.**
 
 # TriggerMesh Sources for Knative
 
